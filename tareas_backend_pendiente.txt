@@ -1,0 +1,171 @@
+================================================================================
+TAREAS BACKEND PENDIENTE - PASOS PARA FINALIZAR
+================================================================================
+
+INSTRUCCIONES: Completar en orden. Cada paso depende del anterior.
+
+================================================================================
+PASO 1: CONFIGURAR VARIABLES DE ENTORNO
+================================================================================
+
+Archivo: /backend/.env
+
+Reemplazar los placeholder con tus credenciales reales:
+
+1. MONGODB_URI
+   → Opción A (Local): mongodb://localhost:27017/dolce_atelier
+   → Opción B (Atlas): mongodb+srv://<user>:<password>@cluster.xxxxx.mongodb.net/dolce_atelier
+
+2. CLERK_SECRET_KEY
+   → https://dashboard.clerk.com → API Keys → Secret Key
+
+3. STRIPE_SECRET_KEY
+   → https://dashboard.stripe.com/apikeys → Secret key (sk_test_...)
+
+4. STRIPE_WEBHOOK_SECRET
+   → https://dashboard.stripe.com/webhooks
+   → Agregar endpoint: http://localhost:3001/api/webhook/stripe
+   → Eventos: checkout.session.completed
+   → Copiar whsec_...
+
+5. CLOUDINARY_*
+   → https://cloudinary.com/console → API Keys
+   → Cloud Name, API Key, API Secret
+
+6. SENDGRID_API_KEY
+   → https://app.sendgrid.com → API Keys → Create Key
+
+================================================================================
+PASO 2: MONGODB ATLAS (SI NO TIENES MONGODB LOCAL)
+================================================================================
+
+1. Crear cuenta: https://www.mongodb.com/atlas
+2. Crear cluster (M0 Free)
+3. Network Access → Allow All (0.0.0.0/0)
+4. Database Access → Crear usuario
+5. Clusters → Connect → Connect your application
+6. Copiar URI y pegar en MONGODB_URI
+
+================================================================================
+PASO 3: SUBIR IMÁGENES A CLOUDINARY
+================================================================================
+
+Opciones para subir fotos de pasteles:
+
+OPCIÓN A (RÁPIDA - Manual):
+1. Ir a https://cloudinary.com/console/media_library
+2. Crear carpeta "dolce-atelier"
+3. Arrastrar fotos → se suben automáticamente
+4. Copiar URLs de cada imagen
+
+OPCIÓN B (API):
+1. Configurar CLOUDINARY_* en .env
+2. Usar endpoint POST /api/upload/receta para subir
+
+DESPUÉS DE SUBIR:
+→ Insertar pasteles en MongoDB con las URLs de Cloudinary
+
+================================================================================
+PASO 4: SEED DATA - INSERTAR PASTELES DE PRUEBA
+================================================================================
+
+POST http://localhost:3001/api/pasteles
+Header: Authorization: Bearer <tu_token_clerk>
+
+Body (ejemplo):
+{
+  "nombre": "Chocolate Belga",
+  "precio": 450,
+  "categoria": "chocolate",
+  "imagen": "https://res.cloudinary.com/TU_CLOUD/image/upload/v1/dolce-atelier/chocolate.jpg",
+  "disponible": true,
+  "descripcion": "Bizcocho de chocolate belga con ganache"
+}
+
+Repetir para cada pastel del catálogo.
+
+================================================================================
+PASO 5: CONFIGURAR CLERK (ROLES ADMIN)
+================================================================================
+
+1. Ir a https://dashboard.clerk.com
+2. Usuarios → Seleccionar usuario → Metadata
+3. En publicMetadata agregar: {"role": "admin"}
+4. Este usuario podrá acceder a /api/admin/*
+
+Para probar auth localmente:
+→ Usar el token JWT del usuario en el header Authorization
+
+================================================================================
+PASO 6: PROBAR FLUJO DE PAGOS (STRIPE TEST MODE)
+================================================================================
+
+1. Configurar STRIPE_SECRET_KEY (test mode)
+2. Instalar Stripe CLI:
+   → https://stripe.com/docs/stripe-cli
+3. Escuchar webhooks localmente:
+   stripe listen --forward-to localhost:3001/api/webhook/stripe
+4. Copiar el webhook signing secret → STRIPE_WEBHOOK_SECRET
+
+Flujo a probar:
+1. Crear pedido → POST /api/pedidos
+2. Redirigir a Stripe Checkout
+3. Completar pago (usar tarjeta test: 4242 4242...)
+4. Verificar que webhook actualice estado a PAGADO
+
+================================================================================
+PASO 7: VERIFICACIÓN FINAL
+================================================================================
+
+Ejecutar: bun scripts/dev.ts
+
+Probar endpoints:
+- GET  http://localhost:3001/health
+- GET  http://localhost:3001/api/pasteles
+- POST http://localhost:3001/api/pedidos (con auth)
+
+Verificar:
+- Frontend conecta con backend
+- Catálogo muestra pasteles de BD real
+- Auth de Clerk funciona
+- Pagos con Stripe (test) completan correctamente
+
+================================================================================
+PASO 8: PREPARAR PARA DEPLOY
+================================================================================
+
+FRONTEND (Vercel):
+1. Subir a GitHub
+2. Conectar en https://vercel.com
+3. Configurar variables de entorno:
+   - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+   - CLERK_SECRET_KEY
+   - NEXT_PUBLIC_API_URL (URL del backend)
+
+BACKEND (Railway/Render):
+1. Subir a GitHub
+2. Desplegar
+3. Configurar variables de entorno en el panel
+4. Cambiar FRONTEND_URL a URL de producción
+
+MONGODB ATLAS:
+1. Network Access → Allow Vercel IP o 0.0.0.0/0
+2. Usar URI de producción en MONGODB_URI
+
+================================================================================
+COMANDOS ÚTILES:
+================================================================================
+
+Iniciar ambos:
+  bun scripts/dev.ts
+
+Solo backend:
+  cd backend && bun run src/server.ts
+
+Reinstalar deps:
+  cd backend && bun install
+
+Stripe CLI (webhooks):
+  stripe listen --forward-to localhost:3001/api/webhook/stripe
+
+================================================================================

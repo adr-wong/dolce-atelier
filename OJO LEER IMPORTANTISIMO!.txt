@@ -1,0 +1,3 @@
+para desplegar todo (backend+frontend)
+
+solo necesitan este comando desde este mismo directorio:   bun scripts/dev.ts  

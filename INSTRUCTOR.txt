@@ -1,0 +1,203 @@
+================================================================================
+INSTRUCTOR DE CONFIGURACIÓN - DOLCE ATELIER
+================================================================================
+
+ESTADO ACTUAL: Backend COMPLETO, requiere configuración de servicios externos.
+
+================================================================================
+PARTE 1: CONFIGURACIÓN DE VARIABLES DE ENTORNO
+================================================================================
+
+Ubicación: backend/.env
+
+Configurar cada variable con tus credenciales reales:
+
+1. MONGODB_URI
+   → MongoDB Atlas: mongodb+srv://<usuario>:<password>@cluster.xxxxx.mongodb.net/dolce_atelier
+   → Local: mongodb://localhost:27017/dolce_atelier
+
+2. CLERK_SECRET_KEY
+   → Dashboard: https://dashboard.clerk.com
+   → API Keys → Secret Key → Copiar
+
+3. STRIPE_SECRET_KEY
+   → Dashboard: https://dashboard.stripe.com/apikeys
+   → Secret key (sk_test_...)
+
+4. STRIPE_WEBHOOK_SECRET
+   → Dashboard: https://dashboard.stripe.com/webhooks
+   → Agregar endpoint: http://localhost:3001/api/webhook/stripe
+   → Eventos: checkout.session.completed
+   → Copiar whsec_...
+
+5. CLOUDINARY
+   → Dashboard: https://cloudinary.com/console
+   → API Keys → Cloud Name, API Key, API Secret
+
+6. SENDGRID
+   → Dashboard: https://app.sendgrid.com
+   → Settings → API Keys → Create Key
+   → Email Settings → Sender Authentication
+
+================================================================================
+PARTE 2: BASE DE DATOS MONGODB
+================================================================================
+
+El backend ya tiene:
+✓ src/lib/db.ts - Conexión
+✓ src/models/Pastel.ts
+✓ src/models/Pedido.ts
+✓ src/models/Receta.ts
+
+Para crear la base de datos:
+1. Ir a MongoDB Atlas (o MongoDB Compass para local)
+2. Crear cluster/grab la URI de conexión
+3. Pegar en MONGODB_URI del .env
+4. La base de datos "dolce_atelier" se crea automáticamente al primer uso
+
+Schemas ya definidos:
+- Pastel: nombre, precio, categoria, imagen, disponible, descripcion
+- Pedido: clerkUserId, estado, total, items[], metodoEntrega, etc.
+- Receta: clerkUserId, archivoUrl, nota, personas, estado, cotizacion
+
+================================================================================
+PARTE 3: SEED DATA (DATOS DE PRUEBA)
+================================================================================
+
+Opcional: Insertar pasteles de prueba
+
+POST /api/pasteles (requiere auth header con Clerk token)
+
+Ejemplo body:
+{
+  "nombre": "Chocolate Belga",
+  "precio": 450,
+  "categoria": "chocolate",
+  "imagen": "https://res.cloudinary.com/...",
+  "disponible": true,
+  "descripcion": "Bizcocho de chocolate belga..."
+}
+
+================================================================================
+PARTE 4: FRONTEND → BACKEND CONNECTION
+================================================================================
+
+El frontend ya tiene:
+✓ lib/api.ts - Cliente API configurado
+✓ lib/types.ts - Tipos sincronizados con modelos
+
+Para conectar:
+1. Configurar backend/.env con todas las variables
+2. Asegurar que NEXT_PUBLIC_API_URL=http://localhost:3001 en frontend/.env.local
+3. Ejecutar: bun scripts/dev.ts
+4. Probar: curl http://localhost:3001/health
+
+Endpoints disponibles:
+- GET  /api/pasteles                    (público)
+- GET  /api/pasteles/:id                (público)
+- POST /api/pasteles                    (auth)
+- PUT  /api/pasteles/:id                (auth)
+- DELETE /api/pasteles/:id              (auth)
+- GET  /api/pedidos                    (auth)
+- POST /api/pedidos                    (auth)
+- GET  /api/pedidos/:id                (auth)
+- PUT  /api/pedidos/:id/estado         (auth)
+- GET  /api/recetas                    (auth)
+- POST /api/recetas                    (auth)
+- PUT  /api/recetas/:id                (auth)
+- PUT  /api/recetas/:id/cotizar        (auth)
+- POST /api/webhook/stripe             (webhook - sin auth)
+- GET  /api/admin/stats                (pendiente proteger con rol admin)
+
+================================================================================
+PARTE 5: AUTENTICACIÓN CLERK
+================================================================================
+
+El backend ya tiene:
+✓ src/lib/clerk.ts - Verificación de tokens
+✓ src/middleware/auth.ts - Middleware de autenticación
+
+Para probar:
+1. Configurar CLERK_SECRET_KEY en backend/.env
+2. Configurar NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY y CLERK_SECRET_KEY en frontend/.env.local
+3. Iniciar sesión con Clerk en el frontend
+4. Copiar el token de sesión del header Authorization
+5. Usar: Authorization: Bearer <token>
+
+El frontend de Clerk maneja automáticamente los tokens.
+
+================================================================================
+PARTE 6: STRIPE (PAGOS)
+================================================================================
+
+El backend ya tiene:
+✓ src/services/stripe.ts - Crear sesión Checkout
+✓ src/routes/webhook.ts - Recibir webhooks
+
+Flujo:
+1. Usuario crea pedido → POST /api/pedidos
+2. Backend crea sesión Stripe y responde con checkoutUrl
+3. Frontend redirige a Stripe Checkout
+4. Stripe envía webhook a /api/webhook/stripe
+5. Backend actualiza pedido a PAGADO
+
+Prueba local (Stripe CLI):
+stripe listen --forward-to localhost:3001/api/webhook/stripe
+
+================================================================================
+VERIFICACIÓN FINAL
+================================================================================
+
+1. Backend funcionando:
+   curl http://localhost:3001/health
+   → {"status":"ok","timestamp":"..."}
+
+2. Frontend funcionando:
+   http://localhost:3000
+
+3. Verificar conexión:
+   - Crear cuenta en Clerk
+   - Configurar Stripe en modo test
+   - Hacer un pedido de prueba
+
+================================================================================
+COMANDOS
+================================================================================
+
+Iniciar ambos servidores:
+  bun scripts/dev.ts
+
+Solo backend:
+  cd backend && bun run src/server.ts
+
+Solo frontend:
+  cd frontend && npm run dev
+
+Reinstalar dependencias:
+  cd backend && bun install
+  cd frontend && npm install
+
+================================================================================
+
+
+
+
+
+===============================================================================
+ DESPLIEGUE DEL PROYECTO ONLINE (SIN IMPLEMENTAR Y A FUTURO)
+===============================================================================
+
+ok dimelo aqui por prompt, si deseo en un futuro desplegar con esta BD mongo, y que todo este en la nube y viva en la nube como lo haria, si estoy en desarrollo mongo local
+Pasar de MongoDB local a MongoDB Atlas (nube):
+1. Crear cuenta en MongoDB Atlas (gratis): https://www.mongodb.com/atlas
+2. Crear cluster:
+   - Free tier: M0 Sandbox
+   - Elegir región cercana (México: us-east-1)
+   - Esperar despliegue (~3 min)
+3. Configurar acceso:
+   - Network Access → Allow All (0.0.0.0/0) o tu IP
+   - Database Access → Crear usuario con permisos readWrite
+4. Obtener URI:
+   - Clusters → Connect → Connect your application
+   - Copiar URI:
+      mongodb+srv://

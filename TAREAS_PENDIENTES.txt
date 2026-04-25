@@ -1,0 +1,153 @@
+================================================================================
+TAREAS PENDIENTES - DOLCE ATELIER
+================================================================================
+
+INSTRUCCIONES OBLIGATORIAS AL INICIAR:
+======================================
+ANTES de hacer CUALQUIER tarea, este agente DEBE leer en este orden:
+
+1. /SKILL.md
+   → Reglas críticas, stack tecnológico, arquitectura, modelos de datos
+
+2. /PRD.txt
+   → Visión del producto, flujos, estados, reglas de negocio
+
+3. /TAREAS_PENDIENTES.txt (este archivo)
+   → Estado actual, qué falta, qué está completo
+
+4. Estructura del proyecto:
+   → /frontend/app/* (vistas frontend)
+   → /frontend/lib/* (tipos, API client, mock data)
+   → /frontend/components/* (componentes)
+   → /frontend/store/* (Zustand)
+   → /backend/* (routes, services, models, middleware, schemas)
+
+NO continuar hasta haber leído y comprendido todo el contexto.
+Si no se comprende algo, PREGUNTAR antes de inventar.
+
+SINCRONIZACIÓN CON BD:
+- Backend y Frontend se desarrollan en paralelo
+- Frontend usa /lib/mock-data.ts para vistas independientes
+- Cuando backend esté listo: conectar /lib/api.ts con endpoints reales
+- NO crear campos adicionales en modelos que no existan en BD
+- Verificar tipos en /frontend/lib/types.ts antes de conectar
+
+================================================================================
+
+================================================================================
+PERSONA IVAN WOO: VISTAS PÚBLICAS (USUARIOS CLIENTES)
+================================================================================
+
+VISTAS SIN CONEXIÓN BD (pueden iniciar inmediatamente):
+------------------------------------------------------
+[ ] /app/checkout/page.tsx (UI del formulario de checkout)
+[ ] /app/checkout/exito/page.tsx (página de éxito post-pago)
+[ ] /app/checkout/error/page.tsx (página de error de pago)
+[ ] /app/not-found.tsx (página 404 personalizada)
+
+VISTAS CON CONEXIÓN BD (iniciar después del backend):
+------------------------------------------------------
+[ ] /app/checkout/page.tsx - INTEGRAR:
+    - GET /api/pedidos (validar carrito existente)
+    - POST /api/pedidos (crear pedido PENDIENTE)
+    - POST /api/stripe/checkout (crear sesión Stripe)
+
+[ ] /app/checkout/exito/page.tsx - INTEGRAR:
+    - Mostrar datos del pedido confirmado
+    - GET /api/pedidos/[id] (obtener detalles)
+
+================================================================================
+PERSONA ADRIAN WONG: VISTAS ADMIN (PANEL ADMIN)
+================================================================================
+
+VISTAS CON CONEXIÓN BD (iniciar después del backend):
+------------------------------------------------------
+[ ] /app/admin/page.tsx (Dashboard) - INTEGRAR:
+    - GET /api/pedidos (contar pedidos hoy)
+    - GET /api/recetas?estado=PENDIENTE (recetas pendientes)
+    - GET /api/pasteles (contar productos)
+    - Calcular ingresos del mes
+
+[ ] /app/admin/pasteles/page.tsx - INTEGRAR:
+    - GET /api/pasteles (listar todos)
+    - POST /api/pasteles (crear)
+    - PUT /api/pasteles/[id] (editar)
+    - DELETE /api/pasteles/[id] (eliminar)
+
+[ ] /app/admin/pedidos/page.tsx - INTEGRAR:
+    - GET /api/pedidos (listar con filtros por estado)
+    - PUT /api/pedidos/[id]/estado (cambiar estado)
+
+[ ] /app/admin/recetas/page.tsx - INTEGRAR:
+    - GET /api/recetas (listar con filtros por estado)
+    - PUT /api/recetas/[id]/estado (cambiar estado)
+    - PUT /api/recetas/[id]/cotizacion (definir precio)
+
+================================================================================
+VISTAS YA COMPLETADAS (no modificar):
+================================================================================
+[x] /app/page.tsx - Home
+[x] /app/catalogo/page.tsx - Catálogo (usa mock-data.ts)
+[x] /app/catalogo/[id]/page.tsx - Detalle pastel (usa mock-data.ts)
+[x] /app/carrito/page.tsx - Carrito (Zustand + localStorage)
+[x] /app/pedidos/page.tsx - Historial pedidos (usa mock-data.ts)
+[x] /app/recetas/page.tsx - Formulario recetas
+[x] /app/admin/layout.tsx - Layout admin
+[x] /app/admin/page.tsx - Dashboard (mock data)
+[x] /app/admin/pasteles/page.tsx - Gestión pasteles (mock data)
+[x] /app/admin/pedidos/page.tsx - Gestión pedidos (mock data)
+[x] /app/admin/recetas/page.tsx - Gestión recetas (mock data)
+[x] /app/sign-in/* - Autenticación (Clerk)
+[x] /app/sign-up/* - Registro (Clerk)
+
+================================================================================
+COMPONENTES REUTILIZABLES:
+================================================================================
+[x] /components/Header.tsx
+[x] /components/TarjetaPastel.tsx
+[x] /components/BotonAgregar.tsx
+
+================================================================================
+DATOS MOCK:
+================================================================================
+[x] /lib/mock-data.ts - 6 pasteles de prueba
+[x] /lib/types.ts - Tipos TypeScript
+[x] /lib/api.ts - Cliente API (listo para conectar)
+
+================================================================================
+BACKEND COMPLETO:
+================================================================================
+[x] /backend/src/lib/db.ts - Conexión MongoDB
+[x] /backend/src/lib/clerk.ts - Cliente Clerk
+[x] /backend/src/models/ - Pastel, Pedido, Receta
+[x] /backend/src/schemas/ - Validaciones Zod
+[x] /backend/src/services/ - pastel, pedido, receta, stripe, cloudinary, email
+[x] /backend/src/routes/ - pasteles, pedidos, recetas, webhook, admin, upload
+[x] /backend/src/middleware/auth.ts - verifyToken, verifyAdmin
+[x] /backend/.env - Variables de entorno
+
+================================================================================
+PRÓXIMOS PASOS (Backend) - COMPLETADO:
+================================================================================
+[x] 1. Configurar conexión MongoDB
+[x] 2. Crear modelos: Pastel, Pedido, Receta
+[x] 3. Implementar rutas API /api/pasteles, /api/pedidos, /api/recetas
+[x] 4. Integrar Stripe Checkout + Webhooks
+[x] 5. Integrar Cloudinary para recetas (subida de archivos)
+[x] 6. Integrar SendGrid para emails
+[x] 7. Middleware verificación rol admin
+
+CONSULTAR: /tareas_backend_pendiente.txt para pasos finales de configuración
+
+================================================================================
+REGLAS DEL SKILL (recordatorio):
+================================================================================
+- NO usar any en TypeScript
+- TODA request debe validarse con Zod
+- NO lógica de negocio en frontend
+- Stripe SOLO desde backend
+- Webhooks SIN auth, SOLO verificación HMAC
+- SIEMPRE código modular
+- Definir endpoint antes de escribir código
+
+================================================================================

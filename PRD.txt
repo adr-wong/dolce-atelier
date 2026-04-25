@@ -1,0 +1,228 @@
+
+
+1. Visión General del Producto
+1.1 Descripción
+Dolce Atelier es una plataforma de comercio electrónico (B2C) enfocada en la venta de pasteles artesanales.
+El sistema permite:
+    • Comprar pasteles predefinidos 
+    • Solicitar pasteles personalizados mediante recetas 
+    • Elegir entre entrega a domicilio o retiro en tienda 
+
+1.2 Propuesta de Valor
+    • Compra rápida y sencilla 
+    • Productos artesanales de alta calidad 
+    • Personalización mediante recetas del cliente 
+    • Experiencia digital fluida de inicio a fin 
+
+1.3 Modelo de Negocio
+Modelo: B2C
+Fuentes de ingreso:
+    • Venta directa de productos del catálogo 
+    • Cobro por elaboración de recetas personalizadas 
+
+1.4 Objetivos
+    • Lanzar MVP funcional 
+    • Alcanzar tracción inicial (pedidos reales) 
+    • Validar modelo de personalización 
+    • Mantener alta conversión en checkout 
+
+2. Stack Tecnológico
+Frontend
+    • Next.js (SSR para SEO) 
+Backend
+    • Node.js con Bun 
+Base de Datos
+    • MongoDB + Mongoose 
+Autenticación
+    • Clerk (SSO, Magic Link, OTP) 
+Pagos
+    • Stripe Checkout + Webhooks 
+Almacenamiento
+    • Cloudinary 
+Email
+    • SendGrid 
+Deploy
+    • Vercel (Frontend) 
+    • Railway (Backend) 
+
+3. Usuarios y Roles
+Cliente
+    • Compra productos 
+    • Gestiona pedidos 
+    • Envía recetas personalizadas 
+Admin
+    • Gestiona catálogo 
+    • Gestiona pedidos 
+    • Revisa recetas 
+Super Admin
+    • Gestiona usuarios y roles 
+    • Acceso completo al sistema 
+
+4. Funcionalidades Principales
+4.1 Autenticación
+    • Registro/login 
+    • Google SSO 
+    • Magic Link 
+    • Protección de rutas 
+
+4.2 Catálogo
+    • Listado de productos 
+    • Filtros por categoría 
+    • Página de detalle 
+    • SSR para SEO 
+
+4.3 Carrito
+    • Persistencia en localStorage 
+    • Fusión al iniciar sesión 
+    • Edición de productos 
+
+4.4 Pagos
+    • Integración con Stripe 
+    • Checkout externo 
+    • Webhook de confirmación 
+
+4.5 Pedidos
+    • Historial de pedidos 
+    • Estado del pedido 
+
+4.6 Recetas Personalizadas
+    • Subida de archivos 
+    • Cotización por admin 
+    • Aceptación y pago 
+
+4.7 Panel Admin
+    • CRUD de productos 
+    • Gestión de pedidos 
+    • Gestión de recetas 
+    • Dashboard básico 
+
+5. Requerimientos Funcionales (Resumen)
+    • Autenticación completa 
+    • Catálogo visible con SSR 
+    • Carrito funcional 
+    • Checkout con Stripe 
+    • Webhook para confirmar pagos 
+    • Historial de pedidos 
+    • Sistema de recetas personalizadas 
+    • Panel administrativo 
+
+6. Requerimientos No Funcionales
+Rendimiento
+    • Tiempo de carga < 2s 
+Seguridad
+    • Variables en entorno 
+    • Validación de webhooks 
+    • Protección de rutas 
+Escalabilidad
+    • Soporte para múltiples usuarios concurrentes 
+Mantenibilidad
+    • Código tipado (TypeScript) 
+    • Validaciones (Zod) 
+
+7. Lógica de Negocio
+Estados del Pedido
+    • PENDIENTE 
+    • PAGADO 
+    • PREPARANDO 
+    • LISTO 
+    • EN_CAMINO 
+    • ENTREGADO 
+    • CANCELADO 
+
+Estados de Receta
+    • PENDIENTE 
+    • REVISANDO 
+    • COTIZADA 
+    • ACEPTADA 
+    • RECHAZADA 
+
+Reglas Clave
+    • El carrito no reserva stock 
+    • El pago se confirma solo vía webhook 
+    • Los precios se guardan como snapshot 
+    • El backend valida autenticación siempre 
+
+8. Arquitectura
+Componentes
+Frontend
+    • Next.js 
+    • Zustand (estado) 
+Backend
+    • API REST 
+    • Validación con Zod 
+Servicios externos
+    • Clerk 
+    • Stripe 
+    • Cloudinary 
+    • SendGrid 
+
+Modelo de Datos
+Pastel
+    • nombre 
+    • precio 
+    • categoría 
+    • imagen 
+    • disponible 
+
+Pedido
+    • usuario 
+    • estado 
+    • total 
+    • items 
+
+Receta
+    • usuario 
+    • archivo 
+    • estado 
+    • cotización 
+
+9. Flujo Principal
+    1. Usuario navega catálogo 
+    2. Agrega productos al carrito 
+    3. Se autentica 
+    4. Crea pedido 
+    5. Paga en Stripe 
+    6. Webhook confirma pago 
+    7. Pedido actualizado 
+    8. Usuario recibe confirmación 
+
+10. Alcance MVP
+Incluye
+    • Catálogo 
+    • Autenticación 
+    • Carrito 
+    • Pagos 
+    • Pedidos 
+    • Recetas 
+    • Admin básico 
+
+No incluye
+    • App móvil 
+    • Sistema de reseñas 
+    • Programa de fidelización 
+    • Notificaciones externas 
+
+11. Roadmap
+Sprint 1
+    • Setup proyecto 
+    • DB conexión 
+Sprint 2
+    • Autenticación 
+Sprint 3
+    • Catálogo 
+Sprint 4
+    • Carrito + pagos 
+Sprint 5
+    • Pedidos + recetas + admin 
+Sprint 6
+    • QA y optimización 
+
+12. Criterios de Aceptación
+    • Login funcional 
+    • Catálogo SSR 
+    • Carrito persistente 
+    • Pago exitoso con Stripe 
+    • Webhook funcional 
+    • Historial visible 
+    • Panel admin operativo 
+    • Sin credenciales expuestas
