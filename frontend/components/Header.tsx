@@ -3,20 +3,22 @@
 import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import Link from 'next/link';
 
+import { useState } from 'react';
+// import './styles/header.css'; // CSS removed for now
+
 export default function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+
   return (
-    <header style={{
-      padding: '1rem 2rem',
-      background: '#fff',
-      borderBottom: '1px solid #eee',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    }}>
-      <Link href="/" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+    <header className="header">
+      <Link href="/" className="logo">
         Dolce Atelier
       </Link>
-      <nav style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+      <button className="menu-button" onClick={toggleMenu} aria-label="Toggle menu">
+        ☰
+      </button>
+      <nav className={menuOpen ? 'open' : ''}>
         <Link href="/catalogo">Catálogo</Link>
         <Link href="/carrito">Carrito</Link>
         <SignedOut>
