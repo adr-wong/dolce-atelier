@@ -40,10 +40,10 @@ PERSONA IVAN WOO: VISTAS PÚBLICAS (USUARIOS CLIENTES)
 
 VISTAS SIN CONEXIÓN BD (pueden iniciar inmediatamente):
 ------------------------------------------------------
-[ ] /app/checkout/page.tsx (UI del formulario de checkout)
-[ ] /app/checkout/exito/page.tsx (página de éxito post-pago)
-[ ] /app/checkout/error/page.tsx (página de error de pago)
-[ ] /app/not-found.tsx (página 404 personalizada)
+[x] /app/checkout/page.tsx (UI del formulario de checkout)
+[x] /app/checkout/exito/page.tsx (página de éxito post-pago)
+[x] /app/checkout/error/page.tsx (página de error de pago)
+[x] /app/not-found.tsx (página 404 personalizada)
 
 VISTAS CON CONEXIÓN BD (iniciar después del backend):
 ------------------------------------------------------

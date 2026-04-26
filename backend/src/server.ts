@@ -31,9 +31,14 @@ async function start() {
     await connectDB();
     console.log('✅ Base de datos conectada');
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    const handler = app.handle;
+
+    const server = Bun.serve({
+      port: PORT,
+      fetch: handler,
     });
+
+    console.log(`🚀 Servidor corriendo en http://localhost:${server.port}`);
   } catch (error) {
     console.error('❌ Error al iniciar:', error);
     process.exit(1);

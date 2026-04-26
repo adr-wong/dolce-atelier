@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { pedidoService } from '../services';
 import { FiltroPedidosSchema } from '../schemas';
-import { authMiddleware } from '../middleware/auth';
+import { verifyToken, verifyAdmin, authMiddleware } from '../middleware/auth';
 
 export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
   .get('/', async ({ query, headers }) => {

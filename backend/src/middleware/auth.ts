@@ -39,3 +39,8 @@ export async function verifyAdmin(authHeader: string | null): Promise<AuthUser |
     return { userId, role: 'user' };
   }
 }
+
+export async function authMiddleware(headers: Record<string, string>): Promise<string | null> {
+  const authHeader = headers.authorization || headers.authorization;
+  return verifyToken(authHeader);
+}

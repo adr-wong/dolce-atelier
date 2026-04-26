@@ -2,27 +2,80 @@
 
 import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import Link from 'next/link';
-
 import { useState } from 'react';
-// import './styles/header.css'; // CSS removed for now
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
+  const headerStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '1rem 2rem',
+    background: 'rgba(255, 255, 255, 0.98)',
+    backdropFilter: 'blur(10px)',
+    zIndex: 1000,
+    boxShadow: '0 2px 20px rgba(0,0,0,0.08)',
+  };
+
+  const logoStyle: React.CSSProperties = {
+    fontFamily: 'Georgia, serif',
+    fontSize: '1.5rem',
+    fontWeight: 600,
+    color: '#1a1a1a',
+    textDecoration: 'none',
+  };
+
+  const navStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2rem',
+  };
+
+  const linkStyle: React.CSSProperties = {
+    fontWeight: 500,
+    fontSize: '0.95rem',
+    color: '#666',
+    textDecoration: 'none',
+    padding: '0.5rem 0',
+    transition: 'color 0.2s',
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    display: 'none',
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+    padding: '0.5rem',
+  };
+
   return (
-    <header className="header">
-      <Link href="/" className="logo">
-        Dolce Atelier
+    <header style={headerStyle}>
+      <Link href="/" style={logoStyle}>
+        Dolce <span style={{ color: '#E11D48' }}>Atelier</span>
       </Link>
-      <button className="menu-button" onClick={toggleMenu} aria-label="Toggle menu">
+      
+      <button style={buttonStyle} onClick={toggleMenu} aria-label="Toggle menu">
         ☰
       </button>
-      <nav className={menuOpen ? 'open' : ''}>
-        <Link href="/catalogo">Catálogo</Link>
-        <Link href="/carrito">Carrito</Link>
+      
+      <nav style={navStyle}>
+        <Link href="/catalogo" style={linkStyle}>
+          Catálogo
+        </Link>
+        <Link href="/carrito" style={linkStyle}>
+          Carrito
+        </Link>
         <SignedOut>
-          <Link href="/sign-in">Iniciar Sesión</Link>
+          <Link href="/sign-in" style={{ ...linkStyle, color: '#E11D48' }}>
+            Iniciar Sesión
+          </Link>
         </SignedOut>
         <SignedIn>
           <UserButton afterSignOutUrl="/" />

@@ -19,79 +19,214 @@ export default function CarritoPage() {
     );
   }
 
+  const emptyStyle: React.CSSProperties = {
+    padding: '4rem 2rem',
+    textAlign: 'center',
+  };
+
+  const containerStyle: React.CSSProperties = {
+    padding: '2rem',
+    maxWidth: 1000,
+    margin: '0 auto',
+  };
+
+  const headerStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '2rem',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontFamily: 'Georgia, serif',
+    fontSize: '2rem',
+  };
+
+  const clearBtnStyle: React.CSSProperties = {
+    padding: '0.5rem 1rem',
+    background: 'none',
+    border: '1px solid #ddd',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+  };
+
+  const gridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 320px',
+    gap: '2rem',
+  };
+
+  const itemCardStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '1rem',
+    padding: '1.5rem',
+    background: '#fff',
+    borderRadius: '12px',
+    marginBottom: '1rem',
+    border: '1px solid #eee',
+  };
+
+  const imageStyle: React.CSSProperties = {
+    position: 'relative',
+    width: 100,
+    height: 100,
+  };
+
+  const itemInfoStyle: React.CSSProperties = {
+    flex: 1,
+  };
+
+  const itemNameStyle: React.CSSProperties = {
+    marginBottom: '0.5rem',
+    fontWeight: 500,
+  };
+
+  const itemPriceStyle: React.CSSProperties = {
+    color: '#666',
+    marginBottom: '0.5rem',
+    fontSize: '0.9rem',
+  };
+
+  const controlsStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+  };
+
+  const quantityBoxStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    border: '1px solid #ddd',
+    borderRadius: '6px',
+  };
+
+  const qtyBtnStyle: React.CSSProperties = {
+    padding: '0.5rem 0.75rem',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '1rem',
+  };
+
+  const deleteBtnStyle: React.CSSProperties = {
+    color: '#e11d48',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+  };
+
+  const itemTotalStyle: React.CSSProperties = {
+    textAlign: 'right',
+    fontWeight: 'bold',
+    fontSize: '1.25rem',
+  };
+
+  const summaryStyle: React.CSSProperties = {
+    background: '#f9f9f9',
+    padding: '1.5rem',
+    borderRadius: '12px',
+    height: 'fit-content',
+  };
+
+  const summaryTitleStyle: React.CSSProperties = {
+    marginBottom: '1rem',
+    fontFamily: 'Georgia, serif',
+  };
+
+  const summaryRowStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '0.5rem',
+    fontSize: '0.9rem',
+  };
+
+  const shippingStyle: React.CSSProperties = {
+    color: '#10b981',
+  };
+
+  const totalRowStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '1.5rem',
+  };
+
+  const totalAmountStyle: React.CSSProperties = {
+    fontSize: '1.25rem',
+    fontWeight: 'bold',
+  };
+
+  const checkoutBtnStyle: React.CSSProperties = {
+    display: 'block',
+    width: '100%',
+    padding: '1rem',
+    background: '#e11d48',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    textAlign: 'center',
+    textDecoration: 'none',
+  };
+
   return (
-    <main style={{ padding: '2rem', maxWidth: 1000, margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1>Tu Carrito ({items.length} {items.length === 1 ? 'artículo' : 'artículos'})</h1>
-        <button onClick={limpiar} style={{ padding: '0.5rem 1rem', background: 'none', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer' }}>
+    <main style={containerStyle}>
+      <div style={headerStyle}>
+        <h1 style={titleStyle}>Tu Carrito ({items.length} {items.length === 1 ? 'artículo' : 'artículos'})</h1>
+        <button onClick={limpiar} style={clearBtnStyle}>
           Vaciar carrito
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '2rem' }}>
+      <div style={gridStyle}>
         <div>
           {items.map(({ pastel, cantidad }) => (
-            <div key={pastel._id} style={{
-              display: 'flex',
-              gap: '1rem',
-              padding: '1.5rem',
-              background: '#fff',
-              borderRadius: '12px',
-              marginBottom: '1rem',
-              border: '1px solid #eee'
-            }}>
-              <div style={{ position: 'relative', width: 100, height: 100 }}>
+            <div key={pastel._id} style={itemCardStyle}>
+              <div style={imageStyle}>
                 <Image src={pastel.imagen} alt={pastel.nombre} fill style={{ objectFit: 'cover', borderRadius: '8px' }} />
               </div>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ marginBottom: '0.5rem' }}>{pastel.nombre}</h3>
-                <p style={{ color: '#666', marginBottom: '0.5rem' }}>${pastel.precio} c/u</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #ddd', borderRadius: '6px' }}>
-                    <button onClick={() => actualizarCantidad(pastel._id, cantidad - 1)} style={{ padding: '0.5rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer' }}>-</button>
+              <div style={itemInfoStyle}>
+                <h3 style={itemNameStyle}>{pastel.nombre}</h3>
+                <p style={itemPriceStyle}>${pastel.precio} c/u</p>
+                <div style={controlsStyle}>
+                  <div style={quantityBoxStyle}>
+                    <button onClick={() => actualizarCantidad(pastel._id, cantidad - 1)} style={qtyBtnStyle}>-</button>
                     <span style={{ padding: '0 1rem' }}>{cantidad}</span>
-                    <button onClick={() => actualizarCantidad(pastel._id, cantidad + 1)} style={{ padding: '0.5rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer' }}>+</button>
+                    <button onClick={() => actualizarCantidad(pastel._id, cantidad + 1)} style={qtyBtnStyle}>+</button>
                   </div>
-                  <button onClick={() => quitar(pastel._id)} style={{ color: '#e11d48', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <button onClick={() => quitar(pastel._id)} style={deleteBtnStyle}>
                     Eliminar
                   </button>
                 </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontWeight: 'bold', fontSize: '1.25rem' }}>${(pastel.precio * cantidad).toFixed(2)}</p>
+              <div style={itemTotalStyle}>
+                <p>${(pastel.precio * cantidad).toFixed(2)}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div style={{ background: '#f9f9f9', padding: '1.5rem', borderRadius: '12px', height: 'fit-content' }}>
-          <h3 style={{ marginBottom: '1rem' }}>Resumen</h3>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+        <div style={summaryStyle}>
+          <h3 style={summaryTitleStyle}>Resumen</h3>
+          <div style={summaryRowStyle}>
             <span>Subtotal</span>
             <span>${total().toFixed(2)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <div style={summaryRowStyle}>
             <span>Envío</span>
-            <span style={{ color: '#10b981' }}>Calculado en checkout</span>
+            <span style={shippingStyle}>Calculado en checkout</span>
           </div>
           <hr style={{ margin: '1rem 0' }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+          <div style={totalRowStyle}>
             <strong>Total</strong>
-            <strong style={{ fontSize: '1.25rem' }}>${total().toFixed(2)}</strong>
+            <strong style={totalAmountStyle}>${total().toFixed(2)}</strong>
           </div>
-          <button style={{
-            width: '100%',
-            padding: '1rem',
-            background: '#e11d48',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            cursor: 'pointer'
-          }}>
+          <Link href="/checkout" style={checkoutBtnStyle}>
             Proceder al Pago
-          </button>
+          </Link>
         </div>
       </div>
     </main>
