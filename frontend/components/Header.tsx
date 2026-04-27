@@ -1,12 +1,15 @@
 'use client';
 
-import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import { UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useState } from 'react';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const toggleMenu = () => setMenuOpen(!menuOpen);
+  const { user } = useUser();
+  
+  const isAdmin = (user?.publicMetadata as { role?: string })?.role === 'admin';
 
   const headerStyle: React.CSSProperties = {
     position: 'fixed',
@@ -46,6 +49,14 @@ export default function Header() {
     transition: 'color 0.2s',
   };
 
+  const adminLinkStyle: React.CSSProperties = {
+    ...linkStyle,
+    background: '#E11D48',
+    color: '#fff',
+    padding: '0.5rem 1rem',
+    borderRadius: '8px',
+  };
+
   const buttonStyle: React.CSSProperties = {
     display: 'none',
     background: 'none',
@@ -72,6 +83,13 @@ export default function Header() {
         <Link href="/carrito" style={linkStyle}>
           Carrito
         </Link>
+        <SignedIn>
+          {isAdmin && (
+            <Link href="/admin" style={adminLinkStyle}>
+              Panel Admin
+            </Link>
+          )}
+        </SignedIn>
         <SignedOut>
           <Link href="/sign-in" style={{ ...linkStyle, color: '#E11D48' }}>
             Iniciar Sesión

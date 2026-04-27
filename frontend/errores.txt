@@ -1,0 +1,33 @@
+1 of 1 error
+Next.js (14.2.35) is outdated (learn more) (turbo)
+
+Unhandled Runtime Error
+TypeError: Cannot read properties of undefined (reading 'filter')
+
+Call Stack
+CatalogoPage
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/_83d430._.js (129:46)
+renderWithHooks
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_react-dom_cjs_react-dom_development_c9a189.js (9803:28)
+updateFunctionComponent
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_react-dom_cjs_react-dom_development_c9a189.js (14203:32)
+beginWork$1
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_react-dom_cjs_react-dom_development_c9a189.js (15966:32)
+beginWork
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_react-dom_cjs_react-dom_development_c9a189.js (22853:28)
+performUnitOfWork
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_react-dom_cjs_react-dom_development_c9a189.js (21895:24)
+workLoopSync
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_react-dom_cjs_react-dom_development_c9a189.js (21660:17)
+renderRootSync
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_react-dom_cjs_react-dom_development_c9a189.js (21627:21)
+recoverFromConcurrentError
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_react-dom_cjs_react-dom_development_c9a189.js (20929:30)
+performConcurrentWorkOnRoot
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_react-dom_cjs_react-dom_development_c9a189.js (20883:46)
+workLoop
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_e13b54._.js (1151:48)
+flushWork
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_e13b54._.js (1129:28)
+MessagePort.performWorkUntilDeadline
+file:///C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/.next/static/chunks/node_modules_next_dist_compiled_e13b54._.js (1367:35)

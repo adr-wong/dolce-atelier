@@ -1,14 +1,18 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+function getCloudinary() {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+  return cloudinary;
+}
 
-export { cloudinary };
+export { getCloudinary };
 
 export async function subirImagen(buffer: Buffer, folder: string = 'dolce-atelier'): Promise<string> {
+  const cloud = getCloudinary();
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -31,8 +35,9 @@ export async function subirImagen(buffer: Buffer, folder: string = 'dolce-atelie
 }
 
 export async function subirReceta(buffer: Buffer, nombreArchivo: string): Promise<string> {
+  const cloud = getCloudinary();
   return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
+    const uploadStream = cloud.uploader.upload_stream(
       {
         folder: 'dolce-atelier/recetas',
         resource_type: 'raw',
@@ -54,6 +59,13 @@ export async function subirReceta(buffer: Buffer, nombreArchivo: string): Promis
 }
 
 export async function eliminarImagen(publicId: string): Promise<boolean> {
-  const result = await cloudinary.uploader.destroy(publicId);
+  const cloud = getCloudinary();
+  const result = await cloud.uploader.destroy(publicId);
   return result.result === 'ok';
+}
+
+export function extraerPublicId(url: string): string | null {
+  const match = url.match(/\/upload\/v\d+\/(.+)\.\w+$/);
+  if (!match) return null;
+  return match[1];
 }

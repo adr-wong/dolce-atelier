@@ -3,9 +3,19 @@ import type { IPastel } from '../models/Pastel';
 import { CrearPastelSchema, ActualizarPastelSchema } from '../schemas/pastel';
 
 export class PastelService {
-  async listar(categoria?: string): Promise<IPastel[]> {
+  async listar(categoria?: string, page: number = 1, limit: number = 12): Promise<{ pasteles: IPastel[]; total: number; page: number; totalPages: number }> {
     const filtro = categoria ? { categoria } : {};
-    return Pastel.find(filtro).sort({ createdAt: -1 });
+    const skip = (page - 1) * limit;
+    const [pasteles, total] = await Promise.all([
+      Pastel.find(filtro).skip(skip).limit(limit).sort({ createdAt: -1 }),
+      Pastel.countDocuments(filtro)
+    ]);
+    return {
+      pasteles,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    };
   }
 
   async obtener(id: string): Promise<IPastel | null> {

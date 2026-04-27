@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node src/server.ts",
+    "dev": "bun --disable-warnings --bun --no-preload src/server.ts",
     "build": "bun build src/server.ts --outdir dist",
     "start": "bun run dist/server.js"
   },

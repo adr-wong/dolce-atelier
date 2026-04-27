@@ -1,0 +1,205 @@
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+function getHeaders(token: string) {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  };
+}
+
+async function getDashboardStats(token: string): Promise<DashboardStats> {
+  const response = await fetch(`${BASE_URL}/api/admin/dashboard`, {
+    credentials: 'include',
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+
+  return response.json();
+}
+
+interface PastelesResponse {
+  pasteles: Pastel[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+async function getPasteles(token: string, params?: { search?: string; page?: number }): Promise<Pastel[]> {
+  const query = new URLSearchParams();
+  if (params?.search) query.set('search', params.search);
+  if (params?.page) query.set('page', params.page.toString());
+  const queryString = query.toString();
+  const endpoint = `/api/admin/pasteles${queryString ? `?${queryString}` : ''}`;
+  
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    credentials: 'include',
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+
+  const data: PastelesResponse = await response.json();
+  return data.pasteles;
+}
+
+async function createPastel(token: string, data: PastelCreateInput): Promise<Pastel> {
+  const response = await fetch(`${BASE_URL}/api/admin/pasteles`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: getHeaders(token),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+
+  return response.json();
+}
+
+async function updatePastel(token: string, id: string, data: PastelUpdateInput): Promise<Pastel> {
+  const response = await fetch(`${BASE_URL}/api/admin/pasteles/${id}`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: getHeaders(token),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+
+  return response.json();
+}
+
+async function deletePastel(token: string, id: string): Promise<void> {
+  const response = await fetch(`${BASE_URL}/api/admin/pasteles/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+}
+
+async function getPedidos(token: string, params?: { status?: string; date?: string }): Promise<Pedido[]> {
+  const query = new URLSearchParams();
+  if (params?.status) query.set('status', params.status);
+  if (params?.date) query.set('date', params.date);
+  const queryString = query.toString();
+  const endpoint = `/api/admin/pedidos${queryString ? `?${queryString}` : ''}`;
+  
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    credentials: 'include',
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+
+  return response.json();
+}
+
+async function updatePedidoStatus(token: string, id: string, status: string): Promise<Pedido> {
+  const response = await fetch(`${BASE_URL}/api/admin/pedidos/${id}/status`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: getHeaders(token),
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+
+  return response.json();
+}
+
+async function getRecetas(token: string): Promise<Receta[]> {
+  const response = await fetch(`${BASE_URL}/api/admin/recetas`, {
+    credentials: 'include',
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+
+  return response.json();
+}
+
+async function createReceta(token: string, data: RecetaCreateInput): Promise<Receta> {
+  const response = await fetch(`${BASE_URL}/api/admin/recetas`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: getHeaders(token),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+
+  return response.json();
+}
+
+async function updateReceta(token: string, id: string, data: RecetaUpdateInput): Promise<Receta> {
+  const response = await fetch(`${BASE_URL}/api/admin/recetas/${id}`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: getHeaders(token),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+
+  return response.json();
+}
+
+async function deleteReceta(token: string, id: string): Promise<void> {
+  const response = await fetch(`${BASE_URL}/api/admin/recetas/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
+}
+
+export {
+  getDashboardStats,
+  getPasteles,
+  createPastel,
+  updatePastel,
+  deletePastel,
+  getPedidos,
+  updatePedidoStatus,
+  getRecetas,
+  createReceta,
+  updateReceta,
+  deleteReceta,
+};
+
+export type {
+  DashboardStats,
+  Pastel,
+  PastelCreateInput,
+  PastelUpdateInput,
+  Pedido,
+  PedidoStatusUpdateInput,
+  Receta,
+  RecetaCreateInput,
+  RecetaUpdateInput,
+};
