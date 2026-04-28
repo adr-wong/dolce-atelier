@@ -80,6 +80,12 @@ export default function Header() {
         <Link href="/catalogo" style={linkStyle}>
           Catálogo
         </Link>
+        <Link href="/contactenos" style={linkStyle}>
+          Contáctenos
+        </Link>
+        <Link href="/sobre-nosotros" style={linkStyle}>
+          Nosotros
+        </Link>
         <Link href="/carrito" style={linkStyle}>
           Carrito
         </Link>
