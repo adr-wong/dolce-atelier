@@ -12,6 +12,7 @@
 # Environment / secret files
 /.env
 /.env.local
+/frontend/.env.local
 /backend/.env
 /.env.*       # any other env files
 # Logs
