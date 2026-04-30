@@ -1,26 +1,27 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCarritoStore } from '@/store/carrito';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 export default function CheckoutPage() {
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const { items, total } = useCarritoStore();
+  const { getToken } = useAuth();
   const [metodoEntrega, setMetodoEntrega] = useState<'domicilio' | 'tienda'>('domicilio');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    nombre: '',
-    email: '',
     telefono: '',
     direccion: '',
-    ciudad: '',
     referencias: '',
   });
 
   if (items.length === 0) {
     return (
-      <main style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+      <main style={{ padding: isMobile ? '6rem 1rem' : '4rem 2rem', textAlign: 'center' }}>
         <h1 style={{ marginBottom: '1rem' }}>Tu Carrito está Vacío</h1>
         <p style={{ color: '#666', marginBottom: '2rem' }}>Agrega pasteles del catálogo para continuar.</p>
         <Link href="/catalogo" style={{ padding: '1rem 2rem', background: '#e11d48', color: '#fff', borderRadius: '8px', textDecoration: 'none' }}>
@@ -34,11 +35,32 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      const token = await getToken();
+      if (!token) {
+        window.location.href = '/checkout/error?reason=no_token';
+        return;
+      }
+
+      const body = {
+        items: items.map(({ pastel, cantidad }) => ({
+          pastelId: pastel._id,
+          cantidad,
+        })),
+        metodoEntrega: metodoEntrega === 'domicilio' ? 'DOMICILIO' : 'TIENDA',
+        telefono: formData.telefono,
+        ...(metodoEntrega === 'domicilio' && { direccionEnvio: formData.direccion }),
+      };
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/pedidos`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, metodoEntrega }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify(body),
       });
+
       const data = await response.json();
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
@@ -57,25 +79,15 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main style={{ padding: '2rem', maxWidth: 1100, margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '2rem', fontFamily: 'Georgia, serif' }}>Checkout</h1>
+    <main style={{ padding: isMobile ? '1rem' : '2rem', maxWidth: 1100, margin: '0 auto', paddingTop: isMobile ? '6rem' : '4rem' }}>
+      <h1 style={{ marginBottom: '2rem', fontFamily: 'Georgia, serif', fontSize: isMobile ? '1.5rem' : '2rem' }}>Checkout</h1>
 
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '3rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 380px', gap: isMobile ? '1.5rem' : '3rem' }}>
           <div>
             <section style={{ marginBottom: '2.5rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 500 }}>Datos de Contacto</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#666' }}>Nombre completo</label>
-                  <input
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    required
-                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-                  />
-                </div>
+              <h2 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', marginBottom: '1.5rem', fontWeight: 500 }}>Datos de Contacto</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#666' }}>Teléfono</label>
                   <input
@@ -87,29 +99,18 @@ export default function CheckoutPage() {
                     style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
                   />
                 </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#666' }}>Email</label>
-                  <input
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-                  />
-                </div>
               </div>
             </section>
 
             <section style={{ marginBottom: '2.5rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 500 }}>Método de Entrega</h2>
-              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', marginBottom: '1.5rem', fontWeight: 500 }}>Método de Entrega</h2>
+              <div style={{ display: 'flex', gap: isMobile ? '0.5rem' : '1rem', marginBottom: '1.5rem', flexDirection: isMobile ? 'column' : 'row' }}>
                 <button
                   type="button"
                   onClick={() => setMetodoEntrega('domicilio')}
                   style={{
                     flex: 1,
-                    padding: '1.5rem',
+                    padding: isMobile ? '1rem' : '1.5rem',
                     border: `2px solid ${metodoEntrega === 'domicilio' ? '#e11d48' : '#ddd'}`,
                     borderRadius: '12px',
                     background: metodoEntrega === 'domicilio' ? '#fdf5f7' : '#fff',
@@ -125,7 +126,7 @@ export default function CheckoutPage() {
                   onClick={() => setMetodoEntrega('tienda')}
                   style={{
                     flex: 1,
-                    padding: '1.5rem',
+                    padding: isMobile ? '1rem' : '1.5rem',
                     border: `2px solid ${metodoEntrega === 'tienda' ? '#e11d48' : '#ddd'}`,
                     borderRadius: '12px',
                     background: metodoEntrega === 'tienda' ? '#fdf5f7' : '#fff',
@@ -139,8 +140,8 @@ export default function CheckoutPage() {
               </div>
 
               {metodoEntrega === 'domicilio' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div style={{ gridColumn: '1 / -1' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
+                  <div style={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#666' }}>Dirección</label>
                     <input
                       name="direccion"
@@ -148,16 +149,6 @@ export default function CheckoutPage() {
                       onChange={handleChange}
                       required={metodoEntrega === 'domicilio'}
                       placeholder="Calle, número, colonia"
-                      style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#666' }}>Ciudad</label>
-                    <input
-                      name="ciudad"
-                      value={formData.ciudad}
-                      onChange={handleChange}
-                      required={metodoEntrega === 'domicilio'}
                       style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
                     />
                   </div>
@@ -176,7 +167,7 @@ export default function CheckoutPage() {
             </section>
           </div>
 
-          <div style={{ background: '#f9f9f9', padding: '1.5rem', borderRadius: '12px', height: 'fit-content' }}>
+          <div style={{ background: '#f9f9f9', padding: isMobile ? '1rem' : '1.5rem', borderRadius: '12px', height: 'fit-content' }}>
             <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>Resumen del Pedido</h3>
             <div style={{ marginBottom: '1.5rem' }}>
               {items.map(({ pastel, cantidad }) => (

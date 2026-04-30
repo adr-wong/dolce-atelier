@@ -1,8 +1,15 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function CheckoutErrorPage() {
+  const [errorId, setErrorId] = useState<string>('');
+
+  useEffect(() => {
+    setErrorId(Date.now().toString().slice(-8));
+  }, []);
+
   return (
     <main style={{
       minHeight: '80vh',
@@ -48,7 +55,7 @@ export default function CheckoutErrorPage() {
             Si el problema persiste, contacta soporte con este ID:
           </p>
           <p style={{ fontSize: '1rem', fontWeight: 600, color: '#666', marginTop: '0.5rem' }}>
-            ERR-{Date.now().toString().slice(-8)}
+            ERR-{errorId || 'CARGANDO...'}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>

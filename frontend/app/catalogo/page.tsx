@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useState, useTransition } from 'react';
 import { useCarritoStore } from '@/store/carrito';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -28,6 +29,7 @@ interface CatalogoDatos {
 }
 
 export default function CatalogoPage() {
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const searchParams = useSearchParams();
   const router = useRouter();
   const categoria = searchParams.get('categoria') || 'todos';
@@ -77,7 +79,7 @@ export default function CatalogoPage() {
   };
 
   const containerStyle: React.CSSProperties = {
-    padding: '2rem',
+    padding: isMobile ? '1rem' : '2rem',
     maxWidth: 1200,
     margin: '0 auto',
     opacity: isPending ? 0.5 : 1,
@@ -89,6 +91,8 @@ export default function CatalogoPage() {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '2rem',
+    flexDirection: isMobile ? 'column' : 'row',
+    gap: isMobile ? '1rem' : '0',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -156,14 +160,14 @@ export default function CatalogoPage() {
 
   const gridStyle: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-    gap: '2rem',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))',
+    gap: isMobile ? '1rem' : '2rem',
   };
 
   const imageContainerStyle: React.CSSProperties = {
     position: 'relative',
     width: '100%',
-    height: 250,
+    height: isMobile ? 200 : 250,
     background: '#f5f5f5',
   };
 

@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 export default function Contactenos() {
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
     background: '#f5f5f5',
@@ -11,8 +14,8 @@ export default function Contactenos() {
 
   const heroSection: React.CSSProperties = {
     position: 'relative',
-    height: '50vh',
-    minHeight: 400,
+    height: isMobile ? '40vh' : '50vh',
+    minHeight: isMobile ? 300 : 400,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -49,23 +52,23 @@ export default function Contactenos() {
   };
 
   const cardsSection: React.CSSProperties = {
-    padding: '4rem 2rem',
+    padding: isMobile ? '2rem 1rem' : '4rem 2rem',
     maxWidth: 1200,
     margin: '0 auto',
   };
 
   const cardsGrid: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '2rem',
-    marginTop: '-5rem',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: isMobile ? '1rem' : '2rem',
+    marginTop: isMobile ? '-3rem' : '-5rem',
     position: 'relative',
     zIndex: 2,
   };
 
   const cardStyle: React.CSSProperties = {
     background: '#fff',
-    padding: '2.5rem',
+    padding: isMobile ? '1.5rem' : '2.5rem',
     borderRadius: '12px',
     boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
     textAlign: 'center',
@@ -104,7 +107,7 @@ export default function Contactenos() {
   };
 
   const infoSection: React.CSSProperties = {
-    padding: '5rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '5rem 2rem',
     background: '#fff',
   };
 
@@ -112,19 +115,19 @@ export default function Contactenos() {
     maxWidth: 900,
     margin: '0 auto',
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-    gap: '3rem',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))',
+    gap: isMobile ? '1.5rem' : '3rem',
   };
 
   const infoCard: React.CSSProperties = {
-    padding: '2.5rem',
+    padding: isMobile ? '1.5rem' : '2.5rem',
     borderRadius: '12px',
     background: '#faf9f8',
   };
 
   const infoTitle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '1.75rem',
+    fontSize: isMobile ? '1.25rem' : '1.75rem',
     fontWeight: 400,
     marginBottom: '1.5rem',
     color: '#1a1a1a',
@@ -134,18 +137,18 @@ export default function Contactenos() {
     color: '#666',
     lineHeight: 1.8,
     marginBottom: '1rem',
-    fontSize: '1.05rem',
+    fontSize: isMobile ? '0.95rem' : '1.05rem',
   };
 
   const ctaSection: React.CSSProperties = {
-    padding: '5rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '5rem 2rem',
     background: 'linear-gradient(135deg, #fdf5f5 0%, #fff 100%)',
     textAlign: 'center',
   };
 
   const ctaTitle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '2rem',
+    fontSize: isMobile ? '1.5rem' : '2rem',
     fontWeight: 400,
     marginBottom: '1rem',
     color: '#1a1a1a',
@@ -155,8 +158,8 @@ export default function Contactenos() {
     color: '#666',
     marginBottom: '2rem',
     lineHeight: 1.7,
-    maxWidth: 500,
-    margin: '0 auto 2rem',
+    maxWidth: isMobile ? '100%' : 500,
+    margin: isMobile ? '0 auto 2rem' : '0 auto 2rem',
   };
 
   const btnStyle: React.CSSProperties = {

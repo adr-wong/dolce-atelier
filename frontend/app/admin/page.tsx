@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { getDashboardStats } from "@/lib/adminApi";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 export default function AdminDashboard() {
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const { getToken } = useAuth();
   const [stats, setStats] = useState({
     totalPedidos: 0,
@@ -41,20 +43,20 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: "2rem" }}>Dashboard</h1>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem" }}>
+      <h1 style={{ marginBottom: isMobile ? '1rem' : '2rem', fontSize: isMobile ? '1.5rem' : '2rem' }}>Dashboard</h1>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(auto-fit, minmax(200px, 1fr))", gap: isMobile ? "0.75rem" : "1.5rem" }}>
         {statsData.map((stat, i) => (
           <div
             key={i}
             style={{
               background: "#fff",
-              padding: "1.5rem",
+              padding: isMobile ? "1rem" : "1.5rem",
               borderRadius: "12px",
               border: "1px solid #eee",
             }}
           >
-            <p style={{ color: "#666", marginBottom: "0.5rem" }}>{stat.label}</p>
-            <p style={{ fontSize: "2rem", fontWeight: "bold", color: stat.color }}>
+            <p style={{ color: "#666", marginBottom: "0.5rem", fontSize: isMobile ? "0.8rem" : "0.9rem" }}>{stat.label}</p>
+            <p style={{ fontSize: isMobile ? "1.5rem" : "2rem", fontWeight: "bold", color: stat.color }}>
               {stat.value}
             </p>
           </div>

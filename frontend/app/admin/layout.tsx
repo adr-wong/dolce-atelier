@@ -1,13 +1,43 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', flexDirection: isMobile ? 'column' : 'row' }}>
+      {isMobile && (
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            zIndex: 100,
+            padding: '0.75rem 1rem',
+            background: '#1f2937',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          {sidebarOpen ? '✕' : '☰'}
+        </button>
+      )}
       <aside style={{
-        width: 240,
+        width: isMobile ? (sidebarOpen ? 240 : 0) : 240,
         background: '#1f2937',
         color: '#fff',
-        padding: '2rem 1rem'
+        padding: isMobile ? (sidebarOpen ? '4rem 1rem 1rem' : '4rem 1rem 1rem') : '2rem 1rem',
+        position: isMobile ? 'fixed' : 'relative',
+        height: isMobile ? '100vh' : 'auto',
+        zIndex: isMobile ? 99 : 'auto',
+        overflow: 'hidden',
+        transition: 'width 0.3s ease',
       }}>
         <h2 style={{ marginBottom: '2rem', fontSize: '1.25rem' }}>Admin Panel</h2>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -21,6 +51,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => isMobile && setSidebarOpen(false)}
               style={{
                 padding: '0.75rem 1rem',
                 borderRadius: '6px',
@@ -34,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ))}
         </nav>
       </aside>
-      <main style={{ flex: 1, padding: '2rem' }}>
+      <main style={{ flex: 1, padding: isMobile ? '1rem 0.5rem' : '2rem', paddingTop: isMobile ? '4rem' : '2rem' }}>
         {children}
       </main>
     </div>

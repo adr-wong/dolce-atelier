@@ -2,12 +2,21 @@
 
 import { UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const [isMobile, setIsMobile] = useState(false);
   const { user } = useUser();
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  const toggleMenu = () => setMenuOpen(!menuOpen);
   
   const isAdmin = (user?.publicMetadata as { role?: string })?.role === 'admin';
 
@@ -34,10 +43,26 @@ export default function Header() {
     textDecoration: 'none',
   };
 
+  const buttonStyle: React.CSSProperties = {
+    display: isMobile ? 'block' : 'none',
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+    padding: '0.5rem',
+  };
+
   const navStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '2rem',
+    display: isMobile ? (menuOpen ? 'flex' : 'none') : 'flex',
+    position: isMobile ? 'absolute' : 'relative',
+    top: isMobile ? '100%' : 'auto',
+    left: isMobile ? 0 : 'auto',
+    right: isMobile ? 0 : 'auto',
+    flexDirection: isMobile ? 'column' : 'row',
+    background: isMobile ? 'white' : 'transparent',
+    padding: isMobile ? '1rem' : 0,
+    gap: isMobile ? 0 : '2rem',
+    boxShadow: isMobile ? '0 4px 20px rgba(0,0,0,0.1)' : 'none',
   };
 
   const linkStyle: React.CSSProperties = {
@@ -45,8 +70,11 @@ export default function Header() {
     fontSize: '0.95rem',
     color: '#666',
     textDecoration: 'none',
-    padding: '0.5rem 0',
+    padding: isMobile ? '1rem' : '0.5rem 0',
+    borderBottom: isMobile ? '1px solid #eee' : 'none',
     transition: 'color 0.2s',
+    width: isMobile ? '100%' : 'auto',
+    textAlign: isMobile ? 'left' : 'center',
   };
 
   const adminLinkStyle: React.CSSProperties = {
@@ -55,15 +83,6 @@ export default function Header() {
     color: '#fff',
     padding: '0.5rem 1rem',
     borderRadius: '8px',
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    display: 'none',
-    background: 'none',
-    border: 'none',
-    fontSize: '1.5rem',
-    cursor: 'pointer',
-    padding: '0.5rem',
   };
 
   return (

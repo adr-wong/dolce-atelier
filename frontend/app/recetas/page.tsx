@@ -1,14 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 export default function RecetasPage() {
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  
   const containerStyle: React.CSSProperties = {
     minHeight: '80vh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '2rem',
+    padding: isMobile ? '1rem' : '2rem',
     textAlign: 'center',
   };
 
@@ -18,7 +21,7 @@ export default function RecetasPage() {
 
   const titleStyle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '3rem',
+    fontSize: isMobile ? '2rem' : '3rem',
     fontWeight: 400,
     color: '#E11D48',
     marginBottom: '0.5rem',
@@ -26,7 +29,7 @@ export default function RecetasPage() {
 
   const subtitleStyle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '1.5rem',
+    fontSize: isMobile ? '1.25rem' : '1.5rem',
     fontWeight: 400,
     color: '#1a1a1a',
     marginBottom: '1.5rem',
@@ -34,7 +37,7 @@ export default function RecetasPage() {
 
   const textStyle: React.CSSProperties = {
     color: '#666',
-    fontSize: '1.1rem',
+    fontSize: isMobile ? '1rem' : '1.1rem',
     lineHeight: 1.7,
     marginBottom: '2rem',
   };

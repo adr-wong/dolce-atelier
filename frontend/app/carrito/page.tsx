@@ -3,13 +3,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCarritoStore } from '@/store/carrito';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 export default function CarritoPage() {
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const { items, actualizarCantidad, quitar, limpiar, total } = useCarritoStore();
 
   if (items.length === 0) {
     return (
-      <main style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+      <main style={{ padding: isMobile ? '6rem 1rem' : '4rem 2rem', textAlign: 'center' }}>
         <h1 style={{ marginBottom: '1rem' }}>Tu Carrito está Vacío</h1>
         <p style={{ color: '#666', marginBottom: '2rem' }}>Agrega pasteles del catálogo para continuar.</p>
         <Link href="/catalogo" style={{ padding: '1rem 2rem', background: '#e11d48', color: '#fff', borderRadius: '8px', textDecoration: 'none' }}>
@@ -20,14 +22,15 @@ export default function CarritoPage() {
   }
 
   const emptyStyle: React.CSSProperties = {
-    padding: '4rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '4rem 2rem',
     textAlign: 'center',
   };
 
   const containerStyle: React.CSSProperties = {
-    padding: '2rem',
+    padding: isMobile ? '1rem' : '2rem',
     maxWidth: 1000,
     margin: '0 auto',
+    paddingTop: isMobile ? '6rem' : '4rem',
   };
 
   const headerStyle: React.CSSProperties = {
@@ -35,11 +38,13 @@ export default function CarritoPage() {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '2rem',
+    flexDirection: isMobile ? 'column' : 'row',
+    gap: isMobile ? '1rem' : '0',
   };
 
   const titleStyle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '2rem',
+    fontSize: isMobile ? '1.5rem' : '2rem',
   };
 
   const clearBtnStyle: React.CSSProperties = {
@@ -53,24 +58,25 @@ export default function CarritoPage() {
 
   const gridStyle: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: '1fr 320px',
-    gap: '2rem',
+    gridTemplateColumns: isMobile ? '1fr' : '1fr 320px',
+    gap: isMobile ? '1.5rem' : '2rem',
   };
 
   const itemCardStyle: React.CSSProperties = {
     display: 'flex',
-    gap: '1rem',
-    padding: '1.5rem',
+    gap: isMobile ? '0.75rem' : '1rem',
+    padding: isMobile ? '1rem' : '1.5rem',
     background: '#fff',
     borderRadius: '12px',
-    marginBottom: '1rem',
+    marginBottom: isMobile ? '0.75rem' : '1rem',
     border: '1px solid #eee',
+    flexDirection: isMobile ? 'column' : 'row',
   };
 
   const imageStyle: React.CSSProperties = {
     position: 'relative',
-    width: 100,
-    height: 100,
+    width: isMobile ? '100%' : 100,
+    height: isMobile ? 150 : 100,
   };
 
   const itemInfoStyle: React.CSSProperties = {
@@ -118,14 +124,14 @@ export default function CarritoPage() {
   };
 
   const itemTotalStyle: React.CSSProperties = {
-    textAlign: 'right',
+    textAlign: isMobile ? 'left' : 'right',
     fontWeight: 'bold',
     fontSize: '1.25rem',
   };
 
   const summaryStyle: React.CSSProperties = {
     background: '#f9f9f9',
-    padding: '1.5rem',
+    padding: isMobile ? '1rem' : '1.5rem',
     borderRadius: '12px',
     height: 'fit-content',
   };

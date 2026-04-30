@@ -2,12 +2,15 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 export default function SobreNosotros() {
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  
   const heroSection: React.CSSProperties = {
     position: 'relative',
-    height: '85vh',
-    minHeight: 600,
+    height: isMobile ? '60vh' : '85vh',
+    minHeight: isMobile ? 400 : 600,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -69,7 +72,7 @@ export default function SobreNosotros() {
   };
 
   const historySection: React.CSSProperties = {
-    padding: '6rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '6rem 2rem',
     background: '#faf9f8',
   };
 
@@ -80,22 +83,22 @@ export default function SobreNosotros() {
 
   const historyCard: React.CSSProperties = {
     background: '#fff',
-    padding: '4rem',
+    padding: isMobile ? '2rem' : '4rem',
     borderRadius: '12px',
     boxShadow: '0 8px 40px rgba(0,0,0,0.08)',
   };
 
   const sectionTitle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '2.5rem',
+    fontSize: isMobile ? '1.75rem' : '2.5rem',
     fontWeight: 400,
     textAlign: 'center',
-    marginBottom: '3rem',
+    marginBottom: isMobile ? '1.5rem' : '3rem',
     color: '#1a1a1a',
   };
 
   const textStyle: React.CSSProperties = {
-    fontSize: '1.15rem',
+    fontSize: isMobile ? '1rem' : '1.15rem',
     lineHeight: 2,
     color: '#555',
     marginBottom: '1.5rem',
@@ -108,34 +111,34 @@ export default function SobreNosotros() {
   };
 
   const featuresSection: React.CSSProperties = {
-    padding: '6rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '6rem 2rem',
     background: '#fff',
   };
 
   const featuresGrid: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '3rem',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+    gap: isMobile ? '1.5rem' : '3rem',
     maxWidth: 1100,
     margin: '0 auto',
   };
 
   const featureItem: React.CSSProperties = {
     textAlign: 'center',
-    padding: '2rem',
+    padding: isMobile ? '1rem' : '2rem',
     borderRadius: '12px',
     background: '#faf9f8',
     transition: 'transform 0.3s ease',
   };
 
   const featureIcon: React.CSSProperties = {
-    fontSize: '3rem',
+    fontSize: isMobile ? '2rem' : '3rem',
     marginBottom: '1.5rem',
   };
 
   const featureTitle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '1.5rem',
+    fontSize: isMobile ? '1.25rem' : '1.5rem',
     fontWeight: 400,
     marginBottom: '1rem',
     color: '#1a1a1a',
@@ -144,11 +147,11 @@ export default function SobreNosotros() {
   const featureText: React.CSSProperties = {
     color: '#666',
     lineHeight: 1.7,
-    fontSize: '1.05rem',
+    fontSize: isMobile ? '0.95rem' : '1.05rem',
   };
 
   const missionSection: React.CSSProperties = {
-    padding: '6rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '6rem 2rem',
     background: '#faf9f8',
   };
 
@@ -159,16 +162,16 @@ export default function SobreNosotros() {
 
   const missionCard: React.CSSProperties = {
     background: '#fff',
-    padding: '4rem',
+    padding: isMobile ? '2rem' : '4rem',
     borderRadius: '12px',
     boxShadow: '0 8px 40px rgba(0,0,0,0.08)',
   };
 
   const valuesGrid: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '2rem',
-    marginTop: '3rem',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: isMobile ? '1rem' : '2rem',
+    marginTop: isMobile ? '1.5rem' : '3rem',
   };
 
   const valueItem: React.CSSProperties = {
@@ -195,7 +198,7 @@ export default function SobreNosotros() {
   };
 
   const ctaSection: React.CSSProperties = {
-    padding: '6rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '6rem 2rem',
     background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
     color: '#fff',
     textAlign: 'center',
@@ -208,13 +211,13 @@ export default function SobreNosotros() {
 
   const ctaTitle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '2.5rem',
+    fontSize: isMobile ? '1.75rem' : '2.5rem',
     fontWeight: 400,
     marginBottom: '1rem',
   };
 
   const ctaText: React.CSSProperties = {
-    fontSize: '1.15rem',
+    fontSize: isMobile ? '1rem' : '1.15rem',
     opacity: 0.9,
     marginBottom: '2rem',
     lineHeight: 1.8,

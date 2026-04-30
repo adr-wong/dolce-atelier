@@ -24,47 +24,107 @@ export class PedidoService {
   }
 
   async crear(clerkUserId: string, data: unknown): Promise<{ pedido: IPedido; checkoutUrl: string }> {
-    const validado = CrearPedidoSchema.parse(data);
-
-    const pastelIds = validado.items.map(i => i.pastelId);
-    const pasteles = await Pastel.find({ _id: { $in: pastelIds } });
-    const pastelMap = new Map(pasteles.map(p => [p._id.toString(), p]));
-
-    const items = validado.items.map(item => {
-      const pastel = pastelMap.get(item.pastelId);
-      if (!pastel) throw new Error(`Pastel ${item.pastelId} no encontrado`);
-      return {
-        pastelId: pastel._id,
-        nombre: pastel.nombre,
-        precioSnapshot: pastel.precio,
-        cantidad: item.cantidad,
-      };
-    });
-
-    const total = items.reduce((sum, item) => sum + item.precioSnapshot * item.cantidad, 0);
-
-    const pedido = await Pedido.create({
+    console.log('[PEDIDO SERVICE] 🏗️ crear() called:', {
       clerkUserId,
-      estado: 'PENDIENTE',
-      total,
-      items,
-      metodoEntrega: validado.metodoEntrega,
-      direccionEnvio: validado.direccionEnvio,
-      telefono: validado.telefono,
+      data,
+      timestamp: new Date().toISOString()
     });
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const session = await crearSesionCheckout({
-      items,
-      pedidoId: pedido._id.toString(),
-      successUrl: `${frontendUrl}/checkout/exito?session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${frontendUrl}/checkout/error`,
-    });
+    try {
+      console.log('[PEDIDO SERVICE] 🔍 Validating with Zod schema...');
+      const validado = CrearPedidoSchema.parse(data);
+      console.log('[PEDIDO SERVICE] ✅ Schema validation passed:', {
+        itemCount: validado.items.length,
+        metodoEntrega: validado.metodoEntrega,
+        hasDireccion: !!validado.direccionEnvio
+      });
 
-    pedido.stripeSessionId = session.id;
-    await pedido.save();
+      const pastelIds = validado.items.map(i => i.pastelId);
+      console.log('[PEDIDO SERVICE] 🔍 Looking up pasteles:', pastelIds);
 
-    return { pedido, checkoutUrl: session.url! };
+      const pasteles = await Pastel.find({ _id: { $in: pastelIds } });
+      console.log('[PEDIDO SERVICE] 📦 Pasteles found:', pasteles.map(p => ({
+        id: p._id,
+        nombre: p.nombre,
+        precio: p.precio
+      })));
+
+      if (pasteles.length !== pastelIds.length) {
+        console.error('[PEDIDO SERVICE] ❌ Some pasteles not found!', {
+          requested: pastelIds,
+          found: pasteles.map(p => p._id.toString())
+        });
+      }
+
+      const pastelMap = new Map(pasteles.map(p => [p._id.toString(), p]));
+
+      const items = validado.items.map(item => {
+        const pastel = pastelMap.get(item.pastelId);
+        if (!pastel) {
+          console.error('[PEDIDO SERVICE] ❌ Pastel not found:', item.pastelId);
+          throw new Error(`Pastel ${item.pastelId} no encontrado`);
+        }
+        return {
+          pastelId: pastel._id,
+          nombre: pastel.nombre,
+          precioSnapshot: pastel.precio,
+          cantidad: item.cantidad,
+        };
+      });
+
+      const total = items.reduce((sum, item) => sum + item.precioSnapshot * item.cantidad, 0);
+      console.log('[PEDIDO SERVICE] 💰 Total calculated:', { total, itemCount: items.length });
+
+      console.log('[PEDIDO SERVICE] 💾 Saving pedido to MongoDB...');
+      const pedido = await Pedido.create({
+        clerkUserId,
+        estado: 'PENDIENTE',
+        total,
+        items,
+        metodoEntrega: validado.metodoEntrega,
+        direccionEnvio: validado.direccionEnvio,
+        telefono: validado.telefono,
+      });
+      console.log('[PEDIDO SERVICE] ✅ Pedido saved to DB:', {
+        pedidoId: pedido._id,
+        estado: pedido.estado,
+        total: pedido.total
+      });
+
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      console.log('[PEDIDO SERVICE] 🔄 Creating Stripe session...', {
+        frontendUrl,
+        pedidoId: pedido._id,
+        successUrl: `${frontendUrl}/checkout/exito?session_id={CHECKOUT_SESSION_ID}&order_id=${pedido._id}`,
+        cancelUrl: `${frontendUrl}/checkout/error`
+      });
+
+      const session = await crearSesionCheckout({
+        items,
+        pedidoId: pedido._id.toString(),
+        successUrl: `${frontendUrl}/checkout/exito?session_id={CHECKOUT_SESSION_ID}&order_id=${pedido._id}`,
+        cancelUrl: `${frontendUrl}/checkout/error`,
+      });
+
+      console.log('[PEDIDO SERVICE] ✅ Stripe session created:', {
+        sessionId: session.id,
+        checkoutUrl: session.url ? `${session.url.substring(0, 50)}...` : 'NONE',
+        paymentStatus: (session as any).payment_status
+      });
+
+      pedido.stripeSessionId = session.id;
+      await pedido.save();
+      console.log('[PEDIDO SERVICE] 💾 Stripe session ID saved to pedido');
+
+      return { pedido, checkoutUrl: session.url! };
+    } catch (error) {
+      console.error('[PEDIDO SERVICE] 💥 EXCEPTION in crear():', {
+        error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      throw error;
+    }
   }
 
   async actualizarEstado(id: string, data: unknown): Promise<IPedido | null> {

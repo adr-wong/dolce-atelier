@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const categorias = [
   { nombre: 'Chocolate', imagen: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop' },
@@ -11,15 +12,19 @@ const categorias = [
 ];
 
 export default function Home() {
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1023px)');
+  
   const heroSection: React.CSSProperties = {
     position: 'relative',
-    height: '85vh',
-    minHeight: 600,
+    height: isMobile ? '70vh' : isTablet ? '80vh' : '85vh',
+    minHeight: isMobile ? 500 : 600,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     background: '#f5f5f5',
+    padding: isMobile ? '1rem' : '0',
   };
 
   const heroOverlay: React.CSSProperties = {
@@ -86,13 +91,14 @@ export default function Home() {
   };
 
   const sectionStyle: React.CSSProperties = {
-    padding: '5rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '5rem 2rem',
     background: '#faf9f8',
   };
 
   const containerStyle: React.CSSProperties = {
     maxWidth: 1200,
     margin: '0 auto',
+    padding: isMobile ? '0 1rem' : '0',
   };
 
   const sectionHeader: React.CSSProperties = {
@@ -111,15 +117,15 @@ export default function Home() {
 
   const sectionTitle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '2.5rem',
+    fontSize: isMobile ? '1.75rem' : '2.5rem',
     fontWeight: 400,
     color: '#1a1a1a',
   };
 
   const categoriasGrid: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '2rem',
+    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)',
+    gap: isMobile ? '1rem' : '2rem',
     maxWidth: 1000,
     margin: '0 auto',
   };
@@ -131,8 +137,8 @@ export default function Home() {
   };
 
   const categoriaImgBox: React.CSSProperties = {
-    width: 180,
-    height: 180,
+    width: isMobile ? 120 : 180,
+    height: isMobile ? 120 : 180,
     borderRadius: '50%',
     overflow: 'hidden',
     margin: '0 auto 1rem',
@@ -147,14 +153,14 @@ export default function Home() {
   };
 
   const featuresSection: React.CSSProperties = {
-    padding: '5rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '5rem 2rem',
     background: '#fff',
   };
 
   const featuresGrid: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '3rem',
+    gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
+    gap: isMobile ? '2rem' : '3rem',
     maxWidth: 1000,
     margin: '0 auto',
   };
@@ -177,14 +183,14 @@ export default function Home() {
   };
 
   const ctaSection: React.CSSProperties = {
-    padding: '5rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '5rem 2rem',
     background: 'linear-gradient(135deg, #fdf5f5 0%, #fff 100%)',
     textAlign: 'center',
   };
 
   const ctaTitle: React.CSSProperties = {
     fontFamily: 'Georgia, serif',
-    fontSize: '2rem',
+    fontSize: isMobile ? '1.5rem' : '2rem',
     fontWeight: 400,
     marginBottom: '1rem',
     color: '#1a1a1a',
@@ -194,6 +200,7 @@ export default function Home() {
     color: '#666',
     marginBottom: '2rem',
     lineHeight: 1.7,
+    padding: isMobile ? '0 1rem' : '0',
   };
 
   const ctaBtn: React.CSSProperties = {
@@ -207,15 +214,15 @@ export default function Home() {
   };
 
   const footerStyle: React.CSSProperties = {
-    padding: '4rem 2rem',
+    padding: isMobile ? '3rem 1rem' : '4rem 2rem',
     background: '#1a1a1a',
     color: '#fff',
   };
 
   const footerGrid: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '3rem',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+    gap: isMobile ? '2rem' : '3rem',
     maxWidth: 1200,
     margin: '0 auto 3rem',
   };

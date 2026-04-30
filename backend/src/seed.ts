@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import { v2 as cloudinary } from 'cloudinary';
-import { readFileSync, readdirSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
+import { subirImagen } from './services/cloudinary';
 
 const IMAGENES_DIR = 'C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/public/images/catalogo';
 
@@ -140,21 +140,6 @@ const PastelSchema = new mongoose.Schema({
 
 const Pastel = mongoose.model('Pastel', PastelSchema);
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-async function subirImagen(nombreArchivo: string): Promise<string> {
-  const ruta = join(IMAGENES_DIR, nombreArchivo);
-  const resultado = await cloudinary.uploader.upload(ruta, {
-    folder: 'dolce-atelier/catalogo',
-    resource_type: 'image',
-  });
-  return resultado.secure_url;
-}
-
 async function seed() {
   console.log('🔄 Conectando a MongoDB...');
   await mongoose.connect(process.env.MONGODB_URI!);
@@ -167,7 +152,9 @@ async function seed() {
   for (const pastel of PASTELES_DATA) {
     try {
       console.log(`   Subiendo ${pastel.imagen}...`);
-      const url = await subirImagen(pastel.imagen);
+      const ruta = join(IMAGENES_DIR, pastel.imagen);
+      const buffer = readFileSync(ruta);
+      const url = await subirImagen(buffer, 'dolce-atelier/catalogo');
       await Pastel.create({ ...pastel, imagen: url });
       console.log(`   ✅ ${pastel.nombre} guardado`);
     } catch (error) {

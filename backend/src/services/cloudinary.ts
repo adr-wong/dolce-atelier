@@ -18,6 +18,7 @@ export async function subirImagen(buffer: Buffer, folder: string = 'dolce-atelie
       {
         folder,
         resource_type: 'auto',
+        upload_preset: 'dolce-atalier',
       },
       (error, result) => {
         if (error) {

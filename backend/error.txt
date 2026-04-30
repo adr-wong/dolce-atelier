@@ -1,6 +1,9 @@
-C:\Users\ELI_BENDECIDA\Desktop\UTP-2026\parcial_1\backend>bun src/server.ts
-❌ Error al iniciar: DNSException: querySrv ECONNREFUSED _mongodb._tcp.cluster1.1dj2uum.mongodb.net
-  syscall: "querySrv",
- hostname: "_mongodb._tcp.cluster1.1dj2uum.mongodb.net",
-    errno: 11,
-     code: "ECONNREFUSED"
+Algo Salió Mal
+Lo sentimos, no pudimos procesar tu pago. Por favor intenta de nuevo o contacta soporte.
+
+Si el problema persiste, contacta soporte con este ID:
+
+ERR-87483804
+
+Reintentar Pago
+Volver al Inicio
