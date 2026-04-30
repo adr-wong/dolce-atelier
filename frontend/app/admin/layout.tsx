@@ -3,13 +3,16 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useMediaQuery('(max-width: 767px)');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', flexDirection: isMobile ? 'column' : 'row' }}>
+      <div className={inter.className} style={{ display: 'flex', minHeight: '100vh', flexDirection: isMobile ? 'column' : 'row' }}>
       {isMobile && (
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
