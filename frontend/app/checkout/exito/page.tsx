@@ -1,14 +1,98 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
+import type { SendReceiptRequest } from '@/lib/types';
 
 export default function CheckoutExitoPage() {
-  const [pedidoId, setPedidoId] = useState<string>('');
+  const searchParams = useSearchParams();
+  const { getToken, userId } = useAuth();
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   useEffect(() => {
-    setPedidoId(Date.now().toString().slice(-8));
-  }, []);
+    const orderIdFromParams = searchParams.get('order_id');
+    if (orderIdFromParams) {
+      setOrderId(orderIdFromParams);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const sendReceipt = async () => {
+      let payload: SendReceiptRequest;
+
+      if (orderId) {
+        try {
+          const token = await getToken();
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/pedidos/${orderId}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const order = data.pedido;
+
+            payload = {
+              customerEmail: "cliente@test.com",
+              orderId: order._id,
+              orderItems: order.items.map((item: any) => ({
+                name: item.nombre || `Pastel ${item.pastelId?.toString().slice(-4)}`,
+                quantity: item.cantidad,
+                price: item.precioSnapshot,
+              })),
+              total: order.total,
+              customerName: userId || "Cliente",
+            };
+          } else {
+            throw new Error('Failed to fetch order');
+          }
+        } catch (error) {
+          console.error('Error fetching order, using mock data:', error);
+          payload = {
+            customerEmail: "cliente@test.com",
+            orderId: orderId || "mock-order-123",
+            orderItems: [{ name: "Pastel de Chocolate", quantity: 1, price: 25.99 }],
+            total: 25.99,
+            customerName: "Cliente de Prueba"
+          };
+        }
+      } else {
+        payload = {
+          customerEmail: "cliente@test.com",
+          orderId: "mock-order-123",
+          orderItems: [{ name: "Pastel de Chocolate", quantity: 1, price: 25.99 }],
+          total: 25.99,
+          customerName: "Cliente de Prueba"
+        };
+      }
+
+      try {
+        const response = await fetch('/api/send-receipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          console.log('Receipt email sent successfully');
+        } else {
+          console.error('Failed to send receipt email:', response.status);
+        }
+      } catch (error) {
+        console.error('Error sending receipt email:', error);
+      }
+    };
+
+    if (orderId) {
+      sendReceipt();
+    }
+  }, [orderId, getToken, userId]);
 
   return (
     <main style={{
@@ -55,7 +139,7 @@ export default function CheckoutExitoPage() {
             Número de pedido
           </p>
           <p style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1a1a1a' }}>
-            #{pedidoId || '-------'}
+            #{orderId ? orderId.toString().slice(-8) : Date.now().toString().slice(-8)}
           </p>
         </div>
         <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '2rem' }}>
