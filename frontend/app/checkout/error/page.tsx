@@ -34,7 +34,7 @@ export default function CheckoutErrorPage() {
           ✕
         </div>
         <h1 style={{
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'var(--font-serif)',
           fontSize: '2rem',
           fontWeight: 400,
           marginBottom: '1rem',

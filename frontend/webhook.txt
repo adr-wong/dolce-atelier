@@ -1,0 +1,253 @@
+Ir a contenido
+Navegado a Dashboard: Entorno de prueba de Dolce Atalier: Stripe [Prueba]
+Entorno de prueba
+Estás usando un entorno de prueba. Los cambios que hagas aquí no afectan tu cuenta activa.
+Cambia a la cuenta activa
+
+Entorno de prueba de Dolce Atalier
+Dolce Atalier
+Inicio
+Saldos
+Transacciones
+Clientes
+Catálogo de productos
+Accesos directos
+Identity
+Cobro por consumo
+Facturas
+Suscripciones
+Resumen de Billing
+Productos
+Payments
+Billing
+Elaboración de informes
+Aplicaciones
+Más
+Buscar
+Guía de configuración
+
+Crea un destino de evento
+Elegir eventos
+Elegir tipo de destino
+Configurar tu destino
+Elegir primero los eventos que se notificarán
+Stripe enviará estos eventos a tu destino.
+Eventos de
+Elige a qué cuentas presta atención este destino: tu propia cuenta u otras cuentas que administras (incluidas tus cuentas v1 y v2). Obtén más información sobre los webhooks de cuentas Connect y v2.
+
+Tu cuenta
+Recibe eventos de los recursos de esta cuenta.
+
+Cuentas conectadas y v2
+Recibe los eventos que se activan en el contexto de las cuentas conectadas y las cuentas v2.
+Versión de API
+
+Versión de API
+2026-04-22.dahlia
+Eventos
+
+Todos los eventos
+Eventos elegidos
+0
+Buscar evento por nombre o descripción…
+Selecciona todo
+
+
+Account Link
+v2
+1 evento
+
+Account Person
+v2
+3 eventos
+
+Account
+4 eventos
+
+Account
+v2
+13 eventos
+
+Balance Settings
+1 evento
+
+Balance
+1 evento
+
+Batch Job
+v2
+10 eventos
+
+Billing Meter
+2 eventos
+
+Billing Portal
+3 eventos
+
+Billing
+8 eventos
+
+Capability
+1 evento
+
+Cash Balance
+1 evento
+
+Charge
+13 eventos
+
+Checkout
+4 eventos
+
+Climate
+7 eventos
+
+Commerce Product Catalog Imports
+v2
+4 eventos
+
+Coupon
+3 eventos
+
+Credit Note
+3 eventos
+
+Customer Cash Balance Transaction
+1 evento
+
+Customer
+21 eventos
+
+Entitlements
+1 evento
+
+Extend Workflow Run
+v2
+3 eventos
+
+File
+1 evento
+
+Financial Connections
+9 eventos
+
+Health
+v2
+1 evento
+
+Identity
+6 eventos
+
+Invoice Payment
+1 evento
+
+Invoice
+17 eventos
+
+Invoiceitem
+2 eventos
+
+Issuing Authorization
+3 eventos
+
+Issuing Card
+2 eventos
+
+Issuing Cardholder
+2 eventos
+
+Issuing Dispute
+6 eventos
+
+Issuing Personalization Design
+4 eventos
+
+Issuing Token
+2 eventos
+
+Issuing Transaction
+3 eventos
+
+Mandate
+1 evento
+
+Payment Intent
+8 eventos
+
+Payment Link
+2 eventos
+
+Payment Method
+4 eventos
+
+Payout
+6 eventos
+
+Person
+3 eventos
+
+Plan
+3 eventos
+
+Price
+3 eventos
+
+Product
+3 eventos
+
+Promotion Code
+2 eventos
+
+Quote
+5 eventos
+
+Radar
+2 eventos
+
+Refund
+3 eventos
+
+Reporting
+3 eventos
+
+Reserve
+7 eventos
+
+Review
+2 eventos
+
+Setup Intent
+5 eventos
+
+Shared Payment
+5 eventos
+
+Sigma
+1 evento
+
+Source
+7 eventos
+
+Subscription Schedule
+7 eventos
+
+Tax Rate
+2 eventos
+
+Tax
+1 evento
+
+Terminal
+3 eventos
+
+Test Helpers
+5 eventos
+
+Topup
+5 eventos
+
+Transfer
+3 eventos
+Cancelar
+Continuar
+Desarrolladores

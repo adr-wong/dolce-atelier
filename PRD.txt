@@ -40,7 +40,7 @@ Pagos
 Almacenamiento
     • Cloudinary 
 Email
-    • SendGrid 
+    • Resend 
 Deploy
     • Vercel (Frontend) 
     • Railway (Backend) 
@@ -154,7 +154,7 @@ Servicios externos
     • Clerk 
     • Stripe 
     • Cloudinary 
-    • SendGrid 
+    • Resend 
 
 Modelo de Datos
 Pastel

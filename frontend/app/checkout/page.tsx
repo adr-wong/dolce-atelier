@@ -14,6 +14,7 @@ export default function CheckoutPage() {
   const [metodoEntrega, setMetodoEntrega] = useState<'domicilio' | 'tienda'>('domicilio');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
+    email: '',
     telefono: '',
     direccion: '',
     referencias: '',
@@ -42,6 +43,7 @@ export default function CheckoutPage() {
       }
 
       const body = {
+        email: formData.email,
         items: items.map(({ pastel, cantidad }) => ({
           pastelId: pastel._id,
           cantidad,
@@ -80,7 +82,7 @@ export default function CheckoutPage() {
 
   return (
     <main style={{ padding: isMobile ? '1rem' : '2rem', maxWidth: 1100, margin: '0 auto', paddingTop: isMobile ? '6rem' : '4rem' }}>
-      <h1 style={{ marginBottom: '2rem', fontFamily: 'Georgia, serif', fontSize: isMobile ? '1.5rem' : '2rem' }}>Checkout</h1>
+      <h1 style={{ marginBottom: '2rem', fontFamily: 'var(--font-serif)', fontSize: isMobile ? '1.5rem' : '2rem' }}>Checkout</h1>
 
       <form onSubmit={handleSubmit}>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 380px', gap: isMobile ? '1.5rem' : '3rem' }}>
@@ -88,6 +90,18 @@ export default function CheckoutPage() {
             <section style={{ marginBottom: '2.5rem' }}>
               <h2 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', marginBottom: '1.5rem', fontWeight: 500 }}>Datos de Contacto</h2>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#666' }}>Correo electrónico</label>
+                  <input
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    placeholder="tu@correo.com"
+                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
+                  />
+                </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#666' }}>Teléfono</label>
                   <input

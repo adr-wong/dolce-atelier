@@ -14,14 +14,15 @@ export async function crearSesionCheckout(params: {
   pedidoId: string;
   successUrl: string;
   cancelUrl: string;
+  customerEmail?: string;
 }) {
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = params.items.map(item => ({
     price_data: {
-      currency: 'mxn',
+      currency: 'usd',
       product_data: {
         name: item.nombre,
       },
-      unit_amount: Math.round(item.precioSnapshot * 100),
+      unit_amount: Math.round(item.precioSnapshot * 100 * 1.07),
     },
     quantity: item.cantidad,
   }));
@@ -34,6 +35,8 @@ export async function crearSesionCheckout(params: {
     metadata: {
       pedidoId: params.pedidoId,
     },
+    billing_address_collection: 'required',
+    customer_email: params.customerEmail,
   });
 
   return session;

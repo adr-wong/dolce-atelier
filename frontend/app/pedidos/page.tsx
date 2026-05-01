@@ -86,7 +86,7 @@ export default function PedidosPage() {
   };
 
   const titleStyle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '2rem',
     color: '#1a1a1a',
   };

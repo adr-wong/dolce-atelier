@@ -1,9 +1,61 @@
-Algo Salió Mal
-Lo sentimos, no pudimos procesar tu pago. Por favor intenta de nuevo o contacta soporte.
+❌ Error al iniciar: 1164 |  */
+1165 |
+1166 | function _handleConnectionErrors(err) {
+1167 |   if (err?.name === 'MongoServerSelectionError') {
+1168 |     const originalError = err;
+1169 |     err = new ServerSelectionError();
+                 ^
+MongooseServerSelectionError: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/
+ errorLabelSet: Set {},
+     reason: TopologyDescription {
+  type: "ReplicaSetNoPrimary",
+  servers: Map(3) {
+    "ac-g1dyv0p-shard-00-00.1dj2uum.mongodb.net:27017": [Object ...],
+    "ac-g1dyv0p-shard-00-01.1dj2uum.mongodb.net:27017": [Object ...],
+    "ac-g1dyv0p-shard-00-02.1dj2uum.mongodb.net:27017": [Object ...],
+  },
+  stale: false,
+  compatible: true,
+  heartbeatFrequencyMS: 10000,
+  localThresholdMS: 15,
+  setName: "atlas-foglon-shard-0",
+  maxElectionId: null,
+  maxSetVersion: null,
+  commonWireVersion: 0,
+  logicalSessionTimeoutMinutes: null,
+  updateFromSrvPollingEvent: [Function: updateFromSrvPollingEvent],
+  update: [Function: update],
+  error: [Getter],
+  hasKnownServers: [Getter],
+  hasDataBearingServers: [Getter],
+  hasServer: [Function: hasServer],
+  toJSON: [Function: toJSON],
+},
+       code: undefined,
+      cause: TopologyDescription {
+  type: "ReplicaSetNoPrimary",
+  servers: Map(3) {
+    "ac-g1dyv0p-shard-00-00.1dj2uum.mongodb.net:27017": [Object ...],
+    "ac-g1dyv0p-shard-00-01.1dj2uum.mongodb.net:27017": [Object ...],
+    "ac-g1dyv0p-shard-00-02.1dj2uum.mongodb.net:27017": [Object ...],
+  },
+  stale: false,
+  compatible: true,
+  heartbeatFrequencyMS: 10000,
+  localThresholdMS: 15,
+  setName: "atlas-foglon-shard-0",
+  maxElectionId: null,
+  maxSetVersion: null,
+  commonWireVersion: 0,
+  logicalSessionTimeoutMinutes: null,
+  updateFromSrvPollingEvent: [Function: updateFromSrvPollingEvent],
+  update: [Function: update],
+  error: [Getter],
+  hasKnownServers: [Getter],
+  hasDataBearingServers: [Getter],
+  hasServer: [Function: hasServer],
+  toJSON: [Function: toJSON],
+},
 
-Si el problema persiste, contacta soporte con este ID:
-
-ERR-87483804
-
-Reintentar Pago
-Volver al Inicio
+      at _handleConnectionErrors (C:\Users\ELI_BENDECIDA\Desktop\UTP-2026\parcial_1\backend\node_modules\mongoose\lib\connection.js:1169:11)
+      at openUri (C:\Users\ELI_BENDECIDA\Desktop\UTP-2026\parcial_1\backend\node_modules\mongoose\lib\connection.js:1100:11)

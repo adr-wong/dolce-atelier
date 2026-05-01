@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const CrearPedidoSchema = z.object({
+  email: z.string().email('Email inválido'),
   items: z.array(z.object({
     pastelId: z.string(),
     cantidad: z.number().int().positive(),
