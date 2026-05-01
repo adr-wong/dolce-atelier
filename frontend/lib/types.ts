@@ -28,3 +28,17 @@ export type EstadoReceta =
   | 'COTIZADA'
   | 'ACEPTADA'
   | 'RECHAZADA';
+
+export interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface SendReceiptRequest {
+  customerEmail: string;
+  orderId: string;
+  orderItems: OrderItem[];
+  total: number;
+  customerName?: string;
+}
