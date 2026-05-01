@@ -78,6 +78,7 @@ export class PedidoService {
       console.log('[PEDIDO SERVICE] 💾 Saving pedido to MongoDB...');
       const pedido = await Pedido.create({
         clerkUserId,
+        email: validado.email,
         estado: 'PENDIENTE',
         total,
         items,
@@ -104,6 +105,7 @@ export class PedidoService {
         pedidoId: pedido._id.toString(),
         successUrl: `${frontendUrl}/checkout/exito?session_id={CHECKOUT_SESSION_ID}&order_id=${pedido._id}`,
         cancelUrl: `${frontendUrl}/checkout/error`,
+        customerEmail: validado.email,
       });
 
       console.log('[PEDIDO SERVICE] ✅ Stripe session created:', {
@@ -136,6 +138,14 @@ export class PedidoService {
     return Pedido.findOneAndUpdate(
       { stripeSessionId, estado: 'PENDIENTE' },
       { estado: 'PAGADO' },
+      { new: true }
+    );
+  }
+
+  async confirmarPagoConEmail(stripeSessionId: string, email: string): Promise<IPedido | null> {
+    return Pedido.findOneAndUpdate(
+      { stripeSessionId, estado: 'PENDIENTE' },
+      { estado: 'PAGADO', email },
       { new: true }
     );
   }

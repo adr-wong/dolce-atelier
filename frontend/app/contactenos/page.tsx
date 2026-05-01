@@ -8,7 +8,7 @@ import { toast, Toaster } from 'sonner';
 
 export default function Contactenos() {
   const isMobile = useMediaQuery('(max-width: 767px)');
-  
+
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
     background: '#f5f5f5',
@@ -41,7 +41,7 @@ export default function Contactenos() {
   };
 
   const heroTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: 'clamp(2.5rem, 6vw, 4rem)',
     fontWeight: 400,
     marginBottom: '1rem',
@@ -84,7 +84,7 @@ export default function Contactenos() {
   };
 
   const cardTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '1.5rem',
     fontWeight: 500,
     marginBottom: '1rem',
@@ -128,7 +128,7 @@ export default function Contactenos() {
   };
 
   const infoTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '1.25rem' : '1.75rem',
     fontWeight: 400,
     marginBottom: '1.5rem',
@@ -149,7 +149,7 @@ export default function Contactenos() {
   };
 
   const ctaTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '1.5rem' : '2rem',
     fontWeight: 400,
     marginBottom: '1rem',
@@ -250,7 +250,7 @@ export default function Contactenos() {
       <section style={heroSection}>
         <div style={heroOverlay} />
         <Image
-          src="https://images.unsplash.com/photo-1558324513-a6e4d73c7a76?w=1920&h=1080&fit=crop"
+          src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1920&h=1080&fit=crop"
           alt="Contáctenos"
           fill
           unoptimized
@@ -290,6 +290,9 @@ export default function Contactenos() {
             <h3 style={cardTitle}>Dirección</h3>
             <p style={cardText}>Visítanos en nuestro atelier. Con cita previa.</p>
             <p style={{ color: '#666', fontWeight: 500 }}>Calle 50, Paitilla<br />Ciudad de Panamá</p>
+            <a href="https://maps.google.com/?q=Calle+50+Paitilla+Ciudad+de+Panama" target="_blank" rel="noopener noreferrer" style={{ ...linkStyle, marginTop: '1rem' }}>
+              Ver en Google Maps
+            </a>
           </div>
         </div>
       </section>
@@ -299,8 +302,8 @@ export default function Contactenos() {
           <div style={infoCard}>
             <h2 style={infoTitle}>¿Tienes una queja o problema?</h2>
             <p style={infoText}>
-              Lamentamos que tu experiencia no haya sido la esperada. Por favor, contáctanos 
-              inmediatamente a través de cualquiera de nuestros canales. Tomamos muy en serio 
+              Lamentamos que tu experiencia no haya sido la esperada. Por favor, contáctanos
+              inmediatamente a través de cualquiera de nuestros canales. Tomamos muy en serio
               cada retroalimentación y nos comprometemos a resolver cualquier situación.
             </p>
             <p style={{ ...infoText, color: '#E11D48', fontWeight: 600 }}>
