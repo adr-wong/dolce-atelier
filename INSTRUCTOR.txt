@@ -34,10 +34,7 @@ Configurar cada variable con tus credenciales reales:
    → Dashboard: https://cloudinary.com/console
    → API Keys → Cloud Name, API Key, API Secret
 
-6. SENDGRID
-   → Dashboard: https://app.sendgrid.com
-   → Settings → API Keys → Create Key
-   → Email Settings → Sender Authentication
+
 
 ================================================================================
 PARTE 2: BASE DE DATOS MONGODB

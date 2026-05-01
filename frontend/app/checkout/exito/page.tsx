@@ -1,8 +1,15 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function CheckoutExitoPage() {
+  const [pedidoId, setPedidoId] = useState<string>('');
+
+  useEffect(() => {
+    setPedidoId(Date.now().toString().slice(-8));
+  }, []);
+
   return (
     <main style={{
       minHeight: '80vh',
@@ -27,7 +34,7 @@ export default function CheckoutExitoPage() {
           ✓
         </div>
         <h1 style={{
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'var(--font-serif)',
           fontSize: '2rem',
           fontWeight: 400,
           marginBottom: '1rem',
@@ -48,7 +55,7 @@ export default function CheckoutExitoPage() {
             Número de pedido
           </p>
           <p style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1a1a1a' }}>
-            #{Date.now().toString().slice(-8)}
+            #{pedidoId || '-------'}
           </p>
         </div>
         <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '2rem' }}>

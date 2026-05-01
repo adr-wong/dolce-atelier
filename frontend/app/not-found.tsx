@@ -14,7 +14,7 @@ export default function NotFound() {
     }}>
       <div style={{ maxWidth: 500 }}>
         <h1 style={{
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'var(--font-serif)',
           fontSize: '8rem',
           fontWeight: 200,
           marginBottom: '0',
@@ -24,7 +24,7 @@ export default function NotFound() {
           404
         </h1>
         <h2 style={{
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'var(--font-serif)',
           fontSize: '1.5rem',
           fontWeight: 400,
           marginBottom: '1rem',

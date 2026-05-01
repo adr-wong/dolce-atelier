@@ -44,7 +44,7 @@ export default function Home() {
   };
 
   const heroSubtitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '0.9rem',
     letterSpacing: '0.3em',
     textTransform: 'uppercase',
@@ -53,7 +53,7 @@ export default function Home() {
   };
 
   const heroTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: 'clamp(3rem, 8vw, 5rem)',
     fontWeight: 400,
     marginBottom: '1.5rem',
@@ -107,7 +107,7 @@ export default function Home() {
   };
 
   const sectionSubtitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '0.85rem',
     letterSpacing: '0.2em',
     textTransform: 'uppercase',
@@ -116,7 +116,7 @@ export default function Home() {
   };
 
   const sectionTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '1.75rem' : '2.5rem',
     fontWeight: 400,
     color: '#1a1a1a',
@@ -146,7 +146,7 @@ export default function Home() {
   };
 
   const categoriaNombre: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '1.25rem',
     fontWeight: 400,
     color: '#1a1a1a',
@@ -170,7 +170,7 @@ export default function Home() {
   };
 
   const featureTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '1.5rem',
     fontWeight: 400,
     marginBottom: '0.75rem',
@@ -189,7 +189,7 @@ export default function Home() {
   };
 
   const ctaTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '1.5rem' : '2rem',
     fontWeight: 400,
     marginBottom: '1rem',
@@ -230,7 +230,7 @@ export default function Home() {
   const footerCol: React.CSSProperties = {};
 
   const footerLogo: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '1.5rem',
     fontWeight: 400,
     marginBottom: '1rem',

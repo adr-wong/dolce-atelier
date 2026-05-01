@@ -96,7 +96,7 @@ export default function CatalogoPage() {
   };
 
   const titleStyle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '2rem',
     color: '#1a1a1a',
   };
@@ -176,7 +176,7 @@ export default function CatalogoPage() {
   };
 
   const nombreStyle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '1.25rem',
     fontWeight: 500,
     marginBottom: '0.5rem',

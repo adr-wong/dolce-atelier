@@ -43,7 +43,7 @@ export default function CarritoPage() {
   };
 
   const titleStyle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '1.5rem' : '2rem',
   };
 
@@ -138,7 +138,7 @@ export default function CarritoPage() {
 
   const summaryTitleStyle: React.CSSProperties = {
     marginBottom: '1rem',
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
   };
 
   const summaryRowStyle: React.CSSProperties = {

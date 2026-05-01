@@ -40,7 +40,7 @@ Construir una plataforma ecommerce B2C de pasteles artesanales con:
 | Auth          | Clerk SDK               |
 | Pagos         | Stripe Checkout         |
 | Storage       | Cloudinary              |
-| Email         | SendGrid                |
+| Email         | Resend                  |
 | Estado FE     | Zustand                 |
 | Validación    | Zod                     |
 

@@ -20,7 +20,7 @@ export default function RecetasPage() {
   };
 
   const titleStyle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '2rem' : '3rem',
     fontWeight: 400,
     color: '#E11D48',
@@ -28,7 +28,7 @@ export default function RecetasPage() {
   };
 
   const subtitleStyle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '1.25rem' : '1.5rem',
     fontWeight: 400,
     color: '#1a1a1a',

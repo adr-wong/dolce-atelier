@@ -18,6 +18,7 @@ export interface IItemPedido {
 
 export interface IPedido extends Document {
   clerkUserId: string;
+  email: string;
   estado: EstadoPedido;
   total: number;
   items: IItemPedido[];
@@ -39,6 +40,7 @@ const ItemPedidoSchema = new Schema<IItemPedido>({
 const PedidoSchema = new Schema<IPedido>(
   {
     clerkUserId: { type: String, required: true, index: true },
+    email: { type: String, required: true },
     estado: {
       type: String,
       enum: ['PENDIENTE', 'PAGADO', 'PREPARANDO', 'LISTO', 'EN_CAMINO', 'ENTREGADO', 'CANCELADO'],

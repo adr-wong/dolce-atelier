@@ -35,7 +35,7 @@ export default function SobreNosotros() {
   };
 
   const heroSubtitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: '0.9rem',
     letterSpacing: '0.3em',
     textTransform: 'uppercase',
@@ -44,7 +44,7 @@ export default function SobreNosotros() {
   };
 
   const heroTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: 'clamp(3rem, 8vw, 5rem)',
     fontWeight: 400,
     marginBottom: '1.5rem',
@@ -89,7 +89,7 @@ export default function SobreNosotros() {
   };
 
   const sectionTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '1.75rem' : '2.5rem',
     fontWeight: 400,
     textAlign: 'center',
@@ -137,7 +137,7 @@ export default function SobreNosotros() {
   };
 
   const featureTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '1.25rem' : '1.5rem',
     fontWeight: 400,
     marginBottom: '1rem',
@@ -210,7 +210,7 @@ export default function SobreNosotros() {
   };
 
   const ctaTitle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'var(--font-serif)',
     fontSize: isMobile ? '1.75rem' : '2.5rem',
     fontWeight: 400,
     marginBottom: '1rem',
