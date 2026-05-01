@@ -184,7 +184,7 @@ export default function Contactenos() {
     position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#666',
   };
   const modalTitleStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 400, marginBottom: '1.5rem', color: '#1a1a1a',
+    fontFamily: 'Georgia, serif', fontSize: '1.75rem', fontWeight: 400, marginBottom: '1.5rem', color: '#1a1a1a',
   };
   const modalFormStyle: React.CSSProperties = { display: 'grid', gap: '1.25rem' };
   const formGroupStyle: React.CSSProperties = { display: 'grid', gap: '0.5rem' };
@@ -196,6 +196,7 @@ export default function Contactenos() {
     padding: '0.875rem 1.5rem', background: '#E11D48', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem', marginTop: '0.5rem',
   };
 
+  // State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -204,6 +205,7 @@ export default function Contactenos() {
     message: '',
   });
 
+  // Handlers
   const handleEmailClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsModalOpen(true);
