@@ -108,13 +108,16 @@ export default function Header() {
         <Link href="/carrito" style={linkStyle}>
           Carrito
         </Link>
-        <SignedIn>
-          {isAdmin && (
-            <Link href="/admin" style={adminLinkStyle}>
-              Panel Admin
-            </Link>
-          )}
-        </SignedIn>
+         <SignedIn>
+           {isAdmin && (
+             <Link href="/admin" style={adminLinkStyle}>
+               Panel Admin
+             </Link>
+           )}
+           <Link href="/pedidos" style={linkStyle}>
+             Mis Pedidos
+           </Link>
+         </SignedIn>
         <SignedOut>
           <Link href="/sign-in" style={{ ...linkStyle, color: '#E11D48' }}>
             Iniciar Sesión

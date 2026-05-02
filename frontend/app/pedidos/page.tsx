@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@clerk/nextjs';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -38,6 +39,7 @@ export default function PedidosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<string>('');
+  const { getToken } = useAuth();
 
   useEffect(() => {
     async function cargarPedidos() {
@@ -45,8 +47,12 @@ export default function PedidosPage() {
       setError(null);
       try {
         const params = filtroEstado ? `?estado=${filtroEstado}` : '';
+        const token = await getToken();
         const res = await fetch(`${API_URL}/api/pedidos${params}`, {
           credentials: 'include',
+          headers: {
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+          },
         });
         
         if (!res.ok) {
