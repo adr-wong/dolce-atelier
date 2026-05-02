@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import type { SendReceiptRequest } from '@/lib/types';
+import type { SendReceiptRequest, PedidoItem } from '@/lib/types';
 
 export default function CheckoutExitoPage() {
   const searchParams = useSearchParams();
@@ -41,7 +41,7 @@ export default function CheckoutExitoPage() {
             payload = {
               customerEmail: "cliente@test.com",
               orderId: order._id,
-              orderItems: order.items.map((item: any) => ({
+              orderItems: order.items.map((item: PedidoItem) => ({
                 name: item.nombre || `Pastel ${item.pastelId?.toString().slice(-4)}`,
                 quantity: item.cantidad,
                 price: item.precioSnapshot,
@@ -139,7 +139,7 @@ export default function CheckoutExitoPage() {
             Número de pedido
           </p>
           <p style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1a1a1a' }}>
-            #{orderId ? orderId.toString().slice(-8) : Date.now().toString().slice(-8)}
+            #{orderId ? orderId.toString().slice(-8) : 'Cargando...'}
           </p>
         </div>
         <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '2rem' }}>

@@ -29,6 +29,13 @@ export type EstadoReceta =
   | 'ACEPTADA'
   | 'RECHAZADA';
 
+export interface PedidoItem {
+  pastelId?: string;
+  nombre: string;
+  cantidad: number;
+  precioSnapshot: number;
+}
+
 export interface OrderItem {
   name: string;
   quantity: number;

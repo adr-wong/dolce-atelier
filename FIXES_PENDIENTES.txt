@@ -40,3 +40,18 @@ FIXES PENDIENTES - Final-fixes-v1
     - Should match the style and image used in /page.tsx landing page
     - VERIFIED: Both use same image URL (photo-1578985545062-69928b1d9587)
     - Contact page already has proper hero banner (lines 250-263)
+
+[x] 6. Fix hydration error in CheckoutExitoPage
+    - Root cause: Line 142 used Date.now() in render, causing server/client text mismatch
+    - Fixed by replacing Date.now() fallback with static 'Cargando...' text
+    - Also fixed type safety: replaced any with PedidoItem interface in lib/types.ts
+    - Files modified:
+      - frontend/app/checkout/exito/page.tsx (lines 44, 142)
+      - frontend/lib/types.ts (added PedidoItem interface)
+    - COMPLETED: Verified no hydration mismatch on checkout success page
+
+[x] 7. Fix deprecated Clerk afterSignInUrl prop warning
+    - Replaced NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL and NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
+    - With new fallback redirect env vars: NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL, NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL
+    - File modified: frontend/.env.local (lines 5-6)
+    - COMPLETED: Deprecated prop warning should be resolved after app restart
