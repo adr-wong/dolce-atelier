@@ -55,3 +55,11 @@ FIXES PENDIENTES - Final-fixes-v1
     - With new fallback redirect env vars: NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL, NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL
     - File modified: frontend/.env.local (lines 5-6)
     - COMPLETED: Deprecated prop warning should be resolved after app restart
+
+[x] 8. Replace Clerk development banner with Dolce Atelier title on sign-in/sign-up pages
+    - Replaced default Clerk footer (contains "Development mode" text and Clerk logo) with custom Dolce Atelier title
+    - Title uses exact provided styles: Georgia serif font, 1.5rem, 600 weight, #1a1a1a color, #E11D48 for "Atelier"
+    - Custom footer component created at frontend/components/ClerkCustomFooter.tsx
+    - Updated sign-in page: frontend/app/sign-in/[[...sign-in]]/page.tsx (hide default footer via appearance prop, render custom title below component)
+    - Updated sign-up page: frontend/app/sign-up/[[...sign-up]]/page.tsx (hide default footer via appearance prop, render custom title below component)
+    - COMPLETED: Verified all files modified correctly, custom title replaces Clerk dev banner on auth pages only
