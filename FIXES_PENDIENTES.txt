@@ -63,3 +63,15 @@ FIXES PENDIENTES - Final-fixes-v1
     - Updated sign-in page: frontend/app/sign-in/[[...sign-in]]/page.tsx (hide default footer via appearance prop, render custom title below component)
     - Updated sign-up page: frontend/app/sign-up/[[...sign-up]]/page.tsx (hide default footer via appearance prop, render custom title below component)
     - COMPLETED: Verified all files modified correctly, custom title replaces Clerk dev banner on auth pages only
+
+[x] 9. Restore sign-in/sign-up navigation links in custom Clerk footer
+    - After hiding default Clerk footer, the navigation links between sign-in and sign-up pages were lost
+    - Updated ClerkCustomFooter component to accept `variant` prop ("signIn" | "signUp")
+    - On sign-in page: Shows "Don't have an account? Sign up" link pointing to /sign-up
+    - On sign-up page: Shows "Already have an account? Sign in" link pointing to /sign-in
+    - Styling mimics Clerk's default footer: 0.875rem gray text with #E11D48 colored links
+    - Files modified:
+      - frontend/components/ClerkCustomFooter.tsx (added variant prop, conditional link rendering)
+      - frontend/app/sign-in/[[...sign-in]]/page.tsx (pass variant="signIn")
+      - frontend/app/sign-up/[[...sign-up]]/page.tsx (pass variant="signUp")
+    - COMPLETED: Navigation links restored on both auth pages with Clerk-like styling

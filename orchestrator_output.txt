@@ -3,28 +3,36 @@ ORCHESTRATOR SESSION SUMMARY - 2026-05-01
 
 ## Tasks Completed + Verified
 1. [x] Create ClerkCustomFooter component
-   - File: frontend/components/ClerkCustomFooter.tsx
-   - Verified: Valid React syntax, exact provided styles, links to homepage
+    - File: frontend/components/ClerkCustomFooter.tsx
+    - Verified: Valid React syntax, exact provided styles, links to homepage
 
 2. [x] Update SignIn page
-   - File: frontend/app/sign-in/[[...sign-in]]/page.tsx
-   - Changes: Added custom footer import, hide default Clerk footer via appearance prop, render custom title below SignIn component
-   - Verified: No TypeScript errors
+    - File: frontend/app/sign-in/[[...sign-in]]/page.tsx
+    - Changes: Added custom footer import, hide default Clerk footer via appearance prop, render custom title below SignIn component
+    - Verified: No TypeScript errors
 
 3. [x] Update SignUp page
-   - File: frontend/app/sign-up/[[...sign-up]]/page.tsx
-   - Changes: Added custom footer import, hide default Clerk footer via appearance prop, render custom title below SignUp component
-   - Verified: No TypeScript errors
+    - File: frontend/app/sign-up/[[...sign-up]]/page.tsx
+    - Changes: Added custom footer import, hide default Clerk footer via appearance prop, render custom title below SignUp component
+    - Verified: No TypeScript errors
 
 4. [x] Update task tracking
-   - File: FIXES_PENDIENTES.txt
-   - Changes: Appended task 8 with correct implementation details
+    - File: FIXES_PENDIENTES.txt
+    - Changes: Appended task 8 with correct implementation details
+
+5. [x] Restore sign-in/sign-up navigation links in custom Clerk footer
+    - File: frontend/components/ClerkCustomFooter.tsx
+    - Changes: Added `variant` prop ("signIn" | "signUp"), conditional rendering of navigation links
+    - On sign-in page: Shows "Don't have an account? Sign up" link
+    - On sign-up page: Shows "Already have an account? Sign in" link
+    - Styling mimics Clerk's default footer (0.875rem gray text, #E11D48 links)
+    - Verified: Files modified correctly, variant props passed in both auth pages
 
 ## Files Changed (Verification Results)
-- frontend/components/ClerkCustomFooter.tsx: Created, valid React syntax
-- frontend/app/sign-in/[[...sign-in]]/page.tsx: Modified, no TS errors
-- frontend/app/sign-up/[[...sign-up]]/page.tsx: Modified, no TS errors
-- FIXES_PENDIENTES.txt: Updated with task 8
+- frontend/components/ClerkCustomFooter.tsx: Created, valid React syntax, updated with variant prop
+- frontend/app/sign-in/[[...sign-in]]/page.tsx: Modified, no TS errors, passes variant="signIn"
+- frontend/app/sign-up/[[...sign-up]]/page.tsx: Modified, no TS errors, passes variant="signUp"
+- FIXES_PENDIENTES.txt: Updated with tasks 8 and 9
 
 ## Remaining Tasks
 None. All pending work from user request completed.
@@ -33,4 +41,5 @@ None. All pending work from user request completed.
 1. Run `npm run dev` in frontend directory to test auth pages
 2. Confirm "Development mode" banner is hidden on /sign-in and /sign-up
 3. Confirm Dolce Atelier title renders correctly with specified styles
-4. Optional: Commit changes if satisfied with testing
+4. Confirm navigation links work: /sign-in shows "Sign up" link, /sign-up shows "Sign in" link
+5. Optional: Commit changes if satisfied with testing

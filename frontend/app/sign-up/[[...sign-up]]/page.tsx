@@ -7,7 +7,7 @@ export default function SignUpPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem', gap: '1rem' }}>
       <SignUp appearance={{ elements: { footer: { display: 'none' } } }} />
-      <ClerkCustomFooter />
+      <ClerkCustomFooter variant="signUp" />
     </div>
   );
 }
