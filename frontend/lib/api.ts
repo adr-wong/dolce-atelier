@@ -1,20 +1,38 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+  const url = `${API_URL}${endpoint}`;
+  const method = options?.method || 'GET';
+  
+  console.log(`[API Request] ${method} ${url}`, {
+    headers: options?.headers,
+    body: options?.body,
   });
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Error desconocido' }));
-    throw new Error(error.message || `HTTP ${res.status}`);
-  }
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
 
-  return res.json();
+    console.log(`[API Response] ${method} ${url} - Status: ${res.status}`);
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ message: 'Error desconocido' }));
+      console.error(`[API Error] ${method} ${url} - Status: ${res.status}`, errorData);
+      throw new Error(errorData.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    console.log(`[API Success] ${method} ${url}`, data);
+    return data;
+  } catch (error) {
+    console.error(`[API Fetch Error] ${method} ${url}`, error);
+    throw error;
+  }
 }
 
 export const api = {

@@ -17,8 +17,17 @@ export const app = new Elysia()
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
   }))
+  .onRequest(({ request }) => {
+    const url = new URL(request.url);
+    console.log(`[BACKEND REQUEST] ${request.method} ${url.pathname}${url.search}`, {
+      timestamp: new Date().toISOString(),
+      hasAuthHeader: !!request.headers.get('authorization'),
+      contentType: request.headers.get('content-type'),
+      origin: request.headers.get('origin'),
+    });
+  })
   .onError(({ code, error, set }) => {
-    console.error('Global error:', error);
+    console.error('[BACKEND ERROR]', { code, error: error.message });
     set.status = code === 'NOT_FOUND' ? 404 : 500;
     return { error: error.message || 'Internal Server Error' };
   })

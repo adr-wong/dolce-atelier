@@ -36,11 +36,19 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      console.log('[Checkout] Form submission started', { 
+        email: formData.email, 
+        itemCount: items.length,
+        metodoEntrega 
+      });
+      
       const token = await getToken();
       if (!token) {
+        console.error('[Checkout] No token available');
         window.location.href = '/checkout/error?reason=no_token';
         return;
       }
+      console.log('[Checkout] Token retrieved successfully');
 
       const body = {
         email: formData.email,
@@ -53,6 +61,11 @@ export default function CheckoutPage() {
         ...(metodoEntrega === 'domicilio' && { direccionEnvio: formData.direccion }),
       };
 
+      console.log('[Checkout] Sending request to /api/pedidos', { 
+        itemCount: body.items.length,
+        metodoEntrega: body.metodoEntrega 
+      });
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/pedidos`, {
         method: 'POST',
         headers: {
@@ -64,12 +77,21 @@ export default function CheckoutPage() {
       });
 
       const data = await response.json();
+      console.log('[Checkout] Response received', { 
+        status: response.status, 
+        hasCheckoutUrl: !!data.checkoutUrl,
+        error: data.error 
+      });
+
       if (data.checkoutUrl) {
+        console.log('[Checkout] Redirecting to Stripe checkout');
         window.location.href = data.checkoutUrl;
       } else {
+        console.error('[Checkout] No checkout URL in response', data);
         window.location.href = '/checkout/error';
       }
-    } catch {
+    } catch (error) {
+      console.error('[Checkout] Error during submission', error);
       window.location.href = '/checkout/error';
     } finally {
       setLoading(false);
@@ -82,6 +104,11 @@ export default function CheckoutPage() {
 
   return (
     <main style={{ padding: isMobile ? '1rem' : '2rem', maxWidth: 1100, margin: '0 auto', paddingTop: isMobile ? '6rem' : '4rem' }}>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <Link href="/pedidos" style={{ color: '#E11D48', textDecoration: 'none', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+          ← Mis Pedidos
+        </Link>
+      </div>
       <h1 style={{ marginBottom: '2rem', fontFamily: 'var(--font-serif)', fontSize: isMobile ? '1.5rem' : '2rem' }}>Checkout</h1>
 
       <form onSubmit={handleSubmit}>

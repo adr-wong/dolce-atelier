@@ -1,0 +1,42 @@
+FIXES PENDIENTES - Final-fixes-v1
+=====================================
+
+[x] 1. "Mis pedidos" button in Header for logged-in users
+    - Add "Mis pedidos" link in Header component when user is signed in
+    - Location: /frontend/components/Header.tsx (inside <SignedIn> block)
+    - COMPLETED: Link added at lines 117-119
+
+[x] 2. "Mis pedidos" button at checkout page - FIXED
+    - Main checkout page (/checkout/page.tsx): Add "Mis pedidos" link (PREVIOUS TASK FAILED - RETRY)
+    - Checkout success page (/checkout/exito): Button exists but /pedidos page has auth bug
+    - FIXED: /pedidos page now sends Bearer token (lines 50-56)
+    - COMPLETED: "Mis pedidos" link added to main checkout page (lines 85-89)
+
+[x] 3. Verbose logging - Frontend
+    - Add console.log statements to API calls in frontend
+    - Add logging to middleware.ts
+    - Add logging to key user actions (login, checkout, etc.)
+    - Files: middleware.ts, lib/api.ts, app/** pages
+    - COMPLETED:
+      - middleware.ts: Lines 12, 15 (logged)
+      - lib/api.ts: Lines 7-10, 21, 25, 30, 33 (logged)
+      - checkout/page.tsx: Lines 39-43, 47, 51, 64-67, 80-84, 87 (logged)
+
+[x] 4. Verbose logging - Backend
+    - Add console.log/console.error to all routes
+    - Add logging to services (pedido, pastel, etc.)
+    - Add request logging in server.ts
+    - Files: backend/src/server.ts, routes/*.ts, services/*.ts
+    - COMPLETED:
+      - server.ts: Lines 20-28 (request logging), Line 30 (error logging)
+      - auth.ts: Lines 11, 23-27 (token verification logging)
+      - pedidos.ts (route): Lines 56-104 (verbose request/response logging)
+      - pedido.ts (service): Lines 27-31, 34-40, 43, 46-50, 53-56, 64, 76, 78, 89-93, 96-101, 111-115, 119, 123-128
+      - webhook.ts: Lines 38-44, 47, 51-52, 67, 70
+      - stripe.ts: Lines 19-25, 29-34, 47-50, 65-70, 74-77
+
+[x] 5. Contacts banner - ensure same as landing page
+    - Verify /contactenos page has proper hero banner
+    - Should match the style and image used in /page.tsx landing page
+    - VERIFIED: Both use same image URL (photo-1578985545062-69928b1d9587)
+    - Contact page already has proper hero banner (lines 250-263)
