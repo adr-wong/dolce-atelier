@@ -89,7 +89,7 @@ export default function AdminPedidos() {
                 <span
                   style={{
                     padding: "0.25rem 0.75rem",
-                    borderRadius: "20px",
+                    borderRadius: "8px",
                     fontSize: "0.8rem",
                     background: estadoColors[pedido.estado] || "#f3f4f6",
                     color: "#374151",

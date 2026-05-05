@@ -1,6 +1,6 @@
 'use client';
 
-import { UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
+import { UserButton, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -85,7 +85,7 @@ export default function Header() {
     borderRadius: '8px',
   };
 
-  return (
+return (
     <header style={headerStyle}>
       <Link href="/" style={logoStyle}>
         Dolce <span style={{ color: '#E11D48' }}>Atelier</span>
@@ -108,24 +108,24 @@ export default function Header() {
         <Link href="/carrito" style={linkStyle}>
           Carrito
         </Link>
-         <SignedIn>
-           {isAdmin && (
-             <Link href="/admin" style={adminLinkStyle}>
-               Panel Admin
-             </Link>
-           )}
-           <Link href="/pedidos" style={linkStyle}>
-             Mis Pedidos
-           </Link>
-         </SignedIn>
-        <SignedOut>
+        {user && (
+          <>
+            <Link href="/pedidos" style={linkStyle}>
+              Mis Pedidos
+            </Link>
+            {isAdmin && (
+              <Link href="/admin" style={adminLinkStyle}>
+                Panel Admin
+              </Link>
+            )}
+          </>
+        )}
+        {!user && (
           <Link href="/sign-in" style={{ ...linkStyle, color: '#E11D48' }}>
             Iniciar Sesión
           </Link>
-        </SignedOut>
-        <SignedIn>
-          <UserButton afterSignOutUrl="/" />
-        </SignedIn>
+        )}
+        {user && <UserButton afterSignOutUrl="/" />}
       </nav>
     </header>
   );

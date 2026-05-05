@@ -322,7 +322,7 @@ export default function AdminPasteles() {
                 <span
                   style={{
                     padding: "0.25rem 0.75rem",
-                    borderRadius: "20px",
+                    borderRadius: "8px",
                     fontSize: "0.8rem",
                     background: pastel.disponible ? "#dcfce7" : "#fee2e2",
                     color: pastel.disponible ? "#166534" : "#991b1b",

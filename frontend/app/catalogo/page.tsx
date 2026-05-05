@@ -101,7 +101,11 @@ export default function CatalogoPage() {
     color: '#1a1a1a',
   };
 
-  const cartLinkStyle: React.CSSProperties = {
+  const cartFloatStyle: React.CSSProperties = {
+    position: 'fixed',
+    bottom: '2rem',
+    right: '2rem',
+    zIndex: 999,
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
@@ -111,7 +115,7 @@ export default function CatalogoPage() {
     borderRadius: '8px',
     textDecoration: 'none',
     fontWeight: 500,
-    position: 'relative',
+    boxShadow: '0 4px 20px rgba(225, 29, 72, 0.4)',
   };
 
   const cartBadgeStyle: React.CSSProperties = {
@@ -139,7 +143,7 @@ export default function CatalogoPage() {
 
   const getTabStyle = (isActive: boolean): React.CSSProperties => ({
     padding: '0.5rem 1rem',
-    borderRadius: '20px',
+    borderRadius: '8px',
     background: isActive ? '#e11d48' : '#fff',
     color: isActive ? '#fff' : '#333',
     border: '1px solid #ddd',
@@ -156,12 +160,15 @@ export default function CatalogoPage() {
     animation: 'fadeIn 0.4s ease-out forwards',
     opacity: 0,
     animationDelay: '0.1s',
+    display: 'flex',
+    flexDirection: 'column',
   };
 
   const gridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))',
     gap: isMobile ? '1rem' : '2rem',
+    alignItems: 'stretch',
   };
 
   const imageContainerStyle: React.CSSProperties = {
@@ -169,10 +176,14 @@ export default function CatalogoPage() {
     width: '100%',
     height: isMobile ? 200 : 250,
     background: '#f5f5f5',
+    flexShrink: 0,
   };
 
   const contentStyle: React.CSSProperties = {
     padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
   };
 
   const nombreStyle: React.CSSProperties = {
@@ -181,6 +192,7 @@ export default function CatalogoPage() {
     fontWeight: 500,
     marginBottom: '0.5rem',
     color: '#1a1a1a',
+    minHeight: '2rem',
   };
 
   const descripcionStyle: React.CSSProperties = {
@@ -188,12 +200,17 @@ export default function CatalogoPage() {
     color: '#666',
     lineHeight: 1.6,
     marginBottom: '1rem',
+    flex: 1,
+    minHeight: '4.5rem',
   };
 
   const actionsStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 'auto',
+    paddingTop: '1rem',
+    borderTop: '1px solid #eee',
   };
 
   const precioStyle: React.CSSProperties = {
@@ -207,7 +224,7 @@ export default function CatalogoPage() {
     background: '#E11D48',
     color: '#fff',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
     fontWeight: 500,
   };
@@ -216,10 +233,6 @@ export default function CatalogoPage() {
     <main style={containerStyle}>
       <div style={headerStyle}>
         <h1 style={titleStyle}>Nuestro Catálogo</h1>
-        <Link href="/carrito" style={cartLinkStyle}>
-          🛒 Carrito
-          {totalItems > 0 && <span style={cartBadgeStyle}>{totalItems}</span>}
-        </Link>
       </div>
 
       <div style={tabsContainerStyle}>
@@ -259,7 +272,7 @@ export default function CatalogoPage() {
               <p style={descripcionStyle}>{pastel.descripcion}</p>
               <div style={actionsStyle}>
                 <span style={precioStyle}>${pastel.precio}</span>
-                <button 
+                <button
                   onClick={() => handleAgregar(pastel)}
                   style={addButtonStyle}
                 >
@@ -271,7 +284,7 @@ export default function CatalogoPage() {
         ))}
       </div>
       )}
-      
+
       {datos && datos.totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '2rem' }}>
           {Array.from({ length: datos.totalPages || 0 }, (_, i) => i + 1).map(num => (
@@ -280,7 +293,7 @@ export default function CatalogoPage() {
               onClick={() => cambiarPagina(num)}
               style={{
                 padding: '0.5rem 1rem',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 border: '1px solid #ddd',
                 background: datos && datos.page === num ? '#E11D48' : '#fff',
                 color: datos && datos.page === num ? '#fff' : '#333',
@@ -292,6 +305,11 @@ export default function CatalogoPage() {
           ))}
         </div>
       )}
+
+      <Link href="/carrito" style={cartFloatStyle}>
+        🛒 Carrito
+        {totalItems > 0 && <span style={cartBadgeStyle}>{totalItems}</span>}
+      </Link>
     </main>
   );
 }

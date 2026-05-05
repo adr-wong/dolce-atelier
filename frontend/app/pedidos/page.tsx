@@ -133,7 +133,7 @@ export default function PedidosPage() {
     return (
       <span style={{
         padding: '0.25rem 0.75rem',
-        borderRadius: '20px',
+        borderRadius: '8px',
         fontSize: '0.8rem',
         fontWeight: 500,
         background: colores.bg,

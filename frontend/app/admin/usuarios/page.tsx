@@ -90,7 +90,7 @@ export default function AdminUsuarios() {
                 <span
                   style={{
                     padding: "0.25rem 0.75rem",
-                    borderRadius: "20px",
+                    borderRadius: "8px",
                     fontSize: "0.8rem",
                     background: roleColors[usuario.role] || "#6b7280",
                     color: "#fff",
