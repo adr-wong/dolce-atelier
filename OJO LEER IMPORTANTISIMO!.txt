@@ -4,4 +4,4 @@ solo necesitan este comando desde este mismo directorio:   bun scripts/dev.ts
 
 LO DE ARRIBA YA NO FUNCIONA, AHORA SE USA 
 frontend con (npm run dev)  y el server con ( bun src/server.ts)
-Recuerda solamente que el back es con (bun install) y el front es con (npm ci)
+Recuerda solamente que el back es con (bun install/npm install) y el front es con (npm ci)
