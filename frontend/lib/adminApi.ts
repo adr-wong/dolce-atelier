@@ -1,5 +1,80 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+export interface DashboardStats {
+  totalPedidos: number;
+  totalRecetas: number;
+  totalPasteles: number;
+  recentPedidos: unknown[];
+}
+
+export interface Pastel {
+  _id: string;
+  nombre: string;
+  descripcion?: string;
+  precio: number;
+  imagen: string;
+  categoria: string;
+  disponible: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PastelCreateInput {
+  nombre: string;
+  descripcion?: string;
+  precio: number;
+  categoria: string;
+  imagen: string;
+  disponible?: boolean;
+}
+
+export interface PastelUpdateInput {
+  nombre?: string;
+  descripcion?: string;
+  precio?: number;
+  categoria?: string;
+  imagen?: string;
+  disponible?: boolean;
+}
+
+export interface Pedido {
+  _id: string;
+  estado: string;
+  total: number;
+  items: unknown[];
+  metodoEntrega: string;
+  direccionEnvio?: string;
+  createdAt: string;
+}
+
+export interface PedidoStatusUpdateInput {
+  status: string;
+}
+
+export interface Receta {
+  _id: string;
+  nombre: string;
+  descripcion?: string;
+  nota?: string;
+  email?: string;
+  telefono?: string;
+  estado: string;
+  cotizacion?: number;
+  createdAt: string;
+}
+
+export interface RecetaCreateInput {
+  nombre: string;
+  descripcion?: string;
+}
+
+export interface RecetaUpdateInput {
+  nombre?: string;
+  descripcion?: string;
+  estado?: string;
+  cotizacion?: number;
+}
+
 function getHeaders(token: string) {
   return {
     'Content-Type': 'application/json',
@@ -190,16 +265,4 @@ export {
   createReceta,
   updateReceta,
   deleteReceta,
-};
-
-export type {
-  DashboardStats,
-  Pastel,
-  PastelCreateInput,
-  PastelUpdateInput,
-  Pedido,
-  PedidoStatusUpdateInput,
-  Receta,
-  RecetaCreateInput,
-  RecetaUpdateInput,
 };

@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { getDashboardStats } from "@/lib/adminApi";
+import { getDashboardStats, type DashboardStats } from "@/lib/adminApi";
 import styles from "./admin-dashboard.module.css";
 
 export default function AdminDashboard() {
   const { getToken } = useAuth();
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     totalPedidos: 0,
     totalRecetas: 0,
     totalPasteles: 0,
@@ -47,9 +47,7 @@ export default function AdminDashboard() {
         {statsData.map((stat, i) => (
           <div key={i} className={styles.statCard}>
             <p className={styles.statLabel}>{stat.label}</p>
-            <p className={styles.statValue} style={{ color: stat.color }}>
-              {stat.value}
-            </p>
+            <p className={styles.statValue} style={{ color: stat.color }}>{stat.value}</p>
           </div>
         ))}
       </div>
