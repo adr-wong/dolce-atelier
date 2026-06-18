@@ -234,6 +234,13 @@
   font-size: 0.85rem;
 }
 
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero {
+    height: 80vh;
+  }
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .hero {
