@@ -1,0 +1,44 @@
+.title {
+  margin-bottom: 2rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--light);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.theadTr {
+  background: #f9fafb;
+}
+
+.th {
+  padding: 1rem;
+  text-align: left;
+}
+
+.td {
+  padding: 1rem;
+}
+
+.tr {
+  border-top: 1px solid #eee;
+}
+
+.statusBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: #374151;
+}
+
+.cotizarBtn {
+  padding: 0.5rem 1rem;
+  background: #10b981;
+  color: var(--light);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}

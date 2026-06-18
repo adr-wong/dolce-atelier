@@ -1,0 +1,41 @@
+.title {
+  margin-bottom: 2rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--light);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.theadTr {
+  background: #f9fafb;
+}
+
+.th {
+  padding: 1rem;
+  text-align: left;
+}
+
+.td {
+  padding: 1rem;
+}
+
+.tr {
+  border-top: 1px solid #eee;
+}
+
+.roleBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--light);
+}
+
+.roleSelect {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}

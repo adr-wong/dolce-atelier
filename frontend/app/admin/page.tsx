@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { getDashboardStats } from "@/lib/adminApi";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import styles from "./admin-dashboard.module.css";
 
 export default function AdminDashboard() {
-  const isMobile = useMediaQuery('(max-width: 767px)');
   const { getToken } = useAuth();
   const [stats, setStats] = useState({
     totalPedidos: 0,
@@ -32,7 +31,7 @@ export default function AdminDashboard() {
     loadStats();
   }, [getToken]);
 
-  if (loading) return <div>Cargando...</div>;
+  if (loading) return <div style={{ padding: '2rem' }}>Cargando...</div>;
 
   const statsData = [
     { label: "Pedidos Hoy", value: stats.totalPedidos, color: "#3b82f6" },
@@ -42,21 +41,13 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div>
-      <h1 style={{ marginBottom: isMobile ? '1rem' : '2rem', fontSize: isMobile ? '1.5rem' : '2rem' }}>Dashboard</h1>
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(auto-fit, minmax(200px, 1fr))", gap: isMobile ? "0.75rem" : "1.5rem" }}>
+    <div className={styles.wrapper}>
+      <h1 className={styles.title}>Dashboard</h1>
+      <div className={styles.statsGrid}>
         {statsData.map((stat, i) => (
-          <div
-            key={i}
-            style={{
-              background: "#fff",
-              padding: isMobile ? "1rem" : "1.5rem",
-              borderRadius: "12px",
-              border: "1px solid #eee",
-            }}
-          >
-            <p style={{ color: "#666", marginBottom: "0.5rem", fontSize: isMobile ? "0.8rem" : "0.9rem" }}>{stat.label}</p>
-            <p style={{ fontSize: isMobile ? "1.5rem" : "2rem", fontWeight: "bold", color: stat.color }}>
+          <div key={i} className={styles.statCard}>
+            <p className={styles.statLabel}>{stat.label}</p>
+            <p className={styles.statValue} style={{ color: stat.color }}>
               {stat.value}
             </p>
           </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import styles from "./usuarios.module.css";
 
 type Usuario = {
   id: string;
@@ -64,46 +65,44 @@ export default function AdminUsuarios() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: "2rem" }}>Gestión de Usuarios</h1>
+      <h1 className={styles.title}>Gestión de Usuarios</h1>
 
-      <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "12px", overflow: "hidden" }}>
+      <table className={styles.table}>
         <thead>
-          <tr style={{ background: "#f9fafb" }}>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Email</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Nombre</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Fecha Registro</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Rol</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Acciones</th>
+          <tr className={styles.theadTr}>
+            <th className={styles.th}>Email</th>
+            <th className={styles.th}>Nombre</th>
+            <th className={styles.th}>Fecha Registro</th>
+            <th className={styles.th}>Rol</th>
+            <th className={styles.th}>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {usuarios.map((usuario) => (
-            <tr key={usuario.id} style={{ borderTop: "1px solid #eee" }}>
-              <td style={{ padding: "1rem" }}>{usuario.email}</td>
-              <td style={{ padding: "1rem" }}>
+            <tr key={usuario.id} className={styles.tr}>
+              <td className={styles.td}>{usuario.email}</td>
+              <td className={styles.td}>
                 {usuario.firstName || ""} {usuario.lastName || ""}
               </td>
-              <td style={{ padding: "1rem" }}>
+              <td className={styles.td}>
                 {new Date(usuario.createdAt).toLocaleDateString()}
               </td>
-              <td style={{ padding: "1rem" }}>
+              <td className={styles.td}>
                 <span
+                  className={styles.roleBadge}
                   style={{
-                    padding: "0.25rem 0.75rem",
-                    borderRadius: "8px",
-                    fontSize: "0.8rem",
+
                     background: roleColors[usuario.role] || "#6b7280",
-                    color: "#fff",
                   }}
                 >
                   {usuario.role}
                 </span>
               </td>
-              <td style={{ padding: "1rem" }}>
+              <td className={styles.td}>
                 <select
                   value={usuario.role}
                   onChange={(e) => handleRoleChange(usuario.id, e.target.value)}
-                  style={{ padding: "0.5rem", borderRadius: "6px", border: "1px solid #ddd" }}
+                  className={styles.roleSelect}
                 >
                   <option value="user">Usuario</option>
                   <option value="admin">Admin</option>
