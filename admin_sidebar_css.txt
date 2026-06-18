@@ -1,0 +1,50 @@
+Tengo un layout admin en React TSX con CSS inline.
+El problema es doble scroll en resolución 1366x768.
+
+COMPORTAMIENTO QUE QUIERO:
+- El sidebar (menú izquierdo) tiene su propio scroll si el menú es muy largo
+- El contenido principal (main) NO tiene scroll propio
+- El scroll global de la página es UNO SOLO: el del navegador (scroll natural del body)
+- En ninguna resolución debe haber dos scrollbars visibles al mismo tiempo
+
+CORRECCIONES EXACTAS:
+
+Contenedor padre (div más externo):
+  display: "flex"
+  minHeight: "100vh"        ← minHeight, NO height fijo
+  width: "100%"
+  overflow: "visible"       ← NO bloquees el overflow aquí
+
+<aside> (sidebar):
+  width: "240px"
+  minWidth: "240px"
+  flexShrink: 0
+  position: "sticky"        ← sticky para que acompañe el scroll
+  top: 0
+  height: "100vh"
+  overflowY: "auto"         ← scroll propio SOLO si el menú es largo
+  alignSelf: "flex-start"
+
+<main>:
+  flex: "1 1 0%"
+  minWidth: 0
+  padding: "2rem"
+  boxSizing: "border-box"
+  overflow: "visible"       ← SIN scroll propio, el body maneja el scroll
+  height: "auto"            ← crece con el contenido naturalmente
+
+Div hijo directo del main:
+  boxSizing: "border-box"
+  width: "100%"
+  SIN minHeight, SIN overflow
+
+REGLA FINAL:
+- Un solo scroll: el del navegador (body)
+- Solo el sidebar tiene overflowY:auto por si el menú crece
+- El main y el padre NO tienen overflow ni height fijo
+- Usa position:sticky en el aside para que el sidebar no se vaya al hacer scroll
+
+RESTRICCIONES:
+- Solo CSS inline style={{}}
+- No cambies JSX ni lógica
+- No uses Tailwind ni clases CSS

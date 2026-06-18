@@ -1,131 +1,72 @@
 'use client';
 
-import { UserButton, useUser } from '@clerk/nextjs';
+import { UserButton, useUser, SignedIn, SignedOut } from '@clerk/nextjs';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useMobile } from '@/hooks/useMediaQuery';
+import styles from './header.module.css';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const { user } = useUser();
-  
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-  
+  const isMobile = useMobile();
+
   const toggleMenu = () => setMenuOpen(!menuOpen);
-  
-  const isAdmin = (user?.publicMetadata as { role?: string })?.role === 'admin';
+  const closeMenu = () => setMenuOpen(false);
 
-  const headerStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '1rem 2rem',
-    background: 'rgba(255, 255, 255, 0.98)',
-    backdropFilter: 'blur(10px)',
-    zIndex: 1000,
-    boxShadow: '0 2px 20px rgba(0,0,0,0.08)',
-  };
+  const userRole = user?.publicMetadata?.role;
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin';
 
-  const logoStyle: React.CSSProperties = {
-    fontFamily: 'Georgia, serif',
-    fontSize: '1.5rem',
-    fontWeight: 600,
-    color: '#1a1a1a',
-    textDecoration: 'none',
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    display: isMobile ? 'block' : 'none',
-    background: 'none',
-    border: 'none',
-    fontSize: '1.5rem',
-    cursor: 'pointer',
-    padding: '0.5rem',
-  };
-
-  const navStyle: React.CSSProperties = {
-    display: isMobile ? (menuOpen ? 'flex' : 'none') : 'flex',
-    position: isMobile ? 'absolute' : 'relative',
-    top: isMobile ? '100%' : 'auto',
-    left: isMobile ? 0 : 'auto',
-    right: isMobile ? 0 : 'auto',
-    flexDirection: isMobile ? 'column' : 'row',
-    background: isMobile ? 'white' : 'transparent',
-    padding: isMobile ? '1rem' : 0,
-    gap: isMobile ? 0 : '2rem',
-    boxShadow: isMobile ? '0 4px 20px rgba(0,0,0,0.1)' : 'none',
-  };
-
-  const linkStyle: React.CSSProperties = {
-    fontWeight: 500,
-    fontSize: '0.95rem',
-    color: '#666',
-    textDecoration: 'none',
-    padding: isMobile ? '1rem' : '0.5rem 0',
-    borderBottom: isMobile ? '1px solid #eee' : 'none',
-    transition: 'color 0.2s',
-    width: isMobile ? '100%' : 'auto',
-    textAlign: isMobile ? 'left' : 'center',
-  };
-
-  const adminLinkStyle: React.CSSProperties = {
-    ...linkStyle,
-    background: '#E11D48',
-    color: '#fff',
-    padding: '0.5rem 1rem',
-    borderRadius: '8px',
-  };
-
-return (
-    <header style={headerStyle}>
-      <Link href="/" style={logoStyle}>
-        Dolce <span style={{ color: '#E11D48' }}>Atelier</span>
+  return (
+    <header className={styles.header}>
+      <Link href="/" className={styles.logo}>
+        Dolce <span className={styles.logoAccent}>Atelier</span>
       </Link>
-      
-      <button style={buttonStyle} onClick={toggleMenu} aria-label="Toggle menu">
-        ☰
-      </button>
-      
-      <nav style={navStyle}>
-        <Link href="/catalogo" style={linkStyle}>
+
+      {isMobile && (
+        <div className={styles.mobileActions}>
+          <button className={styles.menuButton} onClick={toggleMenu} aria-label="Toggle menu">
+            ☰
+          </button>
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+        </div>
+      )}
+
+      <nav className={`${styles.nav} ${isMobile && menuOpen ? styles.navOpen : ''}`}>
+        <Link href="/catalogo" className={styles.link} onClick={closeMenu}>
           Catálogo
         </Link>
-        <Link href="/contactenos" style={linkStyle}>
+        <Link href="/contactenos" className={styles.link} onClick={closeMenu}>
           Contáctenos
         </Link>
-        <Link href="/sobre-nosotros" style={linkStyle}>
+        <Link href="/sobre-nosotros" className={styles.link} onClick={closeMenu}>
           Nosotros
         </Link>
-        <Link href="/carrito" style={linkStyle}>
+        <Link href="/carrito" className={styles.link} onClick={closeMenu}>
           Carrito
         </Link>
-        {user && (
-          <>
-            <Link href="/pedidos" style={linkStyle}>
-              Mis Pedidos
-            </Link>
-            {isAdmin && (
-              <Link href="/admin" style={adminLinkStyle}>
-                Panel Admin
-              </Link>
-            )}
-          </>
-        )}
-        {!user && (
-          <Link href="/sign-in" style={{ ...linkStyle, color: '#E11D48' }}>
-            Iniciar Sesión
+        <SignedIn>
+          <Link href="/pedidos" className={styles.link} onClick={closeMenu}>
+            Mis Pedidos
+          </Link>
+        </SignedIn>
+        {isAdmin && (
+          <Link href="/admin" className={styles.adminLink} onClick={closeMenu}>
+            Panel Admin
           </Link>
         )}
-        {user && <UserButton afterSignOutUrl="/" />}
+        <SignedOut>
+          <Link href="/sign-in" className={styles.linkSignIn} onClick={closeMenu}>
+            Iniciar Sesión
+          </Link>
+        </SignedOut>
+        {!isMobile && (
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+        )}
       </nav>
     </header>
   );

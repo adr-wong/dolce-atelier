@@ -67,7 +67,7 @@ export default function AdminRecetas() {
           {recetas.map((receta) => (
             <tr key={receta._id} className={styles.tr}>
               <td className={styles.td}>#{receta._id}</td>
-              <td className={styles.td}>{receta.nota.substring(0, 50)}...</td>
+              <td className={styles.td}>{receta.nota ? receta.nota.substring(0, 50) + '...' : '—'}</td>
               <td className={styles.td}>
                 {new Date(receta.createdAt).toLocaleDateString()}
               </td>
