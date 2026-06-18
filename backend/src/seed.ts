@@ -1,10 +1,13 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { subirImagen } from './services/cloudinary';
 
-const IMAGENES_DIR = 'C:/Users/ELI_BENDECIDA/Desktop/UTP-2026/parcial_1/frontend/public/images/catalogo';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const IMAGENES_DIR = join(__dirname, '..', '..', '..', 'frontend', 'public', 'images', 'catalogo');
 
 const PASTELES_DATA = [
   {
