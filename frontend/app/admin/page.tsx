@@ -31,7 +31,7 @@ export default function AdminDashboard() {
     loadStats();
   }, [getToken]);
 
-  if (loading) return <div style={{ padding: '2rem' }}>Cargando...</div>;
+  if (loading) return <div className={styles.loading}>Cargando...</div>;
 
   const statsData = [
     { label: "Pedidos Hoy", value: stats.totalPedidos, color: "#3b82f6" },
