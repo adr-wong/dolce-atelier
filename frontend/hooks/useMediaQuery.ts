@@ -7,25 +7,23 @@ export function useMediaQuery(query: string): boolean {
 
   useEffect(() => {
     const media = window.matchMedia(query);
-    if (media.matches !== matches) {
-      setMatches(media.matches);
-    }
-    const listener = () => setMatches(media.matches);
+    setMatches(media.matches);
+    const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
     media.addEventListener('change', listener);
     return () => media.removeEventListener('change', listener);
-  }, [matches, query]);
+  }, [query]);
 
   return matches;
 }
 
 export function useMobile(): boolean {
-  return useMediaQuery('(max-width: 767px)');
+  return useMediaQuery('(max-width: 768px)');
 }
 
 export function useTablet(): boolean {
-  return useMediaQuery('(min-width: 768px) and (max-width: 1023px)');
+  return useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
 }
 
 export function useDesktop(): boolean {
-  return useMediaQuery('(min-width: 1024px)');
+  return useMediaQuery('(min-width: 1025px)');
 }
