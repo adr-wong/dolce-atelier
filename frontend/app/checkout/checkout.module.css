@@ -1,0 +1,273 @@
+.emptyContainer {
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin-bottom: 1rem;
+}
+
+.emptyText {
+  color: var(--gray);
+  margin-bottom: 2rem;
+}
+
+.emptyLink {
+  padding: 1rem 2rem;
+  background: var(--primary);
+  color: var(--light);
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.container {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-top: 4rem;
+}
+
+.backLinkWrapper {
+  margin-bottom: 1.5rem;
+}
+
+.backLink {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.title {
+  margin-bottom: 2rem;
+  font-family: var(--font-serif);
+  font-size: 2rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 3rem;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.inputGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--gray);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.methodSelector {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.methodBtn {
+  flex: 1;
+  padding: 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  background: none;
+}
+
+.methodBtnActive {
+  border: 2px solid var(--primary);
+  background: #fdf5f7;
+}
+
+.methodBtnInactive {
+  border: 2px solid #ddd;
+  background: var(--light);
+}
+
+.methodTitle {
+  font-weight: 500;
+}
+
+.methodDesc {
+  font-size: 0.85rem;
+  color: var(--gray);
+  margin-top: 0.25rem;
+}
+
+.summary {
+  background: var(--gray-light);
+  padding: 1.5rem;
+  border-radius: 12px;
+  height: fit-content;
+}
+
+.summaryTitle {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.itemsList {
+  margin-bottom: 1.5rem;
+}
+
+.orderItem {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.itemImage {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.itemDetails {
+  flex: 1;
+}
+
+.itemName {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.itemQty {
+  color: var(--gray);
+  font-size: 0.85rem;
+}
+
+.itemPrice {
+  font-weight: 500;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.summaryShipping {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.muted {
+  color: var(--gray);
+}
+
+.green {
+  color: #10b981;
+}
+
+.totalAmount {
+  font-size: 1.25rem;
+}
+
+.divider {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 1rem;
+  color: var(--light);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.submitBtnActive {
+  background: var(--primary);
+  cursor: pointer;
+}
+
+.submitBtnDisabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .emptyContainer {
+    padding: 6rem 1rem;
+  }
+
+  .container {
+    padding: 1rem;
+    padding-top: 6rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.1rem;
+  }
+
+  .inputGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .methodSelector {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .methodBtn {
+    padding: 1rem;
+  }
+
+  .summary {
+    padding: 1rem;
+  }
+}
