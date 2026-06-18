@@ -78,16 +78,16 @@ export default function Home() {
       <footer className={styles.footer}>
         <div className={styles.container}>
           <div className={styles.footerGrid}>
-            <div className={styles.footerCol}>
+            <div>
               <h3 className={styles.footerLogo}>Dolce Atelier</h3>
               <p className={styles.footerTextGray}>Pasteles artesanales elaborados con amor y los mejores ingredientes.</p>
             </div>
-            <div className={styles.footerCol}>
+            <div>
               <h4 className={styles.footerHeading}>HORARIO</h4>
               <p className={styles.footerText}>Lun - Vie: 8:00 AM - 7:00 PM</p>
               <p className={styles.footerText}>Sábados: 9:00 AM - 5:00 PM</p>
             </div>
-            <div className={styles.footerCol}>
+            <div>
               <h4 className={styles.footerHeading}>CONTACTO</h4>
               <p className={styles.footerText}>Av. Principal #123</p>
               <p className={styles.footerText}>Ciudad, México</p>
