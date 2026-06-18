@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { getRecetas, updateReceta } from "@/lib/adminApi";
 import type { Receta } from "@/lib/adminApi";
+import styles from "./recetas.module.css";
 
 export default function AdminRecetas() {
   const { getToken } = useAuth();
@@ -49,53 +50,43 @@ export default function AdminRecetas() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: "2rem" }}>Gestión de Recetas</h1>
+      <h1 className={styles.title}>Gestión de Recetas</h1>
 
-      <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "12px", overflow: "hidden" }}>
+      <table className={styles.table}>
         <thead>
-          <tr style={{ background: "#f9fafb" }}>
-            <th style={{ padding: "1rem", textAlign: "left" }}>ID</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Nota</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Fecha</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Estado</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Cotización</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Acciones</th>
+          <tr className={styles.theadTr}>
+            <th className={styles.th}>ID</th>
+            <th className={styles.th}>Nota</th>
+            <th className={styles.th}>Fecha</th>
+            <th className={styles.th}>Estado</th>
+            <th className={styles.th}>Cotización</th>
+            <th className={styles.th}>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {recetas.map((receta) => (
-            <tr key={receta._id} style={{ borderTop: "1px solid #eee" }}>
-              <td style={{ padding: "1rem" }}>#{receta._id}</td>
-              <td style={{ padding: "1rem" }}>{receta.nota.substring(0, 50)}...</td>
-              <td style={{ padding: "1rem" }}>
+            <tr key={receta._id} className={styles.tr}>
+              <td className={styles.td}>#{receta._id}</td>
+              <td className={styles.td}>{receta.nota.substring(0, 50)}...</td>
+              <td className={styles.td}>
                 {new Date(receta.createdAt).toLocaleDateString()}
               </td>
-              <td style={{ padding: "1rem" }}>
+              <td className={styles.td}>
                 <span
+                  className={styles.statusBadge}
                   style={{
-                    padding: "0.25rem 0.75rem",
-                    borderRadius: "20px",
-                    fontSize: "0.8rem",
                     background: estadoColors[receta.estado] || "#f3f4f6",
-                    color: "#374151",
                   }}
                 >
                   {receta.estado}
                 </span>
               </td>
-              <td style={{ padding: "1rem" }}>
+              <td className={styles.td}>
                 {receta.cotizacion ? `$${receta.cotizacion}` : "—"}
               </td>
-              <td style={{ padding: "1rem" }}>
+              <td className={styles.td}>
                 <button
-                  style={{
-                    padding: "0.5rem 1rem",
-                    background: "#10b981",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                  }}
+                  className={styles.cotizarBtn}
                   onClick={() => {
                     const precio = prompt("Ingrese cotización:");
                     if (precio) handleCotizar(receta._id, parseFloat(precio));

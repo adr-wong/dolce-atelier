@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { getPedidos, updatePedidoStatus } from "@/lib/adminApi";
 import type { Pedido } from "@/lib/adminApi";
+import styles from "./pedidos.module.css";
 
 export default function AdminPedidos() {
   const { getToken } = useAuth();
@@ -41,7 +42,9 @@ export default function AdminPedidos() {
 
   const estadoColors: Record<string, string> = {
     PENDIENTE: "#fef3c7",
-    CONFIRMADO: "#dcfce7",
+    PREPARANDO: "#fef3c7",
+    LISTO: "#dcfce7",
+    EN_CAMINO: "#e0e7ff",
     PAGADO: "#dbeafe",
     ENTREGADO: "#f3e8ff",
     CANCELADO: "#fee2e2",
@@ -51,61 +54,62 @@ export default function AdminPedidos() {
 
   return (
     <div>
-      <div style={{ marginBottom: "2rem" }}>
+      <div className={styles.title}>
         <h1>Gestión de Pedidos</h1>
         <select
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value)}
-          style={{ marginTop: "1rem", padding: "0.5rem", borderRadius: "6px" }}
+          className={styles.filterSelect}
         >
           <option value="">Todos los estados</option>
           <option value="PENDIENTE">Pendiente</option>
-          <option value="CONFIRMADO">Confirmado</option>
+          <option value="PREPARANDO">Preparando</option>
+          <option value="LISTO">Listo</option>
+          <option value="EN_CAMINO">En camino</option>
           <option value="PAGADO">Pagado</option>
           <option value="ENTREGADO">Entregado</option>
           <option value="CANCELADO">Cancelado</option>
         </select>
       </div>
 
-      <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "12px", overflow: "hidden" }}>
+      <table className={styles.table}>
         <thead>
-          <tr style={{ background: "#f9fafb" }}>
-            <th style={{ padding: "1rem", textAlign: "left" }}>ID</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Fecha</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Total</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Estado</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Acciones</th>
+          <tr className={styles.theadTr}>
+            <th className={styles.th}>ID</th>
+            <th className={styles.th}>Fecha</th>
+            <th className={styles.th}>Total</th>
+            <th className={styles.th}>Estado</th>
+            <th className={styles.th}>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {pedidos.map((pedido) => (
-            <tr key={pedido._id} style={{ borderTop: "1px solid #eee" }}>
-              <td style={{ padding: "1rem" }}>#{pedido._id}</td>
-              <td style={{ padding: "1rem" }}>
+            <tr key={pedido._id} className={styles.tr}>
+              <td className={styles.td}>#{pedido._id}</td>
+              <td className={styles.td}>
                 {new Date(pedido.createdAt).toLocaleDateString()}
               </td>
-              <td style={{ padding: "1rem" }}>${pedido.total}</td>
-              <td style={{ padding: "1rem" }}>
+              <td className={styles.td}>${pedido.total}</td>
+              <td className={styles.td}>
                 <span
+                  className={styles.statusBadge}
                   style={{
-                    padding: "0.25rem 0.75rem",
-                    borderRadius: "20px",
-                    fontSize: "0.8rem",
                     background: estadoColors[pedido.estado] || "#f3f4f6",
-                    color: "#374151",
                   }}
                 >
-                  {pedido.estado}
+                  {pedido.estado.replace('_', ' ')}
                 </span>
               </td>
-              <td style={{ padding: "1rem" }}>
+              <td className={styles.td}>
                 <select
                   value={pedido.estado}
                   onChange={(e) => handleStatusChange(pedido._id, e.target.value)}
-                  style={{ padding: "0.5rem", borderRadius: "6px", border: "1px solid #ddd" }}
+                  className={styles.statusSelect}
                 >
                   <option value="PENDIENTE">Pendiente</option>
-                  <option value="CONFIRMADO">Confirmado</option>
+                  <option value="PREPARANDO">Preparando</option>
+                  <option value="LISTO">Listo</option>
+                  <option value="EN_CAMINO">En camino</option>
                   <option value="PAGADO">Pagado</option>
                   <option value="ENTREGADO">Entregado</option>
                   <option value="CANCELADO">Cancelado</option>

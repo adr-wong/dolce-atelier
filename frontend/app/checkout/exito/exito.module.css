@@ -1,0 +1,88 @@
+.container {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.content {
+  max-width: 500px;
+}
+
+.iconCircle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #dcfce7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem;
+  font-size: 2.5rem;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  color: var(--dark);
+}
+
+.text {
+  color: var(--gray);
+  margin-bottom: 2rem;
+  line-height: 1.7;
+}
+
+.orderBox {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.orderLabel {
+  font-size: 0.9rem;
+  color: var(--gray);
+  margin-bottom: 0.5rem;
+}
+
+.orderId {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.emailNote {
+  font-size: 0.9rem;
+  color: var(--gray);
+  margin-bottom: 2rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.primaryBtn {
+  padding: 0.875rem 1.5rem;
+  background: #e11d48;
+  color: var(--light);
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.secondaryBtn {
+  padding: 0.875rem 1.5rem;
+  background: var(--light);
+  color: var(--dark);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+}

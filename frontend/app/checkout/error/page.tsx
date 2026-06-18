@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import styles from './error.module.css';
 
 export default function CheckoutErrorPage() {
   const [errorId, setErrorId] = useState<string>('');
@@ -11,79 +12,30 @@ export default function CheckoutErrorPage() {
   }, []);
 
   return (
-    <main style={{
-      minHeight: '80vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2rem',
-      textAlign: 'center'
-    }}>
-      <div style={{ maxWidth: 500 }}>
-        <div style={{
-          width: 80,
-          height: 80,
-          borderRadius: '50%',
-          background: '#fee2e2',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 2rem',
-          fontSize: '2.5rem'
-        }}>
+    <main className={styles.container}>
+      <div className={styles.content}>
+        <div className={styles.iconCircle}>
           ✕
         </div>
-        <h1 style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: '2rem',
-          fontWeight: 400,
-          marginBottom: '1rem',
-          color: '#1a1a1a'
-        }}>
+        <h1 className={styles.title}>
           Algo Salió Mal
         </h1>
-        <p style={{ color: '#666', marginBottom: '2rem', lineHeight: 1.7 }}>
+        <p className={styles.text}>
           Lo sentimos, no pudimos procesar tu pago. Por favor intenta de nuevo o contacta soporte.
         </p>
-        <div style={{
-          background: '#f9f9f9',
-          padding: '1.5rem',
-          borderRadius: '12px',
-          marginBottom: '2rem'
-        }}>
-          <p style={{ fontSize: '0.9rem', color: '#666' }}>
+        <div className={styles.errorBox}>
+          <p className={styles.errorLabel}>
             Si el problema persiste, contacta soporte con este ID:
           </p>
-          <p style={{ fontSize: '1rem', fontWeight: 600, color: '#666', marginTop: '0.5rem' }}>
+          <p className={styles.errorId}>
             ERR-{errorId || 'CARGANDO...'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <Link
-            href="/carrito"
-            style={{
-              padding: '0.875rem 1.5rem',
-              background: '#e11d48',
-              color: '#fff',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: 500
-            }}
-          >
+        <div className={styles.actions}>
+          <Link href="/carrito" className={styles.primaryBtn}>
             Reintentar Pago
           </Link>
-          <Link
-            href="/"
-            style={{
-              padding: '0.875rem 1.5rem',
-              background: '#fff',
-              color: '#1a1a1a',
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: 500
-            }}
-          >
+          <Link href="/" className={styles.secondaryBtn}>
             Volver al Inicio
           </Link>
         </div>

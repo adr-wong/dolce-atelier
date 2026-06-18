@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@clerk/nextjs';
+import styles from './pedidos.module.css';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -75,96 +76,16 @@ export default function PedidosPage() {
     cargarPedidos();
   }, [filtroEstado]);
 
-  const containerStyle: React.CSSProperties = {
-    padding: '2rem',
-    maxWidth: 800,
-    margin: '0 auto',
-    minHeight: '80vh',
-  };
-
-  const headerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '2rem',
-    flexWrap: 'wrap',
-    gap: '1rem',
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-serif)',
-    fontSize: '2rem',
-    color: '#1a1a1a',
-  };
-
-  const filterStyle: React.CSSProperties = {
-    padding: '0.5rem 1rem',
-    borderRadius: '8px',
-    border: '1px solid #ddd',
-    background: '#fff',
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-  };
-
-  const pedidoCardStyle: React.CSSProperties = {
-    border: '1px solid #e5e5e5',
-    borderRadius: '12px',
-    padding: '1.5rem',
-    marginBottom: '1rem',
-    background: '#fff',
-  };
-
-  const pedidoHeaderStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '1rem',
-    flexWrap: 'wrap',
-    gap: '0.5rem',
-  };
-
-  const pedidoIdStyle: React.CSSProperties = {
-    fontSize: '0.85rem',
-    color: '#666',
-  };
-
   const EstadoBadge: React.FC<{ estado: string }> = ({ estado }) => {
     const colores = ESTADOS_COLORES[estado] || ESTADOS_COLORES.PENDIENTE;
     return (
-      <span style={{
-        padding: '0.25rem 0.75rem',
-        borderRadius: '20px',
-        fontSize: '0.8rem',
-        fontWeight: 500,
+      <span className={styles.estadoBadge} style={{
         background: colores.bg,
         color: colores.text,
       }}>
         {estado.replace('_', ' ')}
       </span>
     );
-  };
-
-  const itemsStyle: React.CSSProperties = {
-    borderTop: '1px solid #eee',
-    paddingTop: '1rem',
-    marginTop: '1rem',
-  };
-
-  const itemStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.5rem 0',
-  };
-
-  const totalStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: '1rem',
-    paddingTop: '1rem',
-    borderTop: '1px solid #eee',
-    fontWeight: 600,
   };
 
   const fecha = (dateStr: string) => {
@@ -181,28 +102,21 @@ export default function PedidosPage() {
 
   if (loading) {
     return (
-      <main style={containerStyle}>
-        <h1 style={titleStyle}>Mis Pedidos</h1>
-        <p style={{ textAlign: 'center', padding: '2rem' }}>Cargando pedidos...</p>
+      <main className={styles.container}>
+        <h1 className={styles.title}>Mis Pedidos</h1>
+        <p className={styles.loadingText}>Cargando pedidos...</p>
       </main>
     );
   }
 
   if (error) {
     return (
-      <main style={containerStyle}>
-        <h1 style={titleStyle}>Mis Pedidos</h1>
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p style={{ color: '#666', marginBottom: '1rem' }}>{error}</p>
+      <main className={styles.container}>
+        <h1 className={styles.title}>Mis Pedidos</h1>
+        <div className={styles.errorContainer}>
+          <p className={styles.errorText}>{error}</p>
           {error.includes('sesión') && (
-            <Link href="/sign-in" style={{ 
-              display: 'inline-block',
-              padding: '0.75rem 1.5rem',
-              background: '#E11D48',
-              color: '#fff',
-              borderRadius: '8px',
-              textDecoration: 'none',
-            }}>
+            <Link href="/sign-in" className={styles.loginBtn}>
               Iniciar Sesión
             </Link>
           )}
@@ -212,13 +126,13 @@ export default function PedidosPage() {
   }
 
   return (
-    <main style={containerStyle}>
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Mis Pedidos</h1>
+    <main className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Mis Pedidos</h1>
         <select 
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value)}
-          style={filterStyle}
+          className={styles.filter}
         >
           <option value="">Todos los estados</option>
           <option value="PENDIENTE">Pendiente</option>
@@ -232,51 +146,51 @@ export default function PedidosPage() {
       </div>
 
       {pedidos.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
-          <p style={{ color: '#666', marginBottom: '1rem' }}>No tienes pedidos aún.</p>
-          <Link href="/catalogo" style={{ color: '#E11D48', textDecoration: 'underline' }}>
+        <div className={styles.emptyContainer}>
+          <p className={styles.emptyText}>No tienes pedidos aún.</p>
+          <Link href="/catalogo" className={styles.emptyLink}>
             Ver catálogo →
           </Link>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className={styles.pedidosList}>
           {pedidos.map((pedido) => (
-            <div key={pedido._id} style={pedidoCardStyle}>
-              <div style={pedidoHeaderStyle}>
+            <div key={pedido._id} className={styles.pedidoCard}>
+              <div className={styles.pedidoHeader}>
                 <div>
-                  <p style={pedidoIdStyle}>Pedido #{pedido._id.slice(-6).toUpperCase()}</p>
-                  <p style={{ fontSize: '0.85rem', color: '#666' }}>
+                  <p className={styles.pedidoId}>Pedido #{pedido._id.slice(-6).toUpperCase()}</p>
+                  <p className={styles.dateMeta}>
                     {fecha(pedido.createdAt)} • {formatMetodo(pedido.metodoEntrega)}
                   </p>
                 </div>
                 <EstadoBadge estado={pedido.estado} />
               </div>
 
-              <div style={itemsStyle}>
+              <div className={styles.itemsList}>
                 {pedido.items.map((item, idx) => (
-                  <div key={idx} style={itemStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span style={{ fontWeight: 500 }}>{item.nombre}</span>
-                      <span style={{ fontSize: '0.85rem', color: '#666' }}>x{item.cantidad}</span>
+                  <div key={idx} className={styles.itemRow}>
+                    <div className={styles.itemInfo}>
+                      <span className={styles.itemName}>{item.nombre}</span>
+                      <span className={styles.itemQty}>x{item.cantidad}</span>
                     </div>
-                    <span style={{ fontWeight: 500 }}>
+                    <span className={styles.itemPrice}>
                       ${(item.precioSnapshot * item.cantidad).toFixed(2)}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div style={totalStyle}>
+              <div className={styles.totalRow}>
                 <span>Total</span>
-                <span style={{ fontSize: '1.1rem', color: '#E11D48' }}>${pedido.total.toFixed(2)}</span>
+                <span className={styles.totalAmount}>${pedido.total.toFixed(2)}</span>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <Link href="/catalogo" style={{ color: '#E11D48' }}>
+      <div className={styles.backLink}>
+        <Link href="/catalogo">
           ← Volver al catálogo
         </Link>
       </div>

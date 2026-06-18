@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { getPasteles, createPastel, updatePastel, deletePastel } from "@/lib/adminApi";
 import type { Pastel, PastelCreateInput } from "@/lib/adminApi";
+import styles from "./pasteles.module.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -152,80 +153,57 @@ export default function AdminPasteles() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+      <div className={styles.header}>
         <h1>Gestión de Pasteles</h1>
         <button
           onClick={() => setShowModal(true)}
-          style={{
-            padding: "0.75rem 1.5rem",
-            background: "#e11d48",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-          }}
+          className={styles.addBtn}
         >
           + Nuevo Pastel
         </button>
       </div>
 
       {showModal && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "rgba(0,0,0,0.5)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1000,
-        }}>
-          <form onSubmit={editingPastel ? handleUpdate : handleSubmit} style={{
-            background: "white",
-            padding: "2rem",
-            borderRadius: "12px",
-            width: "400px",
-          }}>
-            <h2 style={{ marginBottom: "1.5rem" }}>{editingPastel ? "Editar Pastel" : "Nuevo Pastel"}</h2>
+        <div className={styles.modalOverlay}>
+          <form onSubmit={editingPastel ? handleUpdate : handleSubmit} className={styles.form}>
+            <h2 className={styles.formTitle}>{editingPastel ? "Editar Pastel" : "Nuevo Pastel"}</h2>
             
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", marginBottom: "0.5rem" }}>Nombre</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Nombre</label>
               <input
                 value={formData.nombre}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                 required
-                style={{ width: "100%", padding: "0.5rem" }}
+                className={styles.input}
               />
             </div>
             
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", marginBottom: "0.5rem" }}>Descripción</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Descripción</label>
               <textarea
                 value={formData.descripcion}
                 onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                style={{ width: "100%", padding: "0.5rem" }}
+                className={styles.input}
               />
             </div>
             
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", marginBottom: "0.5rem" }}>Precio</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Precio</label>
               <input
                 type="number"
                 value={formData.precio}
                 onChange={(e) => setFormData({ ...formData, precio: parseFloat(e.target.value) })}
                 required
-                style={{ width: "100%", padding: "0.5rem" }}
+                className={styles.input}
               />
             </div>
             
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", marginBottom: "0.5rem" }}>Categoría</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Categoría</label>
               <select
                 value={formData.categoria}
                 onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                style={{ width: "100%", padding: "0.5rem" }}
+                className={styles.input}
               >
                 <option value="general">General</option>
                 <option value="chocolate">Chocolate</option>
@@ -235,111 +213,66 @@ export default function AdminPasteles() {
               </select>
             </div>
             
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", marginBottom: "0.5rem" }}>Imagen</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Imagen</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileUpload}
                 ref={fileInputRef}
-                style={{ width: "100%" }}
+                className={styles.fileInput}
               />
               {uploading && <p>Subiendo...</p>}
               {formData.imagen && (
-                <div style={{ marginTop: "0.5rem" }}>
-                  <img src={formData.imagen} alt="Preview" style={{ width: "100px", height: "100px", objectFit: "cover" }} />
-                  <p style={{ fontSize: "0.8rem", color: "green" }}>✓ Imagen cargada</p>
+                <div className={styles.previewContainer}>
+                  <img src={formData.imagen} alt="Preview" className={styles.previewImg} />
+                  <p className={styles.uploadedText}>✓ Imagen cargada</p>
                 </div>
               )}
             </div>
             
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <button
-                type="submit"
-                style={{
-                  padding: "0.75rem 1.5rem",
-                  background: "#e11d48",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                }}
-              >
-                Crear
+            <div className={styles.formActions}>
+              <button type="submit" className={styles.submitBtn}>
+                {editingPastel ? "Actualizar" : "Crear"}
               </button>
-              <button
-                type="button"
-                onClick={() => closeModal()}
-                style={{
-                  padding: "0.75rem 1.5rem",
-                  background: "#6b7280",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                }}
-              >
+              <button type="button" onClick={() => closeModal()} className={styles.cancelBtn}>
                 Cancelar
               </button>
-              {editingPastel && (
-                <button
-                  type="button"
-                  onClick={() => closeModal()}
-                  style={{
-                    padding: "0.75rem 1.5rem",
-                    background: "#6b7280",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Cerrar
-                </button>
-              )}
             </div>
           </form>
         </div>
       )}
 
-      <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "12px", overflow: "hidden" }}>
+      <table className={styles.table}>
         <thead>
-          <tr style={{ background: "#f9fafb" }}>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Nombre</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Categoría</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Precio</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Estado</th>
-            <th style={{ padding: "1rem", textAlign: "left" }}>Acciones</th>
+          <tr className={styles.theadTr}>
+            <th className={styles.th}>Nombre</th>
+            <th className={styles.th}>Categoría</th>
+            <th className={styles.th}>Precio</th>
+            <th className={styles.th}>Estado</th>
+            <th className={styles.th}>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {pasteles.map((pastel) => (
-            <tr key={pastel._id} style={{ borderTop: "1px solid #eee" }}>
-              <td style={{ padding: "1rem" }}>{pastel.nombre}</td>
-              <td style={{ padding: "1rem", textTransform: "capitalize" }}>{pastel.categoria}</td>
-              <td style={{ padding: "1rem" }}>${pastel.precio}</td>
-              <td style={{ padding: "1rem" }}>
-                <span
-                  style={{
-                    padding: "0.25rem 0.75rem",
-                    borderRadius: "20px",
-                    fontSize: "0.8rem",
-                    background: pastel.disponible ? "#dcfce7" : "#fee2e2",
-                    color: pastel.disponible ? "#166534" : "#991b1b",
-                  }}
-                >
+            <tr key={pastel._id} className={styles.tr}>
+              <td className={styles.td}>{pastel.nombre}</td>
+              <td className={`${styles.td} ${styles.capitalize}`}>{pastel.categoria}</td>
+              <td className={styles.td}>${pastel.precio}</td>
+              <td className={styles.td}>
+                <span className={`${styles.statusBadge} ${pastel.disponible ? styles.statusActive : styles.statusInactive}`}>
                   {pastel.disponible ? "Activo" : "Agotado"}
                 </span>
               </td>
-              <td style={{ padding: "1rem" }}>
+              <td className={styles.td}>
                 <button 
-                  style={{ marginRight: "0.5rem", padding: "0.5rem", background: "none", border: "none", cursor: "pointer" }}
+                  className={styles.actionBtn}
                   onClick={() => handleEdit(pastel)}
                 >
                   ✏️
                 </button>
                 <button
-                  style={{ padding: "0.5rem", background: "none", border: "none", cursor: "pointer" }}
+                  className={styles.actionBtnDanger}
                   onClick={() => handleDelete(pastel._id, pastel.imagen)}
                 >
                   🗑️
