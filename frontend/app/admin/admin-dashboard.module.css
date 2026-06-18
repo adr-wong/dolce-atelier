@@ -35,6 +35,10 @@
   font-weight: bold;
 }
 
+.loading {
+  padding: 2rem;
+}
+
 @media (max-width: 1023px) {
   .statsGrid {
     grid-template-columns: 1fr 1fr;
