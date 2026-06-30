@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "concurrently \"bun --disable-warnings --bun --no-preload src/server.ts\" \"C:\\\\Users\\\\ELI_BENDECIDA\\\\Downloads\\\\stripe_1.40.9_windows_x86_64\\\\stripe.exe listen --forward-to localhost:3001/api/webhook/stripe\"",
     "build": "bun build src/server.ts --outdir dist",
-    "start": "bun run dist/server.js"
+    "start": "bun run dist/server.js",
+    "test": "bun test"
   },
   "dependencies": {
     "@clerk/backend": "^1.19.1",
