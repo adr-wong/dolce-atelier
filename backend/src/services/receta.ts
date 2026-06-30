@@ -39,6 +39,14 @@ export class RecetaService {
     );
   }
 
+  async aceptar(id: string): Promise<IReceta | null> {
+    return Receta.findByIdAndUpdate(
+      id,
+      { estado: 'ACEPTADA' },
+      { new: true }
+    );
+  }
+
   async contarPendientes(): Promise<number> {
     return Receta.countDocuments({ estado: 'PENDIENTE' });
   }

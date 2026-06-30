@@ -78,3 +78,40 @@ export async function crearSesionCheckout(params: {
     throw error;
   }
 }
+
+export async function crearSesionReceta(params: {
+  recetaId: string;
+  nota: string;
+  cotizacion: number;
+  successUrl: string;
+  cancelUrl: string;
+  customerEmail?: string;
+}) {
+  const unitAmount = Math.round(params.cotizacion * 100 * 1.07);
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Receta personalizada: ${params.nota.substring(0, 50)}`,
+          },
+          unit_amount: unitAmount,
+        },
+        quantity: 1,
+      },
+    ],
+    success_url: params.successUrl,
+    cancel_url: params.cancelUrl,
+    metadata: {
+      recetaId: params.recetaId,
+      tipo: 'receta',
+    },
+    billing_address_collection: 'required',
+    customer_email: params.customerEmail,
+  });
+
+  return session;
+}
