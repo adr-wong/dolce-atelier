@@ -3,13 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
-import type { SendReceiptRequest, PedidoItem } from '@/lib/types';
 import styles from './exito.module.css';
 
 export default function CheckoutExitoContent() {
   const searchParams = useSearchParams();
-  const { getToken, userId } = useAuth();
   const [orderId, setOrderId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -20,80 +17,8 @@ export default function CheckoutExitoContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    const sendReceipt = async () => {
-      let payload: SendReceiptRequest;
-
-      if (orderId) {
-        try {
-          const token = await getToken();
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/pedidos/${orderId}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            const order = data.pedido;
-
-            payload = {
-              customerEmail: "cliente@test.com",
-              orderId: order._id,
-              orderItems: order.items.map((item: PedidoItem) => ({
-                name: item.nombre || `Pastel ${item.pastelId?.toString().slice(-4)}`,
-                quantity: item.cantidad,
-                price: item.precioSnapshot,
-              })),
-              total: order.total,
-              customerName: userId || "Cliente",
-            };
-          } else {
-            throw new Error('Failed to fetch order');
-          }
-        } catch (error) {
-          console.error('Error fetching order, using mock data:', error);
-          payload = {
-            customerEmail: "cliente@test.com",
-            orderId: orderId || "mock-order-123",
-            orderItems: [{ name: "Pastel de Chocolate", quantity: 1, price: 25.99 }],
-            total: 25.99,
-            customerName: "Cliente de Prueba"
-          };
-        }
-      } else {
-        payload = {
-          customerEmail: "cliente@test.com",
-          orderId: "mock-order-123",
-          orderItems: [{ name: "Pastel de Chocolate", quantity: 1, price: 25.99 }],
-          total: 25.99,
-          customerName: "Cliente de Prueba"
-        };
-      }
-
-      try {
-        const response = await fetch('/api/send-receipt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-          console.log('Receipt email sent successfully');
-        } else {
-          console.error('Failed to send receipt email:', response.status);
-        }
-      } catch (error) {
-        console.error('Error sending receipt email:', error);
-      }
-    };
-
-    if (orderId) {
-      sendReceipt();
-    }
-  }, [orderId, getToken, userId]);
+    console.log('[CHECKOUT-EXITO] Pedido confirmado. El email de confirmación será enviado por el webhook de Stripe.');
+  }, [orderId]);
 
   return (
     <main className={styles.container}>
