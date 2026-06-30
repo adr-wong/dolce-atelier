@@ -1,4 +1,5 @@
 import { Pedido } from '../../models';
+import { auditLogService } from '../../services/auditLog';
 import type { IPedido } from '../../models/Pedido';
 
 const allowedTransitions: Record<IPedido['estado'], IPedido['estado'][]> = {
@@ -52,6 +53,14 @@ export async function updatePedidoStatus(context: PedidoControllerContext) {
     { $set: { estado: newStatus, updatedAt: new Date() } },
     { new: true }
   );
+
+  auditLogService.log({
+    action: 'ADMIN_UPDATE_PEDIDO_STATUS',
+    resource: `/api/admin/pedidos/${params.id}/status`,
+    method: 'PUT',
+    metadata: { pedidoId: params.id, oldStatus: pedido.estado, newStatus },
+  });
+
   set.status = 200;
   return result;
 }
