@@ -1,0 +1,316 @@
+================================================================================
+                DOLCE ATELIER - GUIA DE DESPLIEGUE EN PRODUCCION
+                         (En Español)
+================================================================================
+
+  Fecha: 30 de junio de 2026
+  Arquitectura: Vercel (Frontend) + Railway (Backend)
+
+================================================================================
+                      QUE NECESITAS ANTES DE EMPEZAR
+================================================================================
+
+  Necesitas crear cuentas GRATIS en estos servicios:
+
+  1. MongoDB Atlas    → https://cloud.mongodb.com  (base de datos)
+  2. Clerk            → https://clerk.com           (login/registro)
+  3. Stripe           → https://stripe.com          (pagos)
+  4. Cloudinary       → https://cloudinary.com      (imagenes)
+  5. Brevo            → https://brevo.com           (emails)
+  6. GitHub           → https://github.com          (codigo)
+  7. Vercel           → https://vercel.com          (frontend)
+  8. Railway          → https://railway.app         (backend)
+
+================================================================================
+                      PASO 1: MONGODB ATLAS (Base de Datos)
+================================================================================
+
+  1. Crear cuenta en https://cloud.mongodb.com
+  2. Click "Create a Free Cluster" (M0 Sandbox - GRATIS)
+  3. Elegir region mas cercana (AWS N. Virginia o similar)
+  4. Crear usuario de base de datos:
+     - Username: dolce_atelier
+     - Password: (guarda esta contrasena)
+  5. En "Network Access" → Add IP Address → "Allow Access from Anywhere" (0.0.0.0/0)
+  6. En "Database" → "Connect" → "Connect your application"
+  7. Copiar la URI (se ve asi):
+     mongodb+srv://dolce_atelier:TU_PASSWORD@cluster0.xxxxx.mongodb.net/dolce_atelier?retryWrites=true&w=majority
+
+  GUARDA ESTA URI - la necesitaras despues.
+
+================================================================================
+                      PASO 2: CLERK (Autenticacion)
+================================================================================
+
+  1. Crear cuenta en https://clerk.com
+  2. Click "Create Application"
+  3. Nombre: "Dolce Atelier"
+  4. Seleccionar: Email + Google (o los metodos que quieras)
+  5. Ir a "API Keys" en el menu lateral
+  6. Copiar estas claves:
+     - Publishable Key: pk_test_xxxxx...
+     - Secret Key: sk_test_xxxxx...
+
+  GUARDA ESTAS CLAVES.
+
+  7. Ir a "Paths" en el menu lateral
+  8. Configurar:
+     - Sign In: /sign-in
+     - Sign Up: /sign-up
+     - After Sign In: /
+     - After Sign Up: /
+
+================================================================================
+                      PASO 3: STRIPE (Pagos)
+================================================================================
+
+  1. Crear cuenta en https://stripe.com
+  2. Ir a "Developers" → "API Keys"
+  3. Copiar estas claves:
+     - Publishable key: pk_test_xxxxx...
+     - Secret key: sk_test_xxxxx...
+
+  GUARDA ESTAS CLAVES (usaremos las de TEST por ahora).
+
+  4. Ir a "Developers" → "Webhooks"
+  5. Click "Add endpoint"
+  6. URL: https://TU-BACKEND-EN-RAILWAY.up.railway.app/api/webhook/stripe
+     (Si aun no tienes Railway, pon temporal: http://localhost:3001/api/webhook/stripe)
+  7. Events to send: buscar y seleccionar "checkout.session.completed"
+  8. Click "Add endpoint"
+  9. En el webhook creado, click "Reveal" en "Signing secret"
+  10. Copiar el valor (whsec_xxxxx...)
+
+  GUARDA ESTE WEBHOOK SECRET.
+
+================================================================================
+                      PASO 4: CLOUDINARY (Imagenes)
+================================================================================
+
+  1. Crear cuenta en https://cloudinary.com
+  2. En el Dashboard, copiar:
+     - Cloud name: (algo como daffoedqf)
+     - API Key: 123456789...
+     - API Secret: abcdefg...
+
+  GUARDA ESTOS DATOS.
+
+  3. Ir a "Settings" → "Upload"
+  4. En "Upload presets", click "Add upload preset"
+  5. Type: "Unsigned"
+  6. Preset name: dolce_atelier_unsigned
+  7. Click "Save"
+
+================================================================================
+                      PASO 5: BREVO (Emails)
+================================================================================
+
+  1. Crear cuenta en https://brevo.com
+  2. Ir a "SMTP" → "API Keys"
+  3. Click "Generate a new API key"
+  4. Nombre: "dolce-atelier"
+  5. Copiar la clave (xsmtpsib-xxxxx...)
+
+  GUARDA ESTA CLAVE.
+
+  6. Ir a "Transactional" → "Senders"
+  7. Agregar tu email como remitente verificado
+  8. Copiar el email que usaste (ejemplo: tu@email.com)
+
+  GUARDA ESTE EMAIL.
+
+================================================================================
+                      PASO 6: DESPLEGAR BACKEND EN RAILWAY
+================================================================================
+
+  1. Ir a https://railway.app
+  2. Click "Login" y conectar tu cuenta de GitHub
+  3. Click "New Project" → "Deploy from GitHub Repo"
+  4. Seleccionar tu repositorio "semestral"
+  5. Railway detectara automaticamente el proyecto
+
+  6. En el servicio creado, ir a "Settings":
+     - Root Directory: backend
+     - Build Command: bun run build
+     - Start Command: bun run start
+
+  7. Ir a la pestana "Variables" y agregar estas variables:
+
+     --- BASE DE DATOS ---
+     MONGODB_URI=(pegar la URI de MongoDB Atlas)
+
+     --- CLERK ---
+     CLERK_SECRET_KEY=(pegar la Secret Key de Clerk)
+
+     --- STRIPE ---
+     STRIPE_SECRET_KEY=(pegar la Secret Key de Stripe)
+     STRIPE_WEBHOOK_SECRET=(pegar el webhook secret de Stripe)
+
+     --- CLOUDINARY ---
+     CLOUDINARY_CLOUD_NAME=(tu cloud name)
+     CLOUDINARY_API_KEY=(tu API key)
+     CLOUDINARY_API_SECRET=(tu API secret)
+
+     --- BREVO ---
+     BREVO_SMTP_HOST=smtp-relay.brevo.com
+     BREVO_SMTP_PORT=587
+     BREVO_SMTP_LOGIN=(tu email verificado en Brevo)
+     BREVO_SMTP_KEY=(tu API key de Brevo)
+     BREVO_FROM_EMAIL=Dolce Atelier <tu@email.com>
+
+     --- CONFIGURACION ---
+     NODE_ENV=production
+     PORT=3001
+     SKIP_AUTH=false
+     FRONTEND_URL=(dejalo temporalmente, lo actualizaremos despues)
+
+  8. Ir a "Settings" → "Networking" → "Generate Domain"
+  9. Copiar la URL generada (ej: https://dolce-atelier-backend.up.railway.app)
+
+  VERIFICAR:
+  - Abrir la URL en el navegador
+  - Deberia ver algo como: {"name":"Dolce Atelier API","status":"running"}
+
+================================================================================
+                      PASO 7: DESPLEGAR FRONTEND EN VERCEL
+================================================================================
+
+  1. Ir a https://vercel.com
+  2. Click "Add New..." → "Project"
+  3. Seleccionar tu repositorio "semestral"
+  4. Configurar:
+     - Framework: Next.js (auto-detectado)
+     - Root Directory: frontend
+     - Build Command: next build (auto-detectado)
+
+  5. Ir a "Environment Variables" y agregar estas variables:
+
+     --- CLERK ---
+     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=(pegar la Publishable Key de Clerk)
+     CLERK_SECRET_KEY=(pegar la Secret Key de Clerk)
+     NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+     NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+     NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
+     NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
+
+     --- STRIPE ---
+     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=(pegar la Publishable Key de Stripe)
+
+     --- BACKEND ---
+     NEXT_PUBLIC_API_URL=(pegar la URL de Railway)
+     BACKEND_URL=(pegar la URL de Railway)
+
+     --- CLOUDINARY ---
+     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=(tu cloud name)
+
+     --- BREVO ---
+     BREVO_API_KEY=(tu API key de Brevo)
+     BREVO_FROM_EMAIL=Dolce Atelier <tu@email.com>
+     BREVO_TO_EMAIL=destinatario@dominio.com
+
+  6. Click "Deploy"
+
+  7. Copiar la URL de Vercel (ej: https://dolce-atelier.vercel.app)
+
+================================================================================
+                      PASO 8: ACTUALIZAR FRONTEND_URL EN RAILWAY
+================================================================================
+
+  1. Volver a Railway
+  2. Ir a Variables
+  3. Actualizar FRONTEND_URL con la URL de Vercel:
+     FRONTEND_URL=https://dolce-atelier.vercel.app
+  4. Guardar (se redeployara automaticamente)
+
+================================================================================
+                      PASO 9: CONFIGURAR CLERK PARA PRODUCCION
+================================================================================
+
+  1. Volver a Clerk Dashboard
+  2. Ir a "Paths"
+  3. En "Allow list for redirect URLs", agregar:
+     - https://dolce-atelier.vercel.app/*
+  4. Guardar
+
+================================================================================
+                      VERIFICACION COMPLETA
+================================================================================
+
+  Abre https://dolce-atelier.vercel.app y verifica:
+
+  [ ] La pagina principal carga correctamente
+  [ ] Puedes ver el catalogo de pasteles
+  [ ] Puedes hacer login con Clerk
+  [ ] Puedes agregar pasteles al carrito
+  [ ] Puedes hacer un pedido de prueba
+  [ ] Stripe Checkout abre correctamente
+  [ ] Despues de pagar, el pedido aparece en la BD
+  [ ] El email de confirmacion se envia (revisa tu bandeja)
+  [ ] En /admin/pedidos puedes ver los pedidos
+  [ ] En /admin/recetas puedes cotizar recetas
+  [ ] El formulario de recetas permite subir imagenes
+
+  Tarjeta de prueba de Stripe: 4242 4242 4242 4242
+  (Cualquier fecha futura, cualquier CVC)
+
+================================================================================
+                      SOLUCION DE PROBLEMAS
+================================================================================
+
+  ERROR: "No autenticado"
+  → Verificar que CLERK_SECRET_KEY es correcta
+  → Verificar que el dominio de Vercel esta en Clerk
+
+  ERROR: Webhook de Stripe no funciona
+  → Verificar STRIPE_WEBHOOK_SECRET
+  → Verificar que el endpoint URL es correcto
+
+  ERROR: Cloudinary upload falla
+  → Verificar NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+  → Verificar que el upload preset "dolce_atelier_unsigned" existe
+
+  ERROR: MongoDB connection failed
+  → Verificar MONGODB_URI
+  → Verificar que Network Access permite 0.0.0.0/0
+
+  BACKEND NO INICIA EN RAILWAY
+  → Verificar logs en Railway Dashboard > Logs
+  → Verificar que todas las variables estan configuradas
+
+================================================================================
+                      COSTOS ESTIMADOS
+================================================================================
+
+  Todos estos servicios tienen plan GRATIS:
+
+  - Vercel Hobby: GRATIS
+  - Railway Free: $5/mes de credito
+  - MongoDB Atlas M0: GRATIS
+  - Clerk Free: 10,000 usuarios/mes
+  - Stripe: Sin costo fijo (2.9% + $0.30 por transaccion)
+  - Cloudinary Free: 25GB storage
+  - Brevo Free: 300 emails/dia
+
+  TOTAL ESTIMADO PARA MVP: $0-5/mes
+
+================================================================================
+                      COMANDOS UTILES
+================================================================================
+
+  Ver logs en Railway:
+    → Railway Dashboard → Logs
+
+  Ver logs en Vercel:
+    → Vercel Dashboard → Logs
+
+  Actualizar despues de cambios:
+    git push origin master
+    (Vercel y Railway despliegan automaticamente)
+
+  Forzar redeploy en Vercel:
+    → Vercel Dashboard → Deployments → "..." → Redeploy
+
+  Forzar redeploy en Railway:
+    → Railway Dashboard → Deploy
+
+================================================================================
