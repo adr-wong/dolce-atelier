@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { getApiUrl } from "@/lib/get-api-url";
 import styles from "./usuarios.module.css";
 
 type Usuario = {
@@ -13,8 +14,6 @@ type Usuario = {
   role: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
 export default function AdminUsuarios() {
   const { getToken } = useAuth();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -25,7 +24,7 @@ export default function AdminUsuarios() {
       const token = await getToken();
       if (!token) return;
       
-      const res = await fetch(`${API_URL}/api/admin/usuarios`, {
+      const res = await fetch(`${getApiUrl()}/api/admin/usuarios`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -43,7 +42,7 @@ export default function AdminUsuarios() {
     const token = await getToken();
     if (!token) return;
     
-    await fetch(`${API_URL}/api/admin/usuarios/${id}/rol`, {
+    await fetch(`${getApiUrl()}/api/admin/usuarios/${id}/rol`, {
       method: "PUT",
       headers: { 
         Authorization: `Bearer ${token}`,

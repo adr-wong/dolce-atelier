@@ -1,4 +1,6 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiUrl } from './get-api-url';
+
+const BASE_URL = getApiUrl();
 
 export interface DashboardStats {
   totalPedidos: number;

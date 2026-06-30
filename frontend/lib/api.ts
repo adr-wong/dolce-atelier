@@ -1,7 +1,7 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiUrl } from './get-api-url';
 
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_URL}${endpoint}`;
+  const url = `${getApiUrl()}${endpoint}`;
   const method = options?.method || 'GET';
   
   console.log(`[API Request] ${method} ${url}`, {

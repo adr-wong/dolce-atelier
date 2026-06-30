@@ -97,7 +97,7 @@
 .methodBtn {
   flex: 1;
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
   text-align: left;
   background: none;
@@ -126,7 +126,7 @@
 .summary {
   background: var(--gray-light);
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: 8px;
   height: fit-content;
 }
 

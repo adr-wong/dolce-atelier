@@ -5,14 +5,14 @@
 .filterSelect {
   margin-top: 1rem;
   padding: 0.5rem;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   background: var(--light);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -35,13 +35,13 @@
 
 .statusBadge {
   padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 8px;
   font-size: 0.8rem;
   color: #374151;
 }
 
 .statusSelect {
   padding: 0.5rem;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #ddd;
 }

@@ -30,7 +30,7 @@
 .form {
   background: white;
   padding: 2rem;
-  border-radius: 12px;
+  border-radius: 8px;
   width: 400px;
 }
 
@@ -102,7 +102,7 @@
   width: 100%;
   border-collapse: collapse;
   background: var(--light);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -129,7 +129,7 @@
 
 .statusBadge {
   padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 8px;
   font-size: 0.8rem;
 }
 

@@ -41,7 +41,7 @@ export default function TarjetaPastel({ pastel }: TarjetaPastelProps) {
               background: pastel.disponible ? '#e11d48' : '#ccc',
               color: '#fff',
               border: 'none',
-              borderRadius: '4px',
+              borderRadius: '8px',
               cursor: pastel.disponible ? 'pointer' : 'not-allowed'
             }}
           >
