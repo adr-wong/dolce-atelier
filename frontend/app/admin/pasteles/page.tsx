@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { toast } from "sonner";
 import { getPasteles, createPastel, updatePastel, deletePastel } from "@/lib/adminApi";
 import type { Pastel, PastelCreateInput } from "@/lib/adminApi";
+import { getApiUrl } from "@/lib/get-api-url";
 import styles from "./pasteles.module.css";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function AdminPasteles() {
   const { getToken } = useAuth();
@@ -51,7 +51,7 @@ export default function AdminPasteles() {
     try {
       const token = await getToken();
       
-      const res = await fetch(`${API_URL}/api/upload`, {
+      const res = await fetch(`${getApiUrl()}/api/upload`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: form,
@@ -72,11 +72,11 @@ export default function AdminPasteles() {
     e.preventDefault();
     
     if (!formData.nombre || formData.nombre.trim() === "") {
-      alert("El nombre es requerido");
+      toast.error("El nombre es requerido");
       return;
     }
     if (!formData.precio || formData.precio <= 0) {
-      alert("El precio debe ser mayor a 0");
+      toast.error("El precio debe ser mayor a 0");
       return;
     }
     
@@ -89,9 +89,10 @@ export default function AdminPasteles() {
       setPasteles([...pasteles, nuevo]);
       setShowModal(false);
       setFormData({ nombre: "", descripcion: "", precio: 0, categoria: "general", imagen: "" });
+      toast.success("Pastel creado exitosamente");
     } catch (error) {
       console.error("Error creating pastel:", error);
-      alert("Error al crear pastel: " + error);
+      toast.error("Error al crear pastel");
     }
   };
 
@@ -110,11 +111,11 @@ export default function AdminPasteles() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nombre || formData.nombre.trim() === "") {
-      alert("El nombre es requerido");
+      toast.error("El nombre es requerido");
       return;
     }
     if (!formData.precio || formData.precio <= 0) {
-      alert("El precio debe ser mayor a 0");
+      toast.error("El precio debe ser mayor a 0");
       return;
     }
     if (!editingPastel?._id) return;
@@ -125,9 +126,10 @@ export default function AdminPasteles() {
       const actualizado = await updatePastel(token, editingPastel._id, formData);
       setPasteles(pasteles.map(p => p._id === editingPastel._id ? actualizado : p));
       closeModal();
+      toast.success("Pastel actualizado exitosamente");
     } catch (error) {
       console.error("Error updating pastel:", error);
-      alert("Error al actualizar pastel: " + error);
+      toast.error("Error al actualizar pastel");
     }
   };
 
@@ -144,8 +146,10 @@ export default function AdminPasteles() {
       if (!token) return;
       await deletePastel(token, id);
       setPasteles(pasteles.filter(p => p._id !== id));
+      toast.success("Pastel eliminado exitosamente");
     } catch (error) {
       console.error("Error deleting pastel:", error);
+      toast.error("Error al eliminar pastel");
     }
   };
 
