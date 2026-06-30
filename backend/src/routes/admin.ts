@@ -90,6 +90,7 @@ export const adminRoutes = new Elysia({ prefix: '/api/admin' })
       .get('/recetas', listRecetas)
       .post('/recetas', createReceta, {
         body: t.Object({
+          clerkUserId: t.Optional(t.String()),
           nota: t.String(),
           personas: t.Optional(t.Number()),
           archivoUrl: t.Optional(t.String())
