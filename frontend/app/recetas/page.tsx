@@ -1,41 +1,31 @@
 'use client';
 
 import Link from 'next/link';
+import RecetaForm from '@/components/RecetaForm';
 import styles from './recetas.module.css';
 
 export default function RecetasPage() {
   return (
     <main className={styles.container}>
       <div className={styles.content}>
-        <h1 className={styles.title}>Próximamente</h1>
-        <h2 className={styles.subtitle}>Recetas Personalizadas</h2>
+        <h1 className={styles.title}>Recetas Personalizadas</h1>
+        <h2 className={styles.subtitle}>Cuéntanos tu idea y la haremos realidad</h2>
         
         <p className={styles.text}>
-          Estamos trabajando en una nueva experiencia para que puedas enviar nos tus 
-          recetas personalizadas y convertir tus ideas en realidad.
+          Completa el formulario a continuación con los detalles de tu pastel personalizado.
+          Nuestro equipo te enviará una cotización en menos de 24 horas.
         </p>
         
-        <p className={styles.text}>
-          <span className={styles.textHighlight}>
-            ¡Te esperamos con ilusión para recibir tus solicitudes!
-          </span>
-        </p>
+        <RecetaForm />
         
-        <p className={styles.text}>
-          Mientras tanto, puedes explorar nuestro{' '}
-          <Link href="/catalogo" className={styles.link}>
-            catálogo de pasteles
-          </Link>
-          {' '}o ver tus{' '}
-          <Link href="/pedidos" className={styles.link}>
-            pedidos anteriores
-          </Link>
-          .
-        </p>
-        
-        <Link href="/catalogo" className={styles.button}>
-          Ver Catálogo
-        </Link>
+        <div className={styles.links}>
+          <p className={styles.text}>
+            También puedes explorar nuestro{' '}
+            <Link href="/catalogo" className={styles.link}>
+              catálogo de pasteles
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );
