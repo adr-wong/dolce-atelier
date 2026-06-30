@@ -11,7 +11,7 @@ ESTADO GENERAL DEL PROYECTO
  Implementadas (MVP):   40 (HU-001 a HU-040) - COMPLETADAS
  Production-Ready:      40 (HU-041 a HU-080)
 
- HU Completadas hasta la fecha: 47 / 80
+ HU Completadas hasta la fecha: 53 / 80
 
 ================================================================================
 FASE 1: HU CRITICAS (Seguridad y Pagos) - COMPLETADAS
@@ -74,15 +74,50 @@ FASE 1: HU CRITICAS (Seguridad y Pagos) - COMPLETADAS
               Registra en audit log.
 
 ================================================================================
-FASE 2: HU ALTA (Observabilidad, Errores, Testing, CI/CD) - EN PROGRESO
+FASE 2: HU ALTA (Observabilidad, Errores, Testing, CI/CD) - COMPLETADAS
 ================================================================================
 
- [ ] HU-050: Logging estructurado
- [ ] HU-054: Health checks profundos
- [ ] HU-055: Error Boundaries React
- [ ] HU-056: Manejo errores global backend
- [ ] HU-058: Tests unitarios Vitest
- [ ] HU-063: CI/CD GitHub Actions
+ [x] HU-050: Logging estructurado
+     Commit: 411a11f9
+     Cambio: Logger JSON estructurado con niveles (info, warn, error, debug)
+     Archivos: backend/src/lib/logger.ts (CREADO)
+               backend/src/server.ts (MOD - reemplaza console.log)
+     Detalle: En produccion output JSON, en development formato legible.
+              Incluye timestamp, level, message y metadata.
+
+ [x] HU-054: Health checks profundos
+     Commit: 411a11f9 (incluido en HU-050)
+     Cambio: Endpoint /health verifica estado de MongoDB y memoria
+     Archivos: backend/src/server.ts (MOD)
+     Detalle: Retorna status (ok/degraded), database state, uptime,
+              memory (rss, heapUsed, heapTotal en MB).
+
+ [x] HU-055: Error Boundaries React
+     Commit: 6c399854
+     Cambio: Componente ErrorBoundary que captura errores de render
+     Archivos: frontend/components/ErrorBoundary.tsx (CREADO)
+               frontend/app/layout.tsx (MOD - envuelve children)
+     Detalle: Muestra UI de fallback con boton de recargar pagina.
+
+ [x] HU-056: Manejo errores global backend
+     Commit: 411a11f9 (incluido en HU-050)
+     Cambio: ErrorHandler mejorado con manejo especifico por tipo
+     Archivos: backend/src/server.ts (MOD)
+     Detalle: Distingue NOT_FOUND (404), validation (400), otros (500).
+              Agrega unhandledRejection y uncaughtException handlers.
+
+ [x] HU-058: Tests unitarios
+     Commit: 3c5f517a
+     Cambio: Tests para rate limiter, webhook dedup, audit log, logger
+     Archivos: backend/src/__tests__/security.test.ts (CREADO)
+     Detalle: 7 nuevos tests (total: 12 backend, 5 frontend = 17)
+
+ [x] HU-063: CI/CD GitHub Actions
+     Commit: 76eb7a0a
+     Cambio: Workflow CI que ejecuta tests del backend y build del frontend
+     Archivos: .github/workflows/ci.yml (CREADO)
+     Detalle: Triggers en push/PR a master/main. Bun para backend,
+              Node.js para frontend.
 
 ================================================================================
 FASE 3: HU NORMAL (RBAC, Rate Limiting, Backups, Accesibilidad, i18n) - PENDIENTE
@@ -133,6 +168,10 @@ ARCHIVOS CREADOS EN ESTA SESION
  backend/src/models/AuditLog.ts          - Modelo para auditoria de accesos
  backend/src/services/auditLog.ts        - Servicio de logging de auditoria
  backend/src/routes/reembolsos.ts        - Ruta de reembolsos Stripe
+ backend/src/lib/logger.ts               - Logger JSON estructurado
+ backend/src/__tests__/security.test.ts  - Tests de seguridad
+ frontend/components/ErrorBoundary.tsx    - Error Boundary React
+ .github/workflows/ci.yml               - GitHub Actions CI
  backend/.env.example                    - Template de variables de entorno
  DESPLIEGUE.txt                          - Guia de despliegue en produccion
  AVANCES.txt                             - Este archivo
