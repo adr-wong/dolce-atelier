@@ -1,9 +1,10 @@
 import 'dotenv/config';
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
-import { connectDB } from './lib/db';
+import { connectDB, mongoose } from './lib/db';
 import { Pastel } from './models';
 import { rateLimit } from './middleware/rateLimit';
+import { logger } from './lib/logger';
 import {
   pastelRoutes,
   pedidoRoutes,
@@ -142,14 +143,14 @@ async function autoSeed() {
   try {
     const count = await Pastel.countDocuments();
     if (count === 0) {
-      console.log('🌱 Base de datos vacía, ejecutando seed automático...');
+      logger.info('Database empty, running auto-seed');
       await Pastel.insertMany(PASTELES_DATA);
-      console.log(`✅ Seed completado: ${PASTELES_DATA.length} pasteles insertados`);
+      logger.info('Seed completed', { count: PASTELES_DATA.length });
     } else {
-      console.log(`ℹ️ Base de datos tiene ${count} pasteles, seed omitido`);
+      logger.info('Database has pasteles, seed skipped', { count });
     }
   } catch (error) {
-    console.error('❌ Error en auto-seed:', error);
+    logger.error('Auto-seed failed', { error: error instanceof Error ? error.message : String(error) });
   }
 }
 
@@ -161,19 +162,48 @@ export const app = new Elysia()
   .use(rateLimit({ windowMs: 60_000, max: 100 }))
   .onRequest(({ request }) => {
     const url = new URL(request.url);
-    console.log(`[BACKEND REQUEST] ${request.method} ${url.pathname}${url.search}`, {
-      timestamp: new Date().toISOString(),
-      hasAuthHeader: !!request.headers.get('authorization'),
-      contentType: request.headers.get('content-type'),
+    logger.info('Request received', {
+      method: request.method,
+      path: url.pathname,
+      hasAuth: !!request.headers.get('authorization'),
       origin: request.headers.get('origin'),
     });
   })
   .onError(({ code, error, set }) => {
-    console.error('[BACKEND ERROR]', { code, error: error.message });
-    set.status = code === 'NOT_FOUND' ? 404 : 500;
-    return { error: error.message || 'Internal Server Error' };
+    logger.error('Request error', {
+      code,
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+    });
+
+    if (code === 'NOT_FOUND') {
+      set.status = 404;
+      return { error: 'Recurso no encontrado' };
+    }
+
+    if (error.message?.includes('validation')) {
+      set.status = 400;
+      return { error: 'Datos de entrada invalidos', details: error.message };
+    }
+
+    set.status = 500;
+    return { error: 'Error interno del servidor' };
   })
-  .get('/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
+  .get('/health', async () => {
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    const memUsage = process.memoryUsage();
+    return {
+      status: dbStatus === 'connected' ? 'ok' : 'degraded',
+      timestamp: new Date().toISOString(),
+      database: dbStatus,
+      uptime: Math.floor(process.uptime()),
+      memory: {
+        rss: Math.round(memUsage.rss / 1024 / 1024),
+        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024),
+        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+      },
+    };
+  })
   .use(pastelRoutes)
   .use(pedidoRoutes)
   .use(recetaRoutes)
@@ -186,18 +216,27 @@ export const app = new Elysia()
 const PORT = parseInt(process.env.PORT || '3001');
 
 if (process.env.NODE_ENV !== 'test') {
+  process.on('unhandledRejection', (reason) => {
+    logger.error('Unhandled rejection', { reason: String(reason) });
+  });
+
+  process.on('uncaughtException', (error) => {
+    logger.error('Uncaught exception', { message: error.message, stack: error.stack });
+    process.exit(1);
+  });
+
   async function start() {
     try {
       await connectDB();
-      console.log('✅ Base de datos conectada');
+      logger.info('Database connected');
       
       await autoSeed();
 
       app.listen(PORT, () => {
-        console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+        logger.info('Server started', { port: PORT });
       });
     } catch (error) {
-      console.error('❌ Error al iniciar:', error);
+      logger.error('Server startup failed', { error: error instanceof Error ? error.message : String(error) });
       process.exit(1);
     }
   }
