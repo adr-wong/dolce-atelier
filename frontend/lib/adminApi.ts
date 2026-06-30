@@ -6,6 +6,7 @@ export interface DashboardStats {
   totalPedidos: number;
   totalRecetas: number;
   totalPasteles: number;
+  ingresosMes: number;
   recentPedidos: unknown[];
 }
 
@@ -85,7 +86,7 @@ function getHeaders(token: string) {
 }
 
 async function getDashboardStats(token: string): Promise<DashboardStats> {
-  const response = await fetch(`${BASE_URL}/api/admin/dashboard`, {
+  const response = await fetch(`${BASE_URL}/api/admin/stats`, {
     credentials: 'include',
     headers: getHeaders(token),
   });
@@ -94,7 +95,14 @@ async function getDashboardStats(token: string): Promise<DashboardStats> {
     throw new Error('Request failed');
   }
 
-  return response.json();
+  const data = await response.json();
+  return {
+    totalPedidos: data.stats.pedidosHoy,
+    totalRecetas: data.stats.recetasPendientes,
+    totalPasteles: data.stats.productos,
+    ingresosMes: data.stats.ingresosMes,
+    recentPedidos: [],
+  };
 }
 
 interface PastelesResponse {

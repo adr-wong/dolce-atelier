@@ -37,7 +37,7 @@ export default function AdminDashboard() {
     { label: "Pedidos Hoy", value: stats.totalPedidos, color: "#3b82f6" },
     { label: "Recetas Pendientes", value: stats.totalRecetas, color: "#f59e0b" },
     { label: "Productos", value: stats.totalPasteles, color: "#10b981" },
-    { label: "Pedidos Recientes", value: stats.recentPedidos.length, color: "#8b5cf6" },
+    { label: "Ingresos del Mes", value: `$${stats.ingresosMes.toFixed(2)}`, color: "#8b5cf6" },
   ];
 
   return (
