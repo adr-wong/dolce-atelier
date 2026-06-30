@@ -51,6 +51,9 @@ export default function Header() {
           <Link href="/pedidos" className={styles.link} onClick={closeMenu}>
             Mis Pedidos
           </Link>
+          <Link href="/recetas/mis" className={styles.link} onClick={closeMenu}>
+            Mis Recetas
+          </Link>
         </SignedIn>
         {isAdmin && (
           <Link href="/admin" className={styles.adminLink} onClick={closeMenu}>
