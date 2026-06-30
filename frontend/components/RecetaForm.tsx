@@ -46,7 +46,7 @@ export default function RecetaForm() {
       formDataUpload.append('folder', 'recetas');
 
       const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dvu9umazh'}/image/upload`,
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
         {
           method: 'POST',
           body: formDataUpload,
