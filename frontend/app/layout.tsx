@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
+import { Toaster } from 'sonner';
 import Header from '@/components/Header';
 import './globals.css';
 
@@ -23,6 +24,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="es">
         <body>
+          <Toaster richColors position="top-right" />
           <Header />
           {children}
         </body>
