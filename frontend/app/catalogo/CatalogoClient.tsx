@@ -1,21 +1,14 @@
-import type { Metadata } from 'next';
-import CatalogoClient from './CatalogoClient';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Catálogo de Pasteles | Dolce Atelier',
-  description: 'Explora nuestro catálogo de pasteles artesanales. Chocolate, vainilla, frutas y más. Pasteles personalizados para tus celebraciones.',
-  openGraph: {
-    title: 'Catálogo de Pasteles | Dolce Atelier',
-    description: 'Explora nuestro catálogo de pasteles artesanales.',
-    type: 'website',
-  },
-};
+import Link from 'next/link';
+import Image from 'next/image';
+import { useEffect, useState, useTransition } from 'react';
+import { useCarritoStore } from '@/store/carrito';
+import { useSearchParams, useRouter } from 'next/navigation';
+import type { Pastel } from '@/lib/types';
+import styles from './catalogo.module.css';
 
-const CATEGORIAS = ['todos', 'chocolate', 'vainilla', 'frutas', 'especial'];
-
-export default function CatalogoPage() {
-  return <CatalogoClient />;
-}
+import { getApiUrl } from '@/lib/get-api-url';
 
 const CATEGORIAS = ['todos', 'chocolate', 'vainilla', 'frutas', 'especial'];
 
@@ -26,7 +19,7 @@ interface CatalogoDatos {
   totalPages: number;
 }
 
-export default function CatalogoPage() {
+export default function CatalogoClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const categoria = searchParams.get('categoria') || 'todos';
@@ -81,6 +74,10 @@ export default function CatalogoPage() {
     >
       <div className={styles.header}>
         <h1 className={styles.title}>Nuestro Catálogo</h1>
+        <Link href="/carrito" className={styles.cartLink}>
+          🛒 Carrito
+          {totalItems > 0 && <span className={styles.cartBadge}>{totalItems}</span>}
+        </Link>
       </div>
 
       <div className={styles.tabsContainer}>
@@ -152,40 +149,6 @@ export default function CatalogoPage() {
           })}
         </div>
       )}
-
-      <Link href="/carrito" style={{
-        position: 'fixed',
-        bottom: '2rem',
-        right: '2rem',
-        zIndex: 999,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.75rem 1.5rem',
-        background: '#E11D48',
-        color: '#fff',
-        borderRadius: '8px',
-        textDecoration: 'none',
-        fontWeight: 500,
-        boxShadow: '0 4px 20px rgba(225, 29, 72, 0.4)',
-      }}>
-        🛒 Carrito
-        {totalItems > 0 && <span style={{
-          position: 'absolute',
-          top: -8,
-          right: -8,
-          background: '#fff',
-          color: '#E11D48',
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          width: 20,
-          height: 20,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>{totalItems}</span>}
-      </Link>
     </main>
   );
 }
