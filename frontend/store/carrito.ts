@@ -9,6 +9,7 @@ interface CarritoState {
   actualizarCantidad: (pastelId: string, cantidad: number) => void;
   limpiar: () => void;
   total: () => number;
+  mergeCarrito: (itemsExteriores: CarritoItem[]) => void;
 }
 
 export const useCarritoStore = create<CarritoState>()(
@@ -46,6 +47,23 @@ export const useCarritoStore = create<CarritoState>()(
       },
       limpiar: () => set({ items: [] }),
       total: () => get().items.reduce((sum, i) => sum + i.pastel.precio * i.cantidad, 0),
+      mergeCarrito: (itemsExteriores) => {
+        const itemsActuales = get().items;
+        const itemsMergeados = [...itemsActuales];
+        
+        itemsExteriores.forEach(itemExterno => {
+          const existente = itemsMergeados.find(
+            i => i.pastel._id === itemExterno.pastel._id
+          );
+          if (existente) {
+            existente.cantidad += itemExterno.cantidad;
+          } else {
+            itemsMergeados.push(itemExterno);
+          }
+        });
+        
+        set({ items: itemsMergeados });
+      },
     }),
     { name: 'dolce-carrito' }
   )
