@@ -1,0 +1,149 @@
+================================================================================
+                    DOLCE ATELIER - AVANCES DE IMPLEMENTACION
+================================================================================
+ Ultima actualizacion: 30 de junio de 2026
+
+================================================================================
+ESTADO GENERAL DEL PROYECTO
+================================================================================
+
+ Total HU documentadas: 80
+ Implementadas (MVP):   40 (HU-001 a HU-040) - COMPLETADAS
+ Production-Ready:      40 (HU-041 a HU-080)
+
+ HU Completadas hasta la fecha: 47 / 80
+
+================================================================================
+FASE 1: HU CRITICAS (Seguridad y Pagos) - COMPLETADAS
+================================================================================
+
+ [x] HU-049: PCI DSS SAQ-A
+     Estado: Ya cumple via Stripe Checkout redirect
+     Detalle: Los datos de tarjeta nunca tocan el servidor.
+              Stripe maneja PCI DSS nivel 1.
+     Archivos: Ninguno (documentacion)
+
+ [x] HU-047: Reintentos webhook Stripe
+     Commit: 8006d1fb
+     Cambio: Email de factura enviado fire-and-forget (sin await)
+     Archivos: backend/src/routes/webhook.ts
+     Detalle: Stripe reintenta automaticamente hasta 3 dias.
+              Ahora el handler retorna 200 inmediatamente.
+
+ [x] HU-043: CSP Headers
+     Commit: cff2b265
+     Cambio: Agregados Content-Security-Policy, X-Frame-Options,
+             X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+     Archivos: frontend/next.config.js
+     Nota: Se usa 'unsafe-inline' por Clerk SDK (limitacion conocida)
+
+ [x] HU-041: Rate Limiting API
+     Commit: 89aed7e8
+     Cambio: Middleware in-memory basado en IP
+     Archivos: backend/src/middleware/rateLimit.ts (CREADO)
+               backend/src/server.ts (MODIFICADO)
+     Config: 100 req/min global, cleanup cada 5 min
+     Limitacion: Resetea en restart del servidor, single-instance
+
+ [x] HU-046: Idempotencia Webhooks
+     Commit: fbaf5e3c
+     Cambio: Deduplicacion de eventos Stripe via MongoDB
+     Archivos: backend/src/models/WebhookEvent.ts (CREADO)
+               backend/src/routes/webhook.ts (MODIFICADO)
+     Detalle: Verifica stripeEventId unico antes de procesar.
+              TTL automatico de 72 horas.
+
+ [x] HU-044: Auditoria de Accesos
+     Commit: f48a4482
+     Cambio: Logging de acciones admin y webhooks en MongoDB
+     Archivos: backend/src/models/AuditLog.ts (CREADO)
+               backend/src/services/auditLog.ts (CREADO)
+               backend/src/controllers/admin/pedidoController.ts (MOD)
+               backend/src/routes/webhook.ts (MOD)
+     Detalle: TTL de 90 dias, fire-and-forget (no bloquea respuesta)
+     Acciones loggeadas: ADMIN_UPDATE_PEDIDO_STATUS, WEBHOOK_CHECKOUT_COMPLETED
+
+ [x] HU-048: Reembolsos Stripe
+     Commit: 9582424a
+     Cambio: Endpoint POST /api/reembolsos (admin-only)
+     Archivos: backend/src/services/stripe.ts (MOD - funcion reembolsarPago)
+               backend/src/routes/reembolsos.ts (CREADO)
+               backend/src/routes/index.ts (MOD)
+               backend/src/server.ts (MOD)
+     Detalle: Funciona en test mode (sk_test_). Valida pedido PAGADO.
+              Registra en audit log.
+
+================================================================================
+FASE 2: HU ALTA (Observabilidad, Errores, Testing, CI/CD) - EN PROGRESO
+================================================================================
+
+ [ ] HU-050: Logging estructurado
+ [ ] HU-054: Health checks profundos
+ [ ] HU-055: Error Boundaries React
+ [ ] HU-056: Manejo errores global backend
+ [ ] HU-058: Tests unitarios Vitest
+ [ ] HU-063: CI/CD GitHub Actions
+
+================================================================================
+FASE 3: HU NORMAL (RBAC, Rate Limiting, Backups, Accesibilidad, i18n) - PENDIENTE
+================================================================================
+
+ [ ] HU-067 a HU-070: RBAC/Permisos
+ [ ] HU-071 a HU-072: Rate Limiting avanzado
+ [ ] HU-073 a HU-075: Backups/DR
+ [ ] HU-076 a HU-078: Accesibilidad
+ [ ] HU-079 a HU-080: i18n
+
+================================================================================
+ERRORES ENCONTRADOS Y CORREGIDOS
+================================================================================
+
+ 1. Build backend falla con bun build
+    Error: "Browser build cannot require() Node.js builtin: dns"
+    Fix: Agregar --target bun al script de build en package.json
+    Commit: cf85a2f3
+
+ 2. Cloudinary cloud name mismatch
+    Error: Frontend usaba 'dvu9umazh' (hardcoded), backend usa 'daffoedqf'
+    Fix: Agregar NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME a .env.local
+         y remover fallback incorrecto en RecetaForm.tsx
+    Commit: a3af4c01
+
+ 3. Auth middleware duplicado en recetas.ts
+    Error: authMiddleware se ejecutaba 2 veces (guard + handler manual)
+    Fix: Refactorizar a patron .resolve() como pedidos.ts
+    Commit: 25bb7715
+
+ 4. .env files commiteados al repositorio
+    Error: Credenciales reales en backend/.env y frontend/.env.local
+    Fix: git rm --cached + crear .env.example templates
+    Commit: d9481b91
+
+ 5. SKIP_AUTH=true en produccion
+    Error: Autenticacion completamente desactivada
+    Fix: Cambiar a SKIP_AUTH=false en .env local
+    Nota: En produccion, configurar como variable de entorno en Railway
+
+================================================================================
+ARCHIVOS CREADOS EN ESTA SESION
+================================================================================
+
+ backend/src/middleware/rateLimit.ts     - Rate limiting in-memory
+ backend/src/models/WebhookEvent.ts      - Modelo para idempotencia webhooks
+ backend/src/models/AuditLog.ts          - Modelo para auditoria de accesos
+ backend/src/services/auditLog.ts        - Servicio de logging de auditoria
+ backend/src/routes/reembolsos.ts        - Ruta de reembolsos Stripe
+ backend/.env.example                    - Template de variables de entorno
+ DESPLIEGUE.txt                          - Guia de despliegue en produccion
+ AVANCES.txt                             - Este archivo
+
+================================================================================
+COMANDOS UTILES
+================================================================================
+
+ Build backend:    cd backend && bun run build
+ Build frontend:   cd frontend && npx next build
+ Test backend:     cd backend && bun test
+ Test frontend:    cd frontend && npm test
+ Dev backend:      cd backend && bun run dev
+ Dev frontend:     cd frontend && npm run dev
