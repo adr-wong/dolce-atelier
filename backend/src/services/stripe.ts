@@ -115,3 +115,23 @@ export async function crearSesionReceta(params: {
 
   return session;
 }
+
+export async function reembolsarPago(params: {
+  stripeSessionId: string;
+  amount?: number;
+  reason?: 'duplicate' | 'fraudulent' | 'requested_by_customer';
+}) {
+  const session = await stripe.checkout.sessions.retrieve(params.stripeSessionId);
+
+  if (!session.payment_intent) {
+    throw new Error('No hay pago asociado a esta sesion');
+  }
+
+  const refund = await stripe.refunds.create({
+    payment_intent: session.payment_intent as string,
+    amount: params.amount,
+    reason: params.reason || 'requested_by_customer',
+  });
+
+  return refund;
+}
