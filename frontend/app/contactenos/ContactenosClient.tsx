@@ -1,19 +1,12 @@
-import type { Metadata } from 'next';
-import ContactenosClient from './ContactenosClient';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Contáctenos | Dolce Atelier',
-  description: 'Contáctanos para pedidos personalizados, consultas o cualquier información. Estamos en Calle 50, Paitilla, Ciudad de Panamá.',
-  openGraph: {
-    title: 'Contáctenos | Dolce Atelier',
-    description: 'Contáctanos para pedidos personalizados o consultas.',
-    type: 'website',
-  },
-};
+import Link from 'next/link';
+import Image from 'next/image';
+import { useState } from 'react';
+import { toast, Toaster } from 'sonner';
+import styles from './contactenos.module.css';
 
-export default function Contactenos() {
-  return <ContactenosClient />;
-}
+export default function ContactenosClient() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',

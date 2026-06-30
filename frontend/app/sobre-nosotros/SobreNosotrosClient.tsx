@@ -1,19 +1,10 @@
-import type { Metadata } from 'next';
-import SobreNosotrosClient from './SobreNosotrosClient';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Sobre Nosotros | Dolce Atelier',
-  description: 'Conoce la historia de Dolce Atelier. Pasteles artesanales elaborados con amor, ingredientes premium y la más alta calidad desde 2020.',
-  openGraph: {
-    title: 'Sobre Nosotros | Dolce Atelier',
-    description: 'Conoce la historia de Dolce Atelier.',
-    type: 'website',
-  },
-};
+import Link from 'next/link';
+import Image from 'next/image';
+import styles from './sobre-nosotros.module.css';
 
-export default function SobreNosotros() {
-  return <SobreNosotrosClient />;
-}
+export default function SobreNosotrosClient() {
   return (
     <main>
       <section className={styles.heroSection}>
