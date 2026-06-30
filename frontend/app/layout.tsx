@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from 'sonner';
 import Header from '@/components/Header';
+import { CartMergeProvider } from '@/components/CartMergeProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -24,9 +25,11 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="es">
         <body>
-          <Toaster richColors position="top-right" />
-          <Header />
-          {children}
+          <CartMergeProvider>
+            <Toaster richColors position="top-right" />
+            <Header />
+            {children}
+          </CartMergeProvider>
         </body>
       </html>
     </ClerkProvider>
