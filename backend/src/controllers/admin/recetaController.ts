@@ -16,11 +16,12 @@ export async function listRecetas(context: ElysiaContext) {
 
 export async function createReceta(context: ElysiaContext) {
   const { set, body } = context;
-  const recetaData = body as { nota?: string; personas?: number };
+  const recetaData = body as { clerkUserId?: string; nota?: string; personas?: number; archivoUrl?: string };
   const nuevo = {
-    clerkUserId: '',
+    clerkUserId: recetaData.clerkUserId || '',
     nota: recetaData.nota || '',
     personas: recetaData.personas || 0,
+    archivoUrl: recetaData.archivoUrl || '',
     estado: 'PENDIENTE',
   };
   const receta = await Receta.create(nuevo);
