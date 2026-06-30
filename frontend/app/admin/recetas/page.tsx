@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { getRecetas, updateReceta } from "@/lib/adminApi";
 import type { Receta } from "@/lib/adminApi";
+import CotizarModal from "./cotizar-modal";
 import styles from "./recetas.module.css";
 
 export default function AdminRecetas() {
   const { getToken } = useAuth();
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedReceta, setSelectedReceta] = useState<Receta | null>(null);
 
   useEffect(() => {
     async function loadRecetas() {
@@ -36,6 +39,16 @@ export default function AdminRecetas() {
     } catch (error) {
       console.error("Error cotizando:", error);
     }
+  };
+
+  const openModal = (receta: Receta) => {
+    setSelectedReceta(receta);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedReceta(null);
+    setModalOpen(false);
   };
 
   const estadoColors: Record<string, string> = {
@@ -87,10 +100,7 @@ export default function AdminRecetas() {
               <td className={styles.td}>
                 <button
                   className={styles.cotizarBtn}
-                  onClick={() => {
-                    const precio = prompt("Ingrese cotización:");
-                    if (precio) handleCotizar(receta._id, parseFloat(precio));
-                  }}
+                  onClick={() => openModal(receta)}
                 >
                   Cotizar
                 </button>
@@ -99,6 +109,16 @@ export default function AdminRecetas() {
           ))}
         </tbody>
       </table>
+
+      {selectedReceta && (
+        <CotizarModal
+          isOpen={modalOpen}
+          onClose={closeModal}
+          onConfirm={(cotizacion) => handleCotizar(selectedReceta._id, cotizacion)}
+          recetaId={selectedReceta._id}
+          recetaNota={selectedReceta.nota || ''}
+        />
+      )}
     </div>
   );
 }
