@@ -2,11 +2,13 @@ import { Pedido } from '../../models';
 import type { IPedido } from '../../models/Pedido';
 
 const allowedTransitions: Record<IPedido['estado'], IPedido['estado'][]> = {
-  PENDIENTE: ['CONFIRMADO', 'CANCELADO'],
-  CONFIRMADO: ['ENTREGADO', 'CANCELADO'],
+  PENDIENTE: ['PAGADO', 'CANCELADO'],
+  PAGADO: ['PREPARANDO', 'CANCELADO'],
+  PREPARANDO: ['LISTO', 'CANCELADO'],
+  LISTO: ['EN_CAMINO', 'CANCELADO'],
+  EN_CAMINO: ['ENTREGADO', 'CANCELADO'],
   ENTREGADO: [],
   CANCELADO: [],
-  PAGADO: ['CONFIRMADO', 'CANCELADO'],
 };
 
 type PedidoControllerContext = {
