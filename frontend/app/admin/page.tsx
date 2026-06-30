@@ -11,6 +11,7 @@ export default function AdminDashboard() {
     totalPedidos: 0,
     totalRecetas: 0,
     totalPasteles: 0,
+    ingresosMes: 0,
     recentPedidos: [],
   });
   const [loading, setLoading] = useState(true);
