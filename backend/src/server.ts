@@ -3,6 +3,7 @@ import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { connectDB } from './lib/db';
 import { Pastel } from './models';
+import { rateLimit } from './middleware/rateLimit';
 import {
   pastelRoutes,
   pedidoRoutes,
@@ -11,6 +12,7 @@ import {
   adminRoutes,
   uploadRoutes,
   usuarioRoutes,
+  reembolsoRoutes,
 } from './routes';
 
 const PASTELES_DATA = [
@@ -156,6 +158,7 @@ export const app = new Elysia()
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
   }))
+  .use(rateLimit({ windowMs: 60_000, max: 100 }))
   .onRequest(({ request }) => {
     const url = new URL(request.url);
     console.log(`[BACKEND REQUEST] ${request.method} ${url.pathname}${url.search}`, {
@@ -177,7 +180,8 @@ export const app = new Elysia()
   .use(webhookRoutes)
   .use(adminRoutes)
   .use(uploadRoutes)
-  .use(usuarioRoutes);
+  .use(usuarioRoutes)
+  .use(reembolsoRoutes);
 
 const PORT = parseInt(process.env.PORT || '3001');
 
