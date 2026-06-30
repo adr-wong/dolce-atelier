@@ -1,6 +1,18 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from './home.module.css';
+
+export const metadata: Metadata = {
+  title: 'Dolce Atelier | Pasteles Artesanales Personalizados',
+  description: 'Pasteles artesanales elaborados con amor y los mejores ingredientes. Chocolate belga, vainilla natural, frutas frescas. Personaliza tu pastel ideal.',
+  openGraph: {
+    title: 'Dolce Atelier | Pasteles Artesanales Personalizados',
+    description: 'Pasteles artesanales elaborados con amor y los mejores ingredientes.',
+    type: 'website',
+    locale: 'es_MX',
+  },
+};
 
 const categorias = [
   { nombre: 'Chocolate', imagen: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop' },

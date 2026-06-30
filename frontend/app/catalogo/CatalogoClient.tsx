@@ -1,21 +1,14 @@
-import type { Metadata } from 'next';
-import CatalogoClient from './CatalogoClient';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Catálogo de Pasteles | Dolce Atelier',
-  description: 'Explora nuestro catálogo de pasteles artesanales. Chocolate, vainilla, frutas y más. Pasteles personalizados para tus celebraciones.',
-  openGraph: {
-    title: 'Catálogo de Pasteles | Dolce Atelier',
-    description: 'Explora nuestro catálogo de pasteles artesanales.',
-    type: 'website',
-  },
-};
+import Link from 'next/link';
+import Image from 'next/image';
+import { useEffect, useState, useTransition } from 'react';
+import { useCarritoStore } from '@/store/carrito';
+import { useSearchParams, useRouter } from 'next/navigation';
+import type { Pastel } from '@/lib/types';
+import styles from './catalogo.module.css';
 
-const CATEGORIAS = ['todos', 'chocolate', 'vainilla', 'frutas', 'especial'];
-
-export default function CatalogoPage() {
-  return <CatalogoClient />;
-}
+import { getApiUrl } from '@/lib/get-api-url';
 
 const CATEGORIAS = ['todos', 'chocolate', 'vainilla', 'frutas', 'especial'];
 
@@ -26,7 +19,7 @@ interface CatalogoDatos {
   totalPages: number;
 }
 
-export default function CatalogoPage() {
+export default function CatalogoClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const categoria = searchParams.get('categoria') || 'todos';
