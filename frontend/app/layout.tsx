@@ -3,6 +3,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from 'sonner';
 import Header from '@/components/Header';
 import { CartMergeProvider } from '@/components/CartMergeProvider';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -26,9 +27,11 @@ export default function RootLayout({
       <html lang="es">
         <body>
           <CartMergeProvider>
-            <Toaster richColors position="top-right" />
-            <Header />
-            {children}
+            <ErrorBoundary>
+              <Toaster richColors position="top-right" />
+              <Header />
+              {children}
+            </ErrorBoundary>
           </CartMergeProvider>
         </body>
       </html>
