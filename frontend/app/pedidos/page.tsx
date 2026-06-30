@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useAuth } from '@clerk/nextjs';
 import styles from './pedidos.module.css';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiUrl } from '@/lib/get-api-url';
 
 interface ItemPedido {
   pastelId: string;
@@ -49,7 +49,7 @@ export default function PedidosPage() {
       try {
         const params = filtroEstado ? `?estado=${filtroEstado}` : '';
         const token = await getToken();
-        const res = await fetch(`${API_URL}/api/pedidos${params}`, {
+        const res = await fetch(`${getApiUrl()}/api/pedidos${params}`, {
           credentials: 'include',
           headers: {
             ...(token && { 'Authorization': `Bearer ${token}` }),

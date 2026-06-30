@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { getApiUrl } from '@/lib/get-api-url';
-import styles from './recetas.module.css';
+import styles from '@/app/recetas/recetas.module.css';
 
 interface RecetaFormData {
   nota: string;

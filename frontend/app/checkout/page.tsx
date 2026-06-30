@@ -5,6 +5,7 @@ import { useAuth } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCarritoStore } from '@/store/carrito';
+import { getApiUrl } from '@/lib/get-api-url';
 import styles from './checkout.module.css';
 
 export default function CheckoutPage() {
@@ -53,7 +54,7 @@ export default function CheckoutPage() {
         ...(metodoEntrega === 'domicilio' && { direccionEnvio: formData.direccion }),
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/pedidos`, {
+      const response = await fetch(`${getApiUrl()}/api/pedidos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -46,7 +46,7 @@
   padding: 0.5rem 1rem;
   background: none;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
 }
@@ -62,7 +62,7 @@
   gap: 1rem;
   padding: 1.5rem;
   background: var(--light);
-  border-radius: 12px;
+  border-radius: 8px;
   margin-bottom: 1rem;
   border: 1px solid #eee;
   flex-direction: row;
@@ -99,7 +99,7 @@
   display: flex;
   align-items: center;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .qtyBtn {
@@ -131,7 +131,7 @@
 .summary {
   background: var(--gray-light);
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: 8px;
   height: fit-content;
 }
 

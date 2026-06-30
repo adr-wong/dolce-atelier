@@ -10,6 +10,7 @@ interface DetallePageProps {
 
 async function obtenerPastel(id: string): Promise<Pastel | null> {
   const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  // Server component: localhost:3001 works because backend is on same machine
   try {
     const res = await fetch(`${url}/api/pasteles/${id}`, { cache: 'no-store' });
     if (!res.ok) return null;
@@ -53,7 +54,7 @@ export default async function DetallePage({ params }: DetallePageProps) {
           <span style={{ 
             padding: '0.25rem 0.75rem', 
             background: '#f3f4f6', 
-            borderRadius: '4px',
+            borderRadius: '8px',
             fontSize: '0.875rem'
           }}>
             {pastel.categoria}

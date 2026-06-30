@@ -18,7 +18,7 @@
 .statCard {
   background: var(--light);
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid #eee;
   width: 100%;
   box-sizing: border-box;
