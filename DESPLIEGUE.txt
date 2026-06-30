@@ -1,0 +1,345 @@
+================================================================================
+                    DOLCE ATELIER - GUIA DE DESPLIEGUE EN PRODUCCION
+================================================================================
+
+ Fecha: 30 de junio de 2026
+ Arquitectura: Vercel (Frontend) + Railway (Backend)
+
+================================================================================
+                          ESTRUCTURA DEL PROYECTO
+================================================================================
+
+  semestral/
+  ├── frontend/    → Se despliega en VERCEL
+  ├── backend/     → Se despliega en RAILWAY
+  └── .gitignore   → Ya excluye archivos .env
+
+================================================================================
+                    PASO 1: PREPARAR VARIABLES DE ENTORNO
+================================================================================
+
+  Antes de desplegar, necesitas las credenciales reales de cada servicio.
+
+  1.1 MONGODB ATLAS
+  -----------------
+  - Crear cluster en https://cloud.mongodb.com
+  - Crear usuario de base de datos
+  - Configurar Network Access (allow access from anywhere: 0.0.0.0/0)
+  - Obtener URI de conexion:
+    mongodb+srv://usuario:password@cluster.mongodb.net/dolce_atelier?retryWrites=true&w=majority
+
+  1.2 CLERK (Autenticacion)
+  -------------------------
+  - Crear cuenta en https://clerk.com
+  - Crear una aplicacion
+  - Obtener las claves:
+    * NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (pk_test_... o pk_live_...)
+    * CLERK_SECRET_KEY (sk_test_... o sk_live_...)
+  - Configurar URLs de redireccionamiento:
+    * Sign In URL: /sign-in
+    * Sign Up URL: /sign-up
+    * Fallback Redirect: /
+
+  1.3 STRIPE (Pagos)
+  ------------------
+  - Crear cuenta en https://stripe.com
+  - Obtener claves del Dashboard > Developers > API Keys:
+    * STRIPE_SECRET_KEY (sk_test_... o sk_live_...)
+    * STRIPE_WEBHOOK_SECRET (whsec_...) - del webhook
+    * NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (pk_test_... o pk_live_...)
+  - Crear webhook endpoint:
+    * URL: https://TU-backend-en-railway.up.railway.app/api/webhook/stripe
+    * Eventos: checkout.session.completed
+  - IMPORTANTE: El webhook secret se obtiene despues de crear el webhook
+
+  1.4 CLOUDINARY (Archivos/Imagenes)
+  -----------------------------------
+  - Crear cuenta en https://cloudinary.com
+  - Obtener del Dashboard:
+    * CLOUDINARY_CLOUD_NAME
+    * CLOUDINARY_API_KEY
+    * CLOUDINARY_API_SECRET
+  - Crear unsigned upload preset llamado "dolce_atelier_unsigned"
+  - En Frontend, configurar:
+    * NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME (mismo valor que CLOUDINARY_CLOUD_NAME)
+
+  1.5 BREVO (Email)
+  -----------------
+  - Crear cuenta en https://brevo.com
+  - Ir a SMTP > API Keys
+  - Obtener:
+    * BREVO_SMTP_KEY (xsmtpsib-...)
+    * BREVO_SMTP_LOGIN (tu email o login SMTP)
+    * BREVO_FROM_EMAIL (email remiteur)
+
+================================================================================
+                    PASO 2: DESPLEGAR BACKEND EN RAILWAY
+================================================================================
+
+  2.1 CREAR CUENTA EN RAILWAY
+  ---------------------------
+  - Ir a https://railway.app
+  - Crear cuenta con GitHub
+
+  2.2 CREAR PROYECTO
+  ------------------
+  - Click "New Project" > "Deploy from GitHub Repo"
+  - Seleccionar el repositorio
+  - Railway detectara automaticamente el railway.json
+
+  2.3 CONFIGURAR EL SERVICIO
+  --------------------------
+  - En el servicio creado, ir a "Settings":
+    * Root Directory: backend/
+    * Start Command: bun run src/server.ts
+    * Build Command: bun run build
+  - En "Variables", agregar TODAS estas variables:
+
+    NODE_ENV=production
+    PORT=3001
+    SKIP_AUTH=false
+
+    MONGODB_URI=tu_mongodb_uri_aqui
+
+    CLERK_SECRET_KEY=tu_clerk_secret_key
+
+    STRIPE_SECRET_KEY=tu_stripe_secret_key
+    STRIPE_WEBHOOK_SECRET=tu_stripe_webhook_secret
+
+    CLOUDINARY_CLOUD_NAME=tu_cloud_name
+    CLOUDINARY_API_KEY=tu_api_key
+    CLOUDINARY_API_SECRET=tu_api_secret
+
+    BREVO_SMTP_HOST=smtp-relay.brevo.com
+    BREVO_SMTP_PORT=587
+    BREVO_SMTP_LOGIN=tu_smtp_login
+    BREVO_SMTP_KEY=tu_smtp_key
+    BREVO_FROM_EMAIL=Dolce Atelier <tu_email@dominio.com>
+
+    FRONTEND_URL=https://TU-frontend-en-vercel.vercel.app
+
+  2.4 GENERAR DOMINIO
+  -------------------
+  - En Settings > Networking, generar dominio publico
+  - Copiar la URL (ej: https://dolce-atelier-backend.up.railway.app)
+  - Esta URL se usara en el frontend
+
+  2.5 VERIFICAR
+  -------------
+  - Ir a la URL del backend
+  - Deberia responder con el JSON del endpoint raiz
+  - Verificar /api/pasteles devuelve pasteles
+
+================================================================================
+                    PASO 3: DESPLEGAR FRONTEND EN VERCEL
+================================================================================
+
+  3.1 CREAR CUENTA EN VERCEL
+  ---------------------------
+  - Ir a https://vercel.com
+  - Crear cuenta con GitHub
+
+  3.2 IMPORTAR PROYECTO
+  ---------------------
+  - Click "Add New..." > "Project"
+  - Seleccionar el repositorio de GitHub
+  - Configurar:
+    * Framework Preset: Next.js
+    * Root Directory: frontend/
+    * Build Command: next build (auto-detectado)
+    * Output Directory: .next (auto-detectado)
+
+  3.3 CONFIGURAR VARIABLES DE ENTORNO
+  ------------------------------------
+  - En el proyecto de Vercel, ir a Settings > Environment Variables
+  - Agregar TODAS estas variables:
+
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=tu_clerk_publishable_key
+    CLERK_SECRET_KEY=tu_clerk_secret_key
+    NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+    NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+    NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
+    NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
+
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=tu_stripe_publishable_key
+
+    NEXT_PUBLIC_API_URL=https://TU-backend-en-railway.up.railway.app
+    BACKEND_URL=https://TU-backend-en-railway.up.railway.app
+
+    NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=tu_cloud_name
+
+    BREVO_API_KEY=tu_brevo_api_key
+    BREVO_FROM_EMAIL=Dolce Atelier <tu_email@dominio.com>
+    BREVO_TO_EMAIL=destinatario@dominio.com
+
+  3.4 ACTUALIZAR FRONTEND_URL EN RAILWAY
+  ---------------------------------------
+  - Volver a Railway
+  - En Variables, actualizar FRONTEND_URL con la URL de Vercel
+  - Ejemplo: https://dolce-atelier.vercel.app
+
+  3.5 VERIFICAR
+  -------------
+  - Ir a la URL de Vercel
+  - La pagina principal debe cargar
+  - Probar sign-in/sign-up
+  - Probar catalogo
+  - Probar agregar al carrito
+
+================================================================================
+                    PASO 4: CONFIGURAR WEBHOOK DE STRIPE
+================================================================================
+
+  4.1 CREAR WEBHOOK
+  -----------------
+  - Ir a Stripe Dashboard > Developers > Webhooks
+  - Click "Add endpoint"
+  - Endpoint URL: https://TU-backend-en-railway.up.railway.app/api/webhook/stripe
+  - Events to send: checkout.session.completed
+  - Click "Add endpoint"
+
+  4.2 OBTENER WEBHOOK SECRET
+  --------------------------
+  - En el webhook recien creado, click "Reveal" en Signing secret
+  - Copiar el valor (whsec_...)
+  - Pegar en Railway como STRIPE_WEBHOOK_SECRET
+
+  4.3 VERIFICAR
+  -------------
+  - Hacer un pedido de prueba en la aplicacion
+  - Completar el checkout con tarjeta de prueba (4242 4242 4242 4242)
+  - Verificar que el webhook recibe el evento en Stripe Dashboard
+  - Verificar que se envia el email de confirmacion
+
+================================================================================
+                    PASO 5: CONFIGURAR CLERK PARA PRODUCCION
+================================================================================
+
+  5.1 DOMINIOS PERMITIDOS
+  -----------------------
+  - En Clerk Dashboard > Paths
+  - Agregar el dominio de Vercel a los dominios permitidos
+
+  5.2 URLS DE REDIRECCIONAMIENTO
+  ------------------------------
+  - En Clerk Dashboard > Paths
+  - Sign In Path: /sign-in
+  - Sign Up Path: /sign-up
+  - After Sign In: /
+  - After Sign Up: /
+
+  5.3 CAMBIAR A MODO LIVE (OPCIONAL)
+  -----------------------------------
+  - Si quieres usar Clerk en produccion real:
+    * Ir a Clerk Dashboard > API Keys
+    * Cambiar de "Test" a "Production"
+    * Actualizar todas las claves en Vercel y Railway
+
+================================================================================
+                    PASO 6: VERIFICACION COMPLETA
+================================================================================
+
+  Checklist de verificacion:
+
+  [ ] Frontend carga en Vercel
+  [ ] Backend responde en Railway
+  [ ] Catalogo muestra pasteles
+  [ ] Login/Logout funciona (Clerk)
+  [ ] Agregar al carrito funciona
+  [ ] Checkout redirige a Stripe
+  [ ] Pago exitoso crea pedido en BD
+  [ ] Webhook de Stripe actualiza estado del pedido
+  [ ] Email de confirmacion se envia (Brevo)
+  [ ] Admin puede ver pedidos en /admin/pedidos
+  [ ] Admin puede cotizar recetas en /admin/recetas
+  [ ] Formulario de recetas funciona (upload a Cloudinary)
+  [ ] Pagina 404 funciona
+  [ ] Responsive en movil funciona
+
+================================================================================
+                    COMANDOS UTILES
+================================================================================
+
+  Ver logs en Railway:
+    - En Railway Dashboard > Logs
+
+  Ver logs en Vercel:
+    - En Vercel Dashboard > Logs
+
+  Actualizar despues de cambios en codigo:
+    git push origin master
+    (Vercel y Railway despliegan automaticamente via GitHub)
+
+  Forzar redeploy en Vercel:
+    - En Vercel Dashboard > Deployments > "..." > Redeploy
+
+  Forzar redeploy en Railway:
+    - En Railway Dashboard > Deploy
+
+================================================================================
+                    COSTOS ESTIMADOS
+================================================================================
+
+  Vercel (Frontend):
+    - Hobby: GRATIS (100GB bandwidth, 6000 build min/mes)
+    - Pro: $20/mes por usuario (si necesitas features avanzadas)
+
+  Railway (Backend):
+    - Free: $5/mes de credito incluido
+    - Hobby: $5/mes + uso (generalmente suficiente para MVP)
+
+  MongoDB Atlas:
+    - Free: M0 cluster (512MB, compartido)
+
+  Clerk:
+    - Free: 10,000 usuarios activos mensuales
+
+  Stripe:
+    - Sin costo fijo (2.9% + $0.30 por transaccion)
+
+  Cloudinary:
+    - Free: 25GB storage, 25GB bandwidth/mes
+
+  Brevo:
+    - Free: 300 emails/dia
+
+  TOTAL ESTIMADO PARA MVP: ~$0-5/mes
+
+================================================================================
+                    SOLUCION DE PROBLEMAS
+================================================================================
+
+  ERROR: "No autenticado" en produccion
+  - Verificar que CLERK_SECRET_KEY es correcta
+  - Verificar que el dominio de Vercel esta en Clerk
+
+  ERROR: Webhook de Stripe no funciona
+  - Verificar STRIPE_WEBHOOK_SECRET
+  - Verificar que el endpoint URL es correcto
+  - Verificar que el evento esta seleccionado
+
+  ERROR: Cloudinary upload falla
+  - Verificar NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+  - Verificar que el upload preset "dolce_atelier_unsigned" existe
+
+  ERROR: MongoDB connection failed
+  - Verificar MONGODB_URI
+  - Verificar que Network Access permite 0.0.0.0/0
+  - Verificar usuario y password
+
+  ERROR: Backend no inicia en Railway
+  - Verificar que START_COMMAND es: bun run src/server.ts
+  - Verificar logs en Railway Dashboard
+
+================================================================================
+                          NOTAS FINALES
+================================================================================
+
+  - Los archivos .env NO deben subirse al repositorio (ya esta en .gitignore)
+  - En produccion, usar claves de PRODUCCION, no de test
+  - Cambiar SKIP_AUTH a false siempre en produccion
+  - El frontend hace proxy de /api/* al backend via next.config.js
+  - Railway apaga el servicio despues de inactividad en plan free
+    (se despierta automaticamente al recibir request, toma ~30s)
+
+================================================================================
