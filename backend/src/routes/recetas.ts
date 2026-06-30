@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { recetaService } from '../services';
+import { crearSesionReceta } from '../services/stripe';
 import { FiltroRecetasSchema } from '../schemas';
 import { authMiddleware } from '../middleware/auth';
 
@@ -90,6 +91,51 @@ export const recetaRoutes = new Elysia({ prefix: '/api/recetas' })
           });
         }
         return { receta };
+      }, {
+        params: t.Object({ id: t.String() }),
+      })
+      .post('/:id/aceptar-pagar', async ({ params, headers }) => {
+        const userId = await authMiddleware(headers);
+        if (!userId) {
+          return new Response(JSON.stringify({ error: 'No autenticado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        const receta = await recetaService.obtener(params.id);
+        if (!receta) {
+          return new Response(JSON.stringify({ error: 'Receta no encontrada' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (receta.clerkUserId !== userId) {
+          return new Response(JSON.stringify({ error: 'Acceso denegado' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (receta.estado !== 'COTIZADA' || !receta.cotizacion) {
+          return new Response(JSON.stringify({ error: 'La receta no tiene cotización pendiente' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const session = await crearSesionReceta({
+          recetaId: receta._id.toString(),
+          nota: receta.nota,
+          cotizacion: receta.cotizacion,
+          successUrl: `${frontendUrl}/checkout/receta/exito?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${frontendUrl}/recetas/mis`,
+          customerEmail: headers.get('x-user-email') || undefined,
+        });
+
+        return { sessionId: session.id, url: session.url };
       }, {
         params: t.Object({ id: t.String() }),
       })
