@@ -6,3 +6,4 @@ export * from './webhook';
 export * from './admin';
 export * from './upload';
 export * from './usuarios';
+export * from './reembolsos';
