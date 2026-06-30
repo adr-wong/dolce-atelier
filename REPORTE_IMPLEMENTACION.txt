@@ -1,0 +1,345 @@
+================================================================================
+REPORTE DE IMPLEMENTACIÓN - DOLCE ATELIER
+Fecha: 30 de junio de 2026
+================================================================================
+
+RESUMEN EJECUTIVO
+================================================================================
+Se completaron 14 tareas iniciales + 6 HU adicionales para el MVP del proyecto 
+Dolce Atelier, un e-commerce de pasteles artesanales. El frontend compila 
+exitosamente (22 páginas) y todas las funcionalidades críticas están implementadas.
+
+================================================================================
+TAREAS COMPLETADAS (14/14 - FASE INICIAL)
+================================================================================
+
+[TASK 1] Fix Inconsistent Order States
+--------------------------------------
+Archivo: backend/src/controllers/admin/pedidoController.ts
+Cambio: Corregidas las transiciones de estado para que coincidan con el modelo.
+Estados anteriores: PENDIENTE, CONFIRMADO, ENTREGADO, CANCELADO, PAGADO
+Estados correctos: PENDIENTE → PAGADO → PREPARANDO → LISTO → EN_CAMINO → ENTREGADO
+                   Cualquier estado → CANCELADO
+
+[TASK 2] Fix clerkUserId Empty in Recipes Admin
+------------------------------------------------
+Archivos: backend/src/controllers/admin/recetaController.ts, backend/src/routes/admin.ts
+Cambio: Ahora el endpoint POST /api/recetas acepta clerkUserId en el body
+para que los admin puedan crear recetas para usuarios específicos.
+
+[TASK 3] Fix Email Duplication in Checkout
+-------------------------------------------
+Archivo: frontend/app/checkout/exito/CheckoutExitoContent.tsx
+Cambio: Eliminada la llamada a /api/send-receipt desde el frontend.
+El webhook de Stripe ya envía el email de confirmación, evitando duplicación.
+
+[TASK 4] Replace alert() with Sonner Toasts
+---------------------------------------------
+Archivos: frontend/app/layout.tsx, frontend/app/admin/pasteles/page.tsx
+Cambio: Agregado componente Toaster de sonner al layout principal.
+Reemplazados todos los alert() nativos por toast.success() y toast.error().
+
+[TASK 5] Implement Recipe Submission Form (Client)
+---------------------------------------------------
+Archivos: frontend/components/RecetaForm.tsx, frontend/app/recetas/page.tsx,
+          frontend/app/recetas/recetas.module.css
+Cambio: Reemplazado placeholder "Próximamente" con formulario funcional.
+El formulario envía nota, personas y archivoUrl al backend.
+
+[TASK 6] Implement Cart Merge on Login
+----------------------------------------
+Archivos: frontend/store/carrito.ts, frontend/hooks/useCartMerge.ts,
+          frontend/components/CartMergeProvider.tsx, frontend/app/layout.tsx
+Cambio: Agregada función mergeCarrito al store de Zustand.
+Creado hook useCartMerge que guarda carrito anónimo en localStorage
+y lo fusiona cuando el usuario se autentica.
+
+[TASK 7] Implement Seed Script Automation
+-------------------------------------------
+Archivo: backend/src/server.ts
+Cambio: Agregada función autoSeed() que ejecuta automáticamente
+el seed si la base de datos está vacía al iniciar el servidor.
+Inserta 15 pasteles de prueba con URLs de Cloudinary.
+
+[TASK 8] Convert Pages to SSR for SEO
+---------------------------------------
+Archivos: frontend/app/catalogo/page.tsx, frontend/app/catalogo/CatalogoClient.tsx,
+          frontend/app/page.tsx
+Cambio: Separada lógica del cliente en componentes dedicados.
+Las páginas principales ahora son Server Components con metadata.
+
+[TASK 9] Add SEO Metadata
+---------------------------
+Archivos: frontend/app/page.tsx, frontend/app/catalogo/page.tsx,
+          frontend/app/sobre-nosotros/page.tsx, frontend/app/contactenos/page.tsx
+          (+ Client components correspondientes)
+Cambio: Agregado export metadata con título, descripción y Open Graph
+a todas las páginas principales.
+
+[TASK 10] Add Loading States
+------------------------------
+Archivos: frontend/components/LoadingSpinner.tsx, frontend/components/LoadingSpinner.module.css
+          frontend/app/catalogo/loading.tsx, frontend/app/carrito/loading.tsx
+          frontend/app/pedidos/loading.tsx, frontend/app/admin/loading.tsx
+Cambio: Creado componente LoadingSpinner reutilizable.
+Agregados archivos loading.tsx a rutas principales.
+
+[TASK 11] Fix Hardcoded Rewrites
+----------------------------------
+Archivo: frontend/next.config.js
+Cambio: Reemplazado localhost:3001 hardcoded por variable de entorno
+BACKEND_URL (con fallback a localhost:3001).
+
+[TASK 12] Configure Deployment
+--------------------------------
+Archivos: vercel.json, railway.json, frontend/.env.example, backend/.env.example
+Cambio: Creados archivos de configuración para despliegue en Vercel (frontend)
+y Railway (backend). Creados .env.example como templates.
+
+[TASK 13] Write Unit Tests
+----------------------------
+Archivos: frontend/jest.config.js, frontend/jest.setup.js,
+          frontend/__tests__/carrito.test.ts,
+          backend/src/__tests__/order-states.test.ts
+Cambio: Configurado Jest para frontend con React Testing Library.
+Creados tests para store de carrito (5 tests) y transiciones de estado (5 tests).
+
+[TASK 14] Final Integration Testing
+-------------------------------------
+Acción: Verificación de que el frontend compila exitosamente.
+Resultado: Build exitoso con 20 páginas generadas.
+
+================================================================================
+HISTORIAS DE USUARIO - FASE 2 (6 HU)
+================================================================================
+
+[HU-017] Página de Detalle de Pedido con Tracking
+--------------------------------------------------
+Estado: ✅ COMPLETADA
+Archivos creados:
+  - frontend/app/pedidos/[id]/page.tsx
+  - frontend/app/pedidos/[id]/pedido-detail.module.css
+
+Funcionalidad:
+  - Muestra detalle completo del pedido (items, total, estado)
+  - Timeline visual de tracking con 6 pasos (PENDIENTE → ENTREGADO)
+  - Sección de información de entrega y contacto
+  - Diseño responsive para móvil
+
+[HU-020] Página "Mis Recetas" para Usuarios
+--------------------------------------------
+Estado: ✅ COMPLETADA
+Archivos creados:
+  - frontend/app/recetas/mis/page.tsx
+  - frontend/app/recetas/mis/mis-recetas.module.css
+
+Funcionalidad:
+  - Lista todas las recetas enviadas por el usuario
+  - Muestra estado con badges de color (PENDIENTE, COTIZADA, ACEPTADA, etc.)
+  - Botón "Aceptar y Pagar" cuando la receta está cotizada
+  - Link agregado al Header para acceder fácilmente
+
+[HU-021] Flujo Completo de Aceptar Cotización y Pagar
+------------------------------------------------------
+Estado: ✅ COMPLETADA
+Archivos modificados:
+  - backend/src/services/receta.ts (nuevo método aceptar)
+  - backend/src/services/stripe.ts (nueva función crearSesionReceta)
+  - backend/src/routes/recetas.ts (endpoint POST /:id/aceptar-pagar)
+  - backend/src/routes/webhook.ts (manejo de pagos de recetas)
+
+Archivos creados:
+  - frontend/app/checkout/receta/exito/page.tsx
+  - frontend/app/checkout/receta/exito/receta-exito.module.css
+
+Funcionalidad:
+  - Backend: Endpoint para aceptar cotización y crear sesión de pago
+  - Webhook: Marca receta como ACEPTADA al confirmar pago
+  - Frontend: Botón de pago que redirige a Stripe Checkout
+  - Página de éxito post-pago para recetas
+
+[HU-022] Ingresos del Mes en Dashboard Admin
+---------------------------------------------
+Estado: ✅ COMPLETADA
+Archivos modificados:
+  - frontend/lib/adminApi.ts (actualizado interfaz DashboardStats)
+  - frontend/app/admin/page.tsx (muestra ingresos del mes)
+
+Funcionalidad:
+  - Muestra "Ingresos del Mes" como tarjeta de estadísticas
+  - Usa el endpoint /api/admin/stats que calcula ingresos
+  - Formato de moneda ($XX.XX)
+
+[HU-030] Reemplazar prompt() por Modal en Cotizar Receta
+--------------------------------------------------------
+Estado: ✅ COMPLETADA
+Archivos creados:
+  - frontend/app/admin/recetas/cotizar-modal.tsx
+  - frontend/app/admin/recetas/cotizar-modal.module.css
+
+Archivos modificados:
+  - frontend/app/admin/recetas/page.tsx (usa modal)
+
+Funcionalidad:
+  - Modal profesional para ingresar cotización
+  - Input numérico con validación
+  - Botones de cancelar y confirmar
+  - Reemplaza prompt() nativo del navegador
+
+[HU-038] Campo de Archivo en Formulario de Recetas
+---------------------------------------------------
+Estado: ✅ COMPLETADA
+Archivos modificados:
+  - frontend/components/RecetaForm.tsx
+
+Funcionalidad:
+  - Campo de archivo opcional (imágenes JPG/PNG/WebP o PDF)
+  - Sube archivo a Cloudinary antes de enviar
+  - Validación de tamaño (máx 10MB) y tipo de archivo
+  - Muestra nombre y tamaño del archivo seleccionado
+  - Feedback visual durante la subida
+
+================================================================================
+BUGS CORREGIDOS
+================================================================================
+
+1. ✅ Estados de pedido inconsistentes en pedidoController.ts
+2. ✅ clerkUserId vacío al crear recetas desde admin
+3. ✅ Emails duplicados en checkout (webhook + frontend)
+4. ✅ alert() nativos reemplazados por sonner toasts
+5. ✅ Rewrites hardcoded a localhost:3001
+6. ✅ Páginas sin metadata SEO
+7. ✅ Falta de loading states
+8. ✅ Formulario de recetas no implementado (placeholder)
+9. ✅ Carrito no se fusionaba al login
+10. ✅ Seed script no ejecutaba automáticamente
+11. ✅ Página de detalle de pedido no existía (HU-017)
+12. ✅ No había forma de ver recetas propias (HU-020)
+13. ✅ Flujo de pago de recetas no implementado (HU-021)
+14. ✅ Dashboard sin ingresos del mes (HU-022)
+15. ✅ prompt() nativo para cotizar recetas (HU-030)
+16. ✅ Sin campo de archivo en formulario de recetas (HU-038)
+
+================================================================================
+ARCHIVOS CREADOS (NUEVOS)
+================================================================================
+
+FRONTEND:
+- components/RecetaForm.tsx
+- components/CartMergeProvider.tsx
+- components/LoadingSpinner.tsx
+- components/LoadingSpinner.module.css
+- hooks/useCartMerge.ts
+- app/catalogo/CatalogoClient.tsx
+- app/contactenos/ContactenosClient.tsx
+- app/sobre-nosotros/SobreNosotrosClient.tsx
+- app/catalogo/loading.tsx
+- app/carrito/loading.tsx
+- app/pedidos/loading.tsx
+- app/admin/loading.tsx
+- app/pedidos/[id]/page.tsx (HU-017)
+- app/pedidos/[id]/pedido-detail.module.css (HU-017)
+- app/recetas/mis/page.tsx (HU-020)
+- app/recetas/mis/mis-recetas.module.css (HU-020)
+- app/checkout/receta/exito/page.tsx (HU-021)
+- app/checkout/receta/exito/receta-exito.module.css (HU-021)
+- app/admin/recetas/cotizar-modal.tsx (HU-030)
+- app/admin/recetas/cotizar-modal.module.css (HU-030)
+- __tests__/carrito.test.ts
+- jest.config.js
+- jest.setup.js
+- .env.example
+
+BACKEND:
+- src/__tests__/order-states.test.ts
+- .env.example
+
+CONFIGURACIÓN:
+- vercel.json
+- railway.json
+- docs/superpowers/plans/2026-06-30-dolce-atelier-full-implementation.md
+
+================================================================================
+COMMITS REALIZADOS (22)
+================================================================================
+
+# Fase 1 - Tareas iniciales (14 commits):
+ab01f4d3 fix: correct order state transitions to match model
+0438ed92 fix: accept clerkUserId in recipe creation from admin
+8db7418a fix: remove duplicate email sending from checkout success page
+bf01a0a4 feat: replace alert() with sonner toast notifications in admin
+c4ede6ae feat: implement recipe submission form for clients
+aee1aa1b feat: implement cart merge on user authentication
+2da94b84 feat: auto-seed database on first startup
+7f9c1a9e feat: convert main pages to SSR for SEO
+81ffadba feat: add SEO metadata to about and contact pages
+ecca5504 feat: add consistent loading states across application
+4bac7c26 fix: use environment variable for API URL in rewrites
+0ad4817c feat: add deployment configuration for Vercel and Railway
+b1837068 test: add unit tests for core functionality
+e22eca8b fix: resolve compilation errors and verify build
+
+# Fase 2 - HU adicionales (8 commits):
+ae8f67ed feat(HU-017): add order detail page with tracking
+352b8559 feat(HU-020): add user recipes page and header link
+d098f69a feat(HU-021): add recipe accept-pay flow and webhook handling
+cc9ac37d feat(HU-021): integrate payment button with backend
+8d6418df feat(HU-022): add monthly income to admin dashboard
+530bef14 feat(HU-030): replace prompt() with modal for recipe pricing
+928f9c67 feat(HU-038): add file upload to recipe form
+3ab00003 fix: add missing ingresosMes to initial state
+
+================================================================================
+ESTADO ACTUAL DEL PROYECTO
+================================================================================
+
+✅ Frontend: Compila exitosamente (22 páginas generadas)
+✅ Backend: Código listo (requiere whitelist de IP en MongoDB Atlas)
+✅ Tests: Configurados (jest para frontend, bun test para backend)
+✅ Despliegue: Configurado (Vercel + Railway)
+
+PENDIENTE:
+⚠️  Whitelist de IP en MongoDB Atlas (error de conexión actual)
+⚠️  Push de commits a origin (22 commits locales)
+⚠️  Variables de entorno de producción
+⚠️  Deploy real a Vercel/Railway
+
+================================================================================
+VERIFICACIÓN PENDIENTE - HU NO TESTED
+================================================================================
+
+NOTA: Las 6 HU de la Fase 2 fueron implementadas pero NO verificadas
+funcionalmente. El servidor backend no pudo arrancar por falta de whitelist
+en MongoDB Atlas.
+
+HUS QUE REQUIEREN TESTING MANUAL:
+1. HU-017: Probar /pedidos/[id] con un pedido real
+2. HU-020: Probar /recetas/mis enviando una receta primero
+3. HU-021: Probar flujo completo de pago de receta con Stripe
+4. HU-022: Verificar que dashboard muestra ingresos del mes
+5. HU-030: Probar modal de cotización en admin/recetas
+6. HU-038: Probar subida de archivo en formulario de recetas
+
+PARA VERIFICAR TODO:
+1. Whitelist IP en MongoDB Atlas (0.0.0.0/0)
+2. cd backend && bun run src/server.ts
+3. cd frontend && npm run dev
+4. Probar cada flujo en el navegador
+5. cd frontend && npm test
+6. cd backend && bun test
+
+================================================================================
+CÓMODOS ÚTILES
+================================================================================
+
+Iniciar backend:     cd backend && bun run src/server.ts
+Iniciar frontend:    cd frontend && npm run dev
+Iniciar ambos:       bun scripts/dev.ts
+Build frontend:      cd frontend && npm run build
+Tests frontend:      cd frontend && npm test
+Tests backend:       cd backend && bun test
+Probar backend:      curl http://localhost:3001/health
+
+================================================================================
+FIN DEL REPORTE
+================================================================================
