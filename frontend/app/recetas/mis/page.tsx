@@ -38,6 +38,7 @@ export default function MisRecetasPage() {
   const { getToken } = useAuth();
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [payingId, setPayingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchRecetas() {
@@ -62,6 +63,34 @@ export default function MisRecetasPage() {
 
     fetchRecetas();
   }, [getToken]);
+
+  const handlePay = async (recetaId: string) => {
+    try {
+      setPayingId(recetaId);
+      const token = await getToken();
+      if (!token) return;
+
+      const res = await fetch(`${getApiUrl()}/api/recetas/${recetaId}/aceptar-pagar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Error al procesar el pago');
+        setPayingId(null);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al conectar con el servidor');
+      setPayingId(null);
+    }
+  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('es-PA', {
@@ -131,12 +160,13 @@ export default function MisRecetasPage() {
                     <span className={styles.quoteAmount}>${receta.cotizacion.toFixed(2)}</span>
                   </div>
                   {receta.estado === 'COTIZADA' && (
-                    <Link 
-                      href={`/recetas/${receta._id}/pagar`}
+                    <button 
+                      onClick={() => handlePay(receta._id)}
+                      disabled={payingId === receta._id}
                       className={styles.payBtn}
                     >
-                      Aceptar y Pagar
-                    </Link>
+                      {payingId === receta._id ? 'Procesando...' : 'Aceptar y Pagar'}
+                    </button>
                   )}
                   {receta.estado === 'ACEPTADA' && (
                     <span className={styles.acceptedBadge}>✓ Aceptada - En preparación</span>
