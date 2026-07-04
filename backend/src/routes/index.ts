@@ -10,3 +10,4 @@ export * from './reembolsos';
 export * from './descuentos';
 export * from './reportes';
 export * from './dlq';
+export * from './facturas';
