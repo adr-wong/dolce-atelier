@@ -13,6 +13,14 @@ export default function CheckoutPage() {
   const { getToken } = useAuth();
   const [metodoEntrega, setMetodoEntrega] = useState<'domicilio' | 'tienda'>('domicilio');
   const [loading, setLoading] = useState(false);
+  const [codigoDescuento, setCodigoDescuento] = useState('');
+  const [descuentoAplicado, setDescuentoAplicado] = useState<{
+    codigo: string;
+    montoDescuento: number;
+    totalConDescuento: number;
+  } | null>(null);
+  const [aplicandoDescuento, setAplicandoDescuento] = useState(false);
+  const [errorDescuento, setErrorDescuento] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     telefono: '',
@@ -51,6 +59,7 @@ export default function CheckoutPage() {
         })),
         metodoEntrega: metodoEntrega === 'domicilio' ? 'DOMICILIO' : 'TIENDA',
         telefono: formData.telefono,
+        codigoDescuento: descuentoAplicado?.codigo || undefined,
         ...(metodoEntrega === 'domicilio' && { direccionEnvio: formData.direccion }),
       };
 
@@ -82,6 +91,31 @@ export default function CheckoutPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const aplicarDescuento = async () => {
+    if (!codigoDescuento.trim()) return;
+    setAplicandoDescuento(true);
+    setErrorDescuento('');
+    try {
+      const res = await fetch(`${getApiUrl()}/api/descuentos/validar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: codigoDescuento.trim(), subtotal: total() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valido) {
+        setDescuentoAplicado(data);
+      } else {
+        setErrorDescuento(data.error?.message || 'Código inválido');
+        setDescuentoAplicado(null);
+      }
+    } catch {
+      setErrorDescuento('Error al validar el código');
+      setDescuentoAplicado(null);
+    } finally {
+      setAplicandoDescuento(false);
+    }
   };
 
   return (
@@ -199,9 +233,49 @@ export default function CheckoutPage() {
               <span className={styles.green}>{metodoEntrega === 'tienda' ? 'Gratis' : 'Calculado'}</span>
             </div>
             <hr className={styles.divider} />
+            {/* HU-018: Código de descuento */}
+            <div className={styles.discountSection}>
+              <div className={styles.discountInput}>
+                <input
+                  type="text"
+                  placeholder="Código de descuento"
+                  value={codigoDescuento}
+                  onChange={(e) => { setCodigoDescuento(e.target.value); setErrorDescuento(''); }}
+                  className={styles.discountField}
+                  disabled={!!descuentoAplicado}
+                />
+                {descuentoAplicado ? (
+                  <button
+                    type="button"
+                    onClick={() => { setDescuentoAplicado(null); setCodigoDescuento(''); }}
+                    className={styles.discountRemoveBtn}
+                  >
+                    ✕
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={aplicarDescuento}
+                    disabled={aplicandoDescuento || !codigoDescuento.trim()}
+                    className={styles.discountApplyBtn}
+                  >
+                    {aplicandoDescuento ? '...' : 'Aplicar'}
+                  </button>
+                )}
+              </div>
+              {errorDescuento && <p className={styles.discountError}>{errorDescuento}</p>}
+              {descuentoAplicado && (
+                <p className={styles.discountSuccess}>
+                  Descuento aplicado: -${descuentoAplicado.montoDescuento.toFixed(2)}
+                </p>
+              )}
+            </div>
+            <hr className={styles.divider} />
             <div className={styles.summaryTotal}>
               <strong>Total</strong>
-              <strong className={styles.totalAmount}>${total().toFixed(2)}</strong>
+              <strong className={styles.totalAmount}>
+                ${(descuentoAplicado?.totalConDescuento ?? total()).toFixed(2)}
+              </strong>
             </div>
             <button
               type="submit"

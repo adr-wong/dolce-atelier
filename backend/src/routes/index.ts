@@ -7,3 +7,4 @@ export * from './admin';
 export * from './upload';
 export * from './usuarios';
 export * from './reembolsos';
+export * from './descuentos';

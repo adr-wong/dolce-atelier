@@ -3,3 +3,4 @@ export * from './Pedido';
 export * from './Receta';
 export * from './WebhookEvent';
 export * from './AuditLog';
+export * from './CodigoDescuento';

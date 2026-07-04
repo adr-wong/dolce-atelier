@@ -231,6 +231,83 @@
   cursor: not-allowed;
 }
 
+/* HU-018: Discount code */
+.discountSection {
+  margin: 0.5rem 0;
+}
+
+.discountInput {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.discountField {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.discountField:focus {
+  border-color: #c41e3a;
+}
+
+.discountField:disabled {
+  background: #f5f5f5;
+  color: #888;
+}
+
+.discountApplyBtn {
+  padding: 0.6rem 1rem;
+  background: #c41e3a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.discountApplyBtn:hover:not(:disabled) {
+  background: #a01830;
+}
+
+.discountApplyBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.discountRemoveBtn {
+  padding: 0.6rem 0.8rem;
+  background: #666;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.discountRemoveBtn:hover {
+  background: #444;
+}
+
+.discountError {
+  color: #c41e3a;
+  font-size: 0.8rem;
+  margin: 0.3rem 0 0 0;
+}
+
+.discountSuccess {
+  color: #0e8a16;
+  font-size: 0.85rem;
+  margin: 0.3rem 0 0 0;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   .emptyContainer {
     padding: 6rem 1rem;
