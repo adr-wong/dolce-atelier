@@ -80,7 +80,9 @@ export const adminRoutes = new Elysia({ prefix: '/api/admin' })
       .get('/pedidos', listPedidos, {
         query: t.Object({
           status: t.Optional(t.String()),
-          date: t.Optional(t.String())
+          date: t.Optional(t.String()),
+          page: t.Optional(t.String()),
+          limit: t.Optional(t.String()),
         })
       })
       .put('/pedidos/:id/status', updatePedidoStatus, {
