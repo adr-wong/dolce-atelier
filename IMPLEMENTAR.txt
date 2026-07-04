@@ -1,0 +1,61 @@
+Estoy desarrollando una web ecommerce llamada DOLCE ATALIER (venta de dulces y pasteles) usando React moderno.
+
+Quiero crear una experiencia visual tipo pixel art 2D donde aparezca un pequeño personaje (chef/repostero) preparando un pastel mientras el pedido está en proceso.
+
+Objetivo:
+
+Mostrar una animación continua mientras el pedido tenga estado: PENDIENTE o EN PREPARACIÓN.
+Cuando el pedido cambie a LISTO, la animación debe finalizar y mostrar el pastel terminado.
+
+Concepto visual:
+
+Estilo: pixel art 2D, cálido, artesanal, bonito y moderno.
+Vista lateral tipo mini juego.
+El personaje debe realizar acciones en bucle:
+Buscar ingredientes.
+Mezclar masa.
+Hornear.
+Decorar.
+Empacar.
+El ciclo debe sentirse casi infinito (variaciones aleatorias para no parecer repetitivo).
+
+Tecnologías:
+
+React
+Animaciones modernas recomendadas (Framer Motion, GSAP, React Spring, Canvas, SVG, PixiJS o alternativas actuales).
+Debe funcionar bien en web y ser eficiente.
+
+Necesito ideas de arquitectura y varias propuestas:
+
+Opción simple.
+Opción intermedia.
+Opción estilo mini videojuego.
+
+También quiero sugerencias de:
+
+Cómo sincronizar la animación con el estado real del pedido.
+Cómo pausar/reanudar.
+Cómo mostrar progreso sin parecer una barra de carga tradicional.
+
+Y si quieres ideas concretas para tu página:
+
+🍰 Idea 1 — Mini cocina viva (mi favorita)
+Chef pixel → mezcla → horno → decoración → caja → vuelve a empezar → cuando cambia a LISTO aparece “Pedido listo ✨”.
+
+🎂 Idea 2 — Línea de producción
+Cada estación representa porcentaje del pedido.
+
+🧁 Idea 3 — Tipo idle game
+Monedas, partículas de azúcar, hornos encendiéndose.
+
+🍓 Idea 4 — Escena dinámica
+Clientes esperando, chef cocinando, pastel creciendo poco a poco.
+
+⚙️ Tecnología que yo evaluaría hoy en React:
+
+UI ligera → Framer Motion + SVG
+Más estilo juego → PixiJS + React Pixi
+Más control → Canvas
+Pixel art real → Phaser + React
+
+Para DOLCE ATALIER, probablemente React + PixiJS + spritesheets + WebSocket/SSE para escuchar estado del pedido se sentiría muy premium.

@@ -1,0 +1,14 @@
+En la sección de administración, específicamente en Catálogo, Pedidos y Recetas, actualmente las listas pueden crecer demasiado y generar una página excesivamente vertical. Esto provoca que el contenido se extienda mucho hacia abajo, afectando la experiencia visual y haciendo que el aside lateral izquierdo quede desalineado o demasiado largo al hacer scroll.
+
+Necesito implementar paginación para estas vistas.
+
+Requisitos:
+
+Mostrar una cantidad fija de registros por página (ejemplo: 10–20 elementos).
+Agregar controles de navegación: Anterior, Siguiente y números de página.
+Mantener el diseño actual del panel administrativo.
+Evitar que el aside izquierdo se vea afectado por listas extensas.
+Mantener filtros o búsquedas funcionando entre cambios de página (si existen).
+Aplicar paginación del lado del servidor si los datos vienen del backend; si ya están cargados, usar paginación del lado del cliente.
+
+Objetivo: mejorar la UI/UX y evitar scroll excesivo en el panel de administración.

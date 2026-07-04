@@ -13,3 +13,4 @@ export * from './dlq';
 export * from './facturas';
 export * from './perfil';
 export * from './extras';
+export * from './mcp';
