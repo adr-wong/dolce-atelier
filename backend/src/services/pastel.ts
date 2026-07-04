@@ -1,20 +1,65 @@
 import { Pastel } from '../models';
 import type { IPastel } from '../models/Pastel';
 import { CrearPastelSchema, ActualizarPastelSchema } from '../schemas/pastel';
+import type { FiltroPasteles } from '../schemas/pastel';
+import type { FilterQuery, SortOrder } from 'mongoose';
 
 export class PastelService {
-  async listar(categoria?: string, page: number = 1, limit: number = 12): Promise<{ pasteles: IPastel[]; total: number; page: number; totalPages: number }> {
-    const filtro = categoria ? { categoria } : {};
+  async listar(filtros: FiltroPasteles): Promise<{
+    pasteles: IPastel[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    const page = filtros.page || 1;
+    const limit = filtros.limit || 12;
     const skip = (page - 1) * limit;
+
+    // Build MongoDB filter
+    const filtro: FilterQuery<IPastel> = {};
+
+    // Filtro por categoría
+    if (filtros.categoria) {
+      filtro.categoria = filtros.categoria;
+    }
+
+    // Búsqueda por nombre/descripción (HU-029)
+    if (filtros.q) {
+      const regex = new RegExp(filtros.q, 'i');
+      filtro.$or = [
+        { nombre: regex },
+        { descripcion: regex },
+      ];
+    }
+
+    // Filtro por rango de precio (HU-030)
+    if (filtros.precioMin !== undefined || filtros.precioMax !== undefined) {
+      filtro.precio = {};
+      if (filtros.precioMin !== undefined) {
+        (filtro.precio as any).$gte = filtros.precioMin;
+      }
+      if (filtros.precioMax !== undefined) {
+        (filtro.precio as any).$lte = filtros.precioMax;
+      }
+    }
+
+    // Ordenamiento (HU-031)
+    const sortField = filtros.ordenarPor || 'createdAt';
+    const sortDir: SortOrder = filtros.orden === 'asc' ? 1 : -1;
+
     const [pasteles, total] = await Promise.all([
-      Pastel.find(filtro).skip(skip).limit(limit).sort({ createdAt: -1 }),
-      Pastel.countDocuments(filtro)
+      Pastel.find(filtro)
+        .skip(skip)
+        .limit(limit)
+        .sort({ [sortField]: sortDir }),
+      Pastel.countDocuments(filtro),
     ]);
+
     return {
       pasteles,
       total,
       page,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     };
   }
 

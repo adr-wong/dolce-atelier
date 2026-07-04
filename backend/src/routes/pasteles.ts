@@ -6,9 +6,7 @@ import { verifyToken, verifyAdmin, authMiddleware } from '../middleware/auth';
 export const pastelRoutes = new Elysia({ prefix: '/api/pasteles' })
   .get('/', async ({ query }) => {
     const filtro = FiltroPastelesSchema.parse(query);
-    const page = filtro.page || 1;
-    const limit = filtro.limit || 12;
-    const result = await pastelService.listar(filtro.categoria, page, limit);
+    const result = await pastelService.listar(filtro);
     return result;
   })
   .get('/:id', async ({ params }) => {

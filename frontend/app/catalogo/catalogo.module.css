@@ -212,3 +212,105 @@
   opacity: 0.5;
   transition: opacity 0.3s ease;
 }
+
+/* === HU-029/030/031: Búsqueda, filtro precio, orden === */
+.filtersRow {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchBox {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.6rem 2.2rem 0.6rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+  border-color: #c41e3a;
+}
+
+.clearSearch {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  line-height: 1;
+}
+
+.clearSearch:hover {
+  color: #c41e3a;
+}
+
+.priceFilter {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.priceInput {
+  width: 90px;
+  padding: 0.6rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.priceInput:focus {
+  border-color: #c41e3a;
+}
+
+.priceSeparator {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.sortSelect {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.sortSelect:focus {
+  border-color: #c41e3a;
+}
+
+@media (max-width: 640px) {
+  .filtersRow {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .searchBox {
+    min-width: 100%;
+  }
+
+  .priceInput {
+    width: 80px;
+  }
+}

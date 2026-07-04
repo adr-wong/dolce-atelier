@@ -14,6 +14,13 @@ export const ActualizarPastelSchema = CrearPastelSchema.partial();
 export const FiltroPastelesSchema = z.object({
   categoria: z.string().optional(),
   disponible: z.string().optional(),
+  q: z.string().optional(),
+  precioMin: z.coerce.number().optional(),
+  precioMax: z.coerce.number().optional(),
+  ordenarPor: z.enum(['precio', 'nombre', 'createdAt']).optional(),
+  orden: z.enum(['asc', 'desc']).optional(),
   page: z.coerce.number().optional(),
   limit: z.coerce.number().optional(),
 });
+
+export type FiltroPasteles = z.infer<typeof FiltroPastelesSchema>;
