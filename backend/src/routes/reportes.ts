@@ -143,4 +143,40 @@ export const reportesRoutes = new Elysia({ prefix: '/api/admin/reportes' })
           hasta: t.Optional(t.String()),
         }),
       })
+
+      // HU-036: Pasteles más vendidos
+      .get('/mas-vendidos', async ({ query }) => {
+        const { limite } = query as { limite?: string };
+        const limit = parseInt(limite || '10');
+
+        const pipeline = [
+          { $match: { estado: { $in: ['PAGADO', 'PREPARANDO', 'LISTO', 'EN_CAMINO', 'ENTREGADO'] } } },
+          { $unwind: '$items' },
+          {
+            $group: {
+              _id: '$items.nombre',
+              pastelId: { $first: '$items.pastelId' },
+              totalVendido: { $sum: '$items.cantidad' },
+              ingresos: { $sum: { $multiply: ['$items.precioSnapshot', '$items.cantidad'] } },
+            },
+          },
+          { $sort: { totalVendido: -1 } },
+          { $limit: limit },
+        ];
+
+        const resultados = await Pedido.aggregate(pipeline);
+
+        return {
+          masVendidos: resultados.map(r => ({
+            nombre: r._id,
+            pastelId: r.pastelId,
+            totalVendido: r.totalVendido,
+            ingresos: r.ingresos,
+          })),
+        };
+      }, {
+        query: t.Object({
+          limite: t.Optional(t.String()),
+        }),
+      })
   );

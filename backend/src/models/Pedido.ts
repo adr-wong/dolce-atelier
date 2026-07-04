@@ -26,6 +26,8 @@ export interface IPedido extends Document {
   direccionEnvio?: string;
   telefono?: string;
   stripeSessionId?: string;
+  calificacion?: number;
+  resena?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,6 +59,8 @@ const PedidoSchema = new Schema<IPedido>(
     direccionEnvio: { type: String },
     telefono: { type: String },
     stripeSessionId: { type: String, index: true },
+    calificacion: { type: Number, min: 1, max: 5 },
+    resena: { type: String, maxlength: 500 },
   },
   { timestamps: true }
 );

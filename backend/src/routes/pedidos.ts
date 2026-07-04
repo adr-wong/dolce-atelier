@@ -120,4 +120,49 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
         return { pedido: actualizado };
       }, {
         params: t.Object({ id: t.String() }),
+      })
+      // HU-024: Calificar pedido entregado
+      .put('/:id/calificar', async ({ params, headers, body }) => {
+        const userId = await authMiddleware(headers);
+        if (!userId) {
+          return new Response(JSON.stringify({ error: 'No autenticado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        const pedido = await pedidoService.obtener(params.id);
+        if (!pedido) {
+          return new Response(JSON.stringify({ error: 'Pedido no encontrado' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (pedido.clerkUserId !== userId) {
+          return new Response(JSON.stringify({ error: 'Acceso denegado' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (pedido.estado !== 'ENTREGADO') {
+          return new Response(
+            JSON.stringify({ error: 'Solo se pueden calificar pedidos entregados' }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const { calificacion, resena } = body as { calificacion: number; resena?: string };
+        pedido.calificacion = calificacion;
+        pedido.resena = resena;
+        await pedido.save();
+
+        return { pedido };
+      }, {
+        params: t.Object({ id: t.String() }),
+        body: t.Object({
+          calificacion: t.Number({ minimum: 1, maximum: 5 }),
+          resena: t.Optional(t.String({ maxLength: 500 })),
+        }),
       });
