@@ -3,8 +3,10 @@ import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { connectDB, mongoose } from './lib/db';
 import { Pastel } from './models';
-import { rateLimit } from './middleware/rateLimit';
+import { generalLimiter } from './middleware/rateLimit';
 import { logger } from './lib/logger';
+import { AppError } from './lib/errors';
+import { initWhatsApp, getStatus as getWhatsAppStatus } from './services/whatsapp';
 import {
   pastelRoutes,
   pedidoRoutes,
@@ -159,7 +161,7 @@ export const app = new Elysia()
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
   }))
-  .use(rateLimit({ windowMs: 60_000, max: 100 }))
+  .onBeforeHandle(generalLimiter)
   .onRequest(({ request }) => {
     const url = new URL(request.url);
     logger.info('Request received', {
@@ -170,7 +172,12 @@ export const app = new Elysia()
     });
   })
   .onError(({ code, error, set }) => {
-    logger.error('Request error', {
+    if (error instanceof AppError) {
+      set.status = error.status;
+      return error.toJSON();
+    }
+
+    logger.error('Unhandled error', {
       code,
       message: error.message,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
@@ -178,24 +185,26 @@ export const app = new Elysia()
 
     if (code === 'NOT_FOUND') {
       set.status = 404;
-      return { error: 'Recurso no encontrado' };
+      return { error: { code: 'NOT_FOUND', message: 'Recurso no encontrado' } };
     }
 
     if (error.message?.includes('validation')) {
       set.status = 400;
-      return { error: 'Datos de entrada invalidos', details: error.message };
+      return { error: { code: 'VALIDATION_ERROR', message: 'Datos inválidos', details: error.message } };
     }
 
     set.status = 500;
-    return { error: 'Error interno del servidor' };
+    return { error: { code: 'INTERNAL', message: 'Error interno del servidor' } };
   })
   .get('/health', async () => {
     const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
     const memUsage = process.memoryUsage();
+    const waStatus = process.env.WHATSAPP_ENABLED === 'true' ? getWhatsAppStatus() : null;
     return {
       status: dbStatus === 'connected' ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
       database: dbStatus,
+      whatsapp: waStatus,
       uptime: Math.floor(process.uptime()),
       memory: {
         rss: Math.round(memUsage.rss / 1024 / 1024),
@@ -234,6 +243,10 @@ if (process.env.NODE_ENV !== 'test') {
 
       app.listen(PORT, () => {
         logger.info('Server started', { port: PORT });
+
+        if (process.env.WHATSAPP_ENABLED === 'true') {
+          initWhatsApp();
+        }
       });
     } catch (error) {
       logger.error('Server startup failed', { error: error instanceof Error ? error.message : String(error) });
