@@ -14,14 +14,14 @@ const allowedTransitions: Record<IPedido['estado'], IPedido['estado'][]> = {
 
 type PedidoControllerContext = {
   set: { status: number };
-  query: { status?: string; date?: string };
+  query: { status?: string; date?: string; page?: string; limit?: string };
   params: { id?: string };
   body: { status?: string };
 };
 
 export async function listPedidos(context: PedidoControllerContext) {
   const { set, query } = context;
-  const { status, date } = query;
+  const { status, date, page, limit } = query;
   const q: Record<string, unknown> = {};
   if (status) q.estado = status;
   if (date) {
@@ -31,9 +31,23 @@ export async function listPedidos(context: PedidoControllerContext) {
       $lt: new Date(startDate.getTime() + 86400000)
     };
   }
-  const pedidos = await Pedido.find(q);
+
+  const pageNum = parseInt(page || '1');
+  const limitNum = parseInt(limit || '12');
+  const skip = (pageNum - 1) * limitNum;
+
+  const [pedidos, total] = await Promise.all([
+    Pedido.find(q).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+    Pedido.countDocuments(q),
+  ]);
+
   set.status = 200;
-  return { pedidos };
+  return {
+    pedidos,
+    total,
+    page: pageNum,
+    totalPages: Math.ceil(total / limitNum),
+  };
 }
 
 export async function updatePedidoStatus(context: PedidoControllerContext) {
