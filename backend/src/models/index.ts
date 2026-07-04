@@ -4,3 +4,4 @@ export * from './Receta';
 export * from './WebhookEvent';
 export * from './AuditLog';
 export * from './CodigoDescuento';
+export * from './Categoria';

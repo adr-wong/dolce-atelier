@@ -3,6 +3,15 @@ import { pedidoService } from '../services';
 import { FiltroPedidosSchema } from '../schemas';
 import { verifyToken, verifyAdmin, authMiddleware } from '../middleware/auth';
 
+// HU-012: Idempotency store (in-memory)
+const idempotencyStore = new Map<string, { response: any; createdAt: number }>();
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of idempotencyStore) {
+    if (now - v.createdAt > 86_400_000) idempotencyStore.delete(k); // 24h TTL
+  }
+}, 300_000);
+
 export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
   .get('/', async ({ query, headers }) => {
     const filtro = FiltroPedidosSchema.parse(query);
@@ -52,7 +61,7 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
   }, {
     params: t.Object({ id: t.String() }),
   })
-  .post('/', async ({ body, headers }) => {
+  .post('/', async ({ body, headers, request }) => {
         const userId = await authMiddleware(headers);
 
         if (!userId) {
@@ -62,8 +71,26 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
           });
         }
 
+        // HU-012: Idempotency check
+        const idempotencyKey = (request as Request).headers.get('Idempotency-Key');
+        if (idempotencyKey) {
+          const cached = idempotencyStore.get(idempotencyKey);
+          if (cached) {
+            return cached.response;
+          }
+        }
+
         try {
           const result = await pedidoService.crear(userId, body);
+          
+          // Cache response for idempotency
+          if (idempotencyKey) {
+            idempotencyStore.set(idempotencyKey, {
+              response: result,
+              createdAt: Date.now(),
+            });
+          }
+          
           return result;
         } catch (error) {
           console.error('[BACKEND] Error in POST /api/pedidos:', error);

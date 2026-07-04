@@ -109,4 +109,47 @@ export const adminRoutes = new Elysia({ prefix: '/api/admin' })
       .delete('/recetas/:id', deleteReceta, {
         params: t.Object({ id: t.String() })
       })
+      // HU-035: Gestionar categorias
+      .get('/categorias', async () => {
+        const Categoria = (await import('../models/Categoria')).Categoria;
+        return Categoria.find().sort({ orden: 1 });
+      })
+      .post('/categorias', async ({ body }) => {
+        const Categoria = (await import('../models/Categoria')).Categoria;
+        const categoria = await Categoria.create(body);
+        return { categoria };
+      }, {
+        body: t.Object({
+          nombre: t.String({ minLength: 1 }),
+          slug: t.String({ minLength: 1 }),
+          descripcion: t.Optional(t.String()),
+          imagen: t.Optional(t.String()),
+          orden: t.Optional(t.Number()),
+        }),
+      })
+      .put('/categorias/:id', async ({ params, body }) => {
+        const Categoria = (await import('../models/Categoria')).Categoria;
+        const categoria = await Categoria.findByIdAndUpdate(params.id, body, { new: true });
+        if (!categoria) {
+          return new Response(JSON.stringify({ error: 'No encontrada' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+        }
+        return { categoria };
+      }, {
+        params: t.Object({ id: t.String() }),
+        body: t.Object({
+          nombre: t.Optional(t.String()),
+          slug: t.Optional(t.String()),
+          descripcion: t.Optional(t.String()),
+          imagen: t.Optional(t.String()),
+          activa: t.Optional(t.Boolean()),
+          orden: t.Optional(t.Number()),
+        }),
+      })
+      .delete('/categorias/:id', async ({ params }) => {
+        const Categoria = (await import('../models/Categoria')).Categoria;
+        await Categoria.findByIdAndDelete(params.id);
+        return { success: true };
+      }, {
+        params: t.Object({ id: t.String() }),
+      })
   );

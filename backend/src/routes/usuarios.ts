@@ -45,4 +45,21 @@ export const usuarioRoutes = new Elysia({ prefix: '/api/admin/usuarios' })
         params: t.Object({ id: t.String() }),
         body: t.Object({ role: t.String() })
       })
+      // HU-005: Impersonacion - admin obtiene token de sesion como usuario
+      .post('/:id/impersonar', async ({ params }) => {
+        try {
+          // Crear un token de impersonacion via Clerk
+          const token = await clerkClient.sessions.createSessionToken({
+            userId: params.id,
+          });
+          return { token };
+        } catch (error: any) {
+          return new Response(
+            JSON.stringify({ error: 'No se pudo impersonar al usuario', details: error.message }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      }, {
+        params: t.Object({ id: t.String() }),
+      })
   );
