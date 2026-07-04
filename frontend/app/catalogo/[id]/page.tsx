@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { BotonAgregar } from '@/components/BotonAgregar';
+import ReviewsSection from '@/components/ReviewsSection';
 import type { Pastel } from '@/lib/types';
 
 interface DetallePageProps {
@@ -73,6 +74,9 @@ export default async function DetallePage({ params }: DetallePageProps) {
           </p>
           
           <BotonAgregar pastel={pastel} />
+          
+          {/* HU-032: Reseñas de clientes */}
+          <ReviewsSection pastelNombre={pastel.nombre} />
         </div>
       </div>
     </main>

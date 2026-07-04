@@ -92,6 +92,25 @@ export default function MisRecetasPage() {
     }
   };
 
+  const handleReject = async (recetaId: string) => {
+    if (!confirm('¿Rechazar esta cotización?')) return;
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const res = await fetch(`${getApiUrl()}/api/recetas/${recetaId}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado: 'RECHAZADA' }),
+      });
+      if (res.ok) {
+        setRecetas(recetas.map(r => r._id === recetaId ? { ...r, estado: 'RECHAZADA' } : r));
+      }
+    } catch { /* ignore */ }
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('es-PA', {
       year: 'numeric',
@@ -160,13 +179,21 @@ export default function MisRecetasPage() {
                     <span className={styles.quoteAmount}>${receta.cotizacion.toFixed(2)}</span>
                   </div>
                   {receta.estado === 'COTIZADA' && (
-                    <button 
-                      onClick={() => handlePay(receta._id)}
-                      disabled={payingId === receta._id}
-                      className={styles.payBtn}
-                    >
-                      {payingId === receta._id ? 'Procesando...' : 'Aceptar y Pagar'}
-                    </button>
+                    <div className={styles.quoteActions}>
+                      <button 
+                        onClick={() => handlePay(receta._id)}
+                        disabled={payingId === receta._id}
+                        className={styles.payBtn}
+                      >
+                        {payingId === receta._id ? 'Procesando...' : 'Aceptar y Pagar'}
+                      </button>
+                      <button
+                        onClick={() => handleReject(receta._id)}
+                        className={styles.rejectBtn}
+                      >
+                        Rechazar
+                      </button>
+                    </div>
                   )}
                   {receta.estado === 'ACEPTADA' && (
                     <span className={styles.acceptedBadge}>✓ Aceptada - En preparación</span>

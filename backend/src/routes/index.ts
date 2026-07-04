@@ -14,3 +14,4 @@ export * from './facturas';
 export * from './perfil';
 export * from './extras';
 export * from './mcp';
+export * from './auditoria';

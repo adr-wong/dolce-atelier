@@ -157,11 +157,30 @@
   padding: 0.6rem 1.2rem;
   background: var(--primary, #c9a86c);
   color: white;
-  text-decoration: none;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 0.9rem;
-}
+  .acceptedBadge {
+    color: #10b981;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  /* HU-025: Rechazar */
+  .quoteActions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .rejectBtn {
+    padding: 0.5rem 1rem;
+    background: #fff;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .rejectBtn:hover {
+    background: #fef2f2;
+  }
 
 .payBtn:hover {
   background: var(--primary-dark, #b8956a);
