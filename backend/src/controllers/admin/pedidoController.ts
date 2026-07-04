@@ -33,7 +33,7 @@ export async function listPedidos(context: PedidoControllerContext) {
   }
   const pedidos = await Pedido.find(q);
   set.status = 200;
-  return pedidos;
+  return { pedidos };
 }
 
 export async function updatePedidoStatus(context: PedidoControllerContext) {

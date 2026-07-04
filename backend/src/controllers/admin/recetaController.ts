@@ -11,7 +11,7 @@ export async function listRecetas(context: ElysiaContext) {
   const { set } = context;
   const recetas = await Receta.find();
   set.status = 200;
-  return recetas;
+  return { recetas };
 }
 
 export async function createReceta(context: ElysiaContext) {
