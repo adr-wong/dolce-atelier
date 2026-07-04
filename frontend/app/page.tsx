@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from './home.module.css';
-import AuthButtons from '@/components/AuthButtons';
 
 export const metadata: Metadata = {
   title: 'Dolce Atelier | Pasteles Artesanales Personalizados',
@@ -40,7 +39,6 @@ export default function Home() {
           <h1 className={styles.heroTitle}>Dolce Atelier</h1>
           <p className={styles.heroText}>Elaborados con amor, ingredientes premium y la más alta calidad</p>
           <Link href="/catalogo" className="hero-btn">Ver Catálogo</Link>
-          <AuthButtons />
         </div>
         <div className={styles.heroScroll}>↓</div>
       </section>

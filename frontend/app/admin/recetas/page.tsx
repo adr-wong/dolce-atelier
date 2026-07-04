@@ -5,22 +5,28 @@ import { useAuth } from "@clerk/nextjs";
 import { getRecetas, updateReceta } from "@/lib/adminApi";
 import type { Receta } from "@/lib/adminApi";
 import CotizarModal from "./cotizar-modal";
+import { useAdaptiveRows } from "@/hooks/useAdaptiveRows";
+import Pagination from "@/components/Pagination";
 import styles from "./recetas.module.css";
 
 export default function AdminRecetas() {
   const { getToken } = useAuth();
+  const limit = useAdaptiveRows();
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedReceta, setSelectedReceta] = useState<Receta | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     async function loadRecetas() {
       try {
         const token = await getToken();
         if (!token) return;
-        const data = await getRecetas(token);
-        setRecetas(data);
+        const result = await getRecetas(token, { page: currentPage, limit });
+        setRecetas(result.data);
+        setTotalPages(result.totalPages);
       } catch (error) {
         console.error("Error loading recetas:", error);
       } finally {
@@ -28,7 +34,7 @@ export default function AdminRecetas() {
       }
     }
     loadRecetas();
-  }, [getToken]);
+  }, [getToken, currentPage, limit]);
 
   const handleCotizar = async (id: string, cotizacion: number) => {
     try {
@@ -62,10 +68,11 @@ export default function AdminRecetas() {
   if (loading) return <div>Cargando...</div>;
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <h1 className={styles.title}>Gestión de Recetas</h1>
 
-      <table className={styles.table}>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
         <thead>
           <tr className={styles.theadTr}>
             <th className={styles.th}>ID</th>
@@ -109,6 +116,9 @@ export default function AdminRecetas() {
           ))}
         </tbody>
       </table>
+      </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 
       {selectedReceta && (
         <CotizarModal

@@ -6,16 +6,21 @@ import { toast } from "sonner";
 import { getPasteles, createPastel, updatePastel, deletePastel } from "@/lib/adminApi";
 import type { Pastel, PastelCreateInput } from "@/lib/adminApi";
 import { getApiUrl } from "@/lib/get-api-url";
+import { useAdaptiveRows } from "@/hooks/useAdaptiveRows";
+import Pagination from "@/components/Pagination";
 import styles from "./pasteles.module.css";
 
 export default function AdminPasteles() {
   const { getToken } = useAuth();
+  const limit = useAdaptiveRows();
   const [pasteles, setPasteles] = useState<Pastel[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPastel, setEditingPastel] = useState<Pastel | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [formData, setFormData] = useState<PastelCreateInput>({
     nombre: "",
     descripcion: "",
@@ -29,8 +34,9 @@ export default function AdminPasteles() {
       try {
         const token = await getToken();
         if (!token) return;
-        const data = await getPasteles(token);
-        setPasteles(data);
+        const result = await getPasteles(token, { page: currentPage, limit });
+        setPasteles(result.data);
+        setTotalPages(result.totalPages);
       } catch (error) {
         console.error("Error loading pasteles:", error);
       } finally {
@@ -38,7 +44,7 @@ export default function AdminPasteles() {
       }
     }
     loadPasteles();
-  }, [getToken]);
+  }, [getToken, currentPage, limit]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -156,7 +162,7 @@ export default function AdminPasteles() {
   if (loading) return <div>Cargando...</div>;
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className={styles.header}>
         <h1>Gestión de Pasteles</h1>
         <button
@@ -247,45 +253,49 @@ export default function AdminPasteles() {
         </div>
       )}
 
-      <table className={styles.table}>
-        <thead>
-          <tr className={styles.theadTr}>
-            <th className={styles.th}>Nombre</th>
-            <th className={styles.th}>Categoría</th>
-            <th className={styles.th}>Precio</th>
-            <th className={styles.th}>Estado</th>
-            <th className={styles.th}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pasteles.map((pastel) => (
-            <tr key={pastel._id} className={styles.tr}>
-              <td className={styles.td}>{pastel.nombre}</td>
-              <td className={`${styles.td} ${styles.capitalize}`}>{pastel.categoria}</td>
-              <td className={styles.td}>${pastel.precio}</td>
-              <td className={styles.td}>
-                <span className={`${styles.statusBadge} ${pastel.disponible ? styles.statusActive : styles.statusInactive}`}>
-                  {pastel.disponible ? "Activo" : "Agotado"}
-                </span>
-              </td>
-              <td className={styles.td}>
-                <button 
-                  className={styles.actionBtn}
-                  onClick={() => handleEdit(pastel)}
-                >
-                  ✏️
-                </button>
-                <button
-                  className={styles.actionBtnDanger}
-                  onClick={() => handleDelete(pastel._id, pastel.imagen)}
-                >
-                  🗑️
-                </button>
-              </td>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr className={styles.theadTr}>
+              <th className={styles.th}>Nombre</th>
+              <th className={styles.th}>Categoría</th>
+              <th className={styles.th}>Precio</th>
+              <th className={styles.th}>Estado</th>
+              <th className={styles.th}>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {pasteles.map((pastel) => (
+              <tr key={pastel._id} className={styles.tr}>
+                <td className={styles.td}>{pastel.nombre}</td>
+                <td className={`${styles.td} ${styles.capitalize}`}>{pastel.categoria}</td>
+                <td className={styles.td}>${pastel.precio}</td>
+                <td className={styles.td}>
+                  <span className={`${styles.statusBadge} ${pastel.disponible ? styles.statusActive : styles.statusInactive}`}>
+                    {pastel.disponible ? "Activo" : "Agotado"}
+                  </span>
+                </td>
+                <td className={styles.td}>
+                  <button 
+                    className={styles.actionBtn}
+                    onClick={() => handleEdit(pastel)}
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    className={styles.actionBtnDanger}
+                    onClick={() => handleDelete(pastel._id, pastel.imagen)}
+                  >
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
     </div>
   );
 }

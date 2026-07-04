@@ -1,7 +1,8 @@
 .container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   flex-direction: row;
+  overflow: hidden;
 }
 
 .sidebarToggle {
@@ -96,16 +97,20 @@
 
 .main {
   flex: 1;
+  min-height: 0;
   padding: 2rem;
   margin-left: 0;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 768px) {
   .main {
     padding: 6rem 0.75rem 1rem;
+    overflow-y: auto;
   }
 }

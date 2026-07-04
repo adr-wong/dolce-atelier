@@ -18,17 +18,6 @@ export default function AdminUsuarios() {
   const { getToken } = useAuth();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-
-  const usuariosFiltrados = usuarios.filter(u => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      u.email.toLowerCase().includes(q) ||
-      (u.firstName || '').toLowerCase().includes(q) ||
-      (u.lastName || '').toLowerCase().includes(q)
-    );
-  });
 
   useEffect(() => {
     async function getUsuarios() {
@@ -77,17 +66,7 @@ export default function AdminUsuarios() {
     <div>
       <h1 className={styles.title}>Gestión de Usuarios</h1>
 
-      <div className={styles.searchBar}>
-        <input
-          type="text"
-          placeholder="Buscar por email o nombre..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className={styles.searchInput}
-        />
-        <span className={styles.count}>{usuariosFiltrados.length} usuarios</span>
-      </div>
-
+      <div className={styles.tableWrapper}>
       <table className={styles.table}>
         <thead>
           <tr className={styles.theadTr}>
@@ -99,7 +78,7 @@ export default function AdminUsuarios() {
           </tr>
         </thead>
         <tbody>
-          {usuariosFiltrados.map((usuario) => (
+          {usuarios.map((usuario) => (
             <tr key={usuario.id} className={styles.tr}>
               <td className={styles.td}>{usuario.email}</td>
               <td className={styles.td}>
@@ -133,6 +112,7 @@ export default function AdminUsuarios() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

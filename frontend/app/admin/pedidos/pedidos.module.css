@@ -1,9 +1,14 @@
 .title {
-  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .filterSelect {
-  margin-top: 1rem;
   padding: 0.5rem;
   border-radius: 8px;
 }
@@ -14,6 +19,25 @@
   background: var(--light);
   border-radius: 8px;
   overflow: hidden;
+}
+
+.tableWrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 650px;
+  }
 }
 
 .theadTr {

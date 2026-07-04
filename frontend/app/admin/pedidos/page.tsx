@@ -4,13 +4,18 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { getPedidos, updatePedidoStatus } from "@/lib/adminApi";
 import type { Pedido } from "@/lib/adminApi";
+import { useAdaptiveRows } from "@/hooks/useAdaptiveRows";
+import Pagination from "@/components/Pagination";
 import styles from "./pedidos.module.css";
 
 export default function AdminPedidos() {
   const { getToken } = useAuth();
+  const limit = useAdaptiveRows();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     async function loadPedidos() {
@@ -18,8 +23,9 @@ export default function AdminPedidos() {
         const token = await getToken();
         if (!token) return;
         const status = filtroEstado || undefined;
-        const data = await getPedidos(token, { status });
-        setPedidos(data);
+        const result = await getPedidos(token, { status, page: currentPage, limit });
+        setPedidos(result.data);
+        setTotalPages(result.totalPages);
       } catch (error) {
         console.error("Error loading pedidos:", error);
       } finally {
@@ -27,7 +33,12 @@ export default function AdminPedidos() {
       }
     }
     loadPedidos();
-  }, [getToken, filtroEstado]);
+  }, [getToken, filtroEstado, currentPage, limit]);
+
+  const handleFiltroChange = (value: string) => {
+    setFiltroEstado(value);
+    setCurrentPage(1);
+  };
 
   const handleStatusChange = async (id: string, status: string) => {
     try {
@@ -53,12 +64,12 @@ export default function AdminPedidos() {
   if (loading) return <div>Cargando...</div>;
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className={styles.title}>
         <h1>Gestión de Pedidos</h1>
         <select
           value={filtroEstado}
-          onChange={(e) => setFiltroEstado(e.target.value)}
+          onChange={(e) => handleFiltroChange(e.target.value)}
           className={styles.filterSelect}
         >
           <option value="">Todos los estados</option>
@@ -72,7 +83,8 @@ export default function AdminPedidos() {
         </select>
       </div>
 
-      <table className={styles.table}>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
         <thead>
           <tr className={styles.theadTr}>
             <th className={styles.th}>ID</th>
@@ -118,7 +130,10 @@ export default function AdminPedidos() {
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
     </div>
   );
 }

@@ -112,10 +112,18 @@ interface PastelesResponse {
   limit: number;
 }
 
-async function getPasteles(token: string, params?: { search?: string; page?: number }): Promise<Pastel[]> {
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+async function getPasteles(token: string, params?: { search?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Pastel>> {
   const query = new URLSearchParams();
   if (params?.search) query.set('search', params.search);
   if (params?.page) query.set('page', params.page.toString());
+  if (params?.limit) query.set('limit', params.limit.toString());
   const queryString = query.toString();
   const endpoint = `/api/admin/pasteles${queryString ? `?${queryString}` : ''}`;
   
@@ -129,7 +137,12 @@ async function getPasteles(token: string, params?: { search?: string; page?: num
   }
 
   const data: PastelesResponse = await response.json();
-  return data.pasteles;
+  return {
+    data: data.pasteles,
+    total: data.total,
+    page: data.page,
+    totalPages: Math.ceil(data.total / data.limit),
+  };
 }
 
 async function createPastel(token: string, data: PastelCreateInput): Promise<Pastel> {
@@ -174,10 +187,12 @@ async function deletePastel(token: string, id: string): Promise<void> {
   }
 }
 
-async function getPedidos(token: string, params?: { status?: string; date?: string }): Promise<Pedido[]> {
+async function getPedidos(token: string, params?: { status?: string; date?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Pedido>> {
   const query = new URLSearchParams();
   if (params?.status) query.set('status', params.status);
   if (params?.date) query.set('date', params.date);
+  if (params?.page) query.set('page', params.page.toString());
+  if (params?.limit) query.set('limit', params.limit.toString());
   const queryString = query.toString();
   const endpoint = `/api/admin/pedidos${queryString ? `?${queryString}` : ''}`;
   
@@ -190,7 +205,13 @@ async function getPedidos(token: string, params?: { status?: string; date?: stri
     throw new Error('Request failed');
   }
 
-  return response.json();
+  const data = await response.json();
+  return {
+    data: data.pedidos,
+    total: data.total,
+    page: data.page,
+    totalPages: data.totalPages,
+  };
 }
 
 async function updatePedidoStatus(token: string, id: string, status: string): Promise<Pedido> {
@@ -208,8 +229,14 @@ async function updatePedidoStatus(token: string, id: string, status: string): Pr
   return response.json();
 }
 
-async function getRecetas(token: string): Promise<Receta[]> {
-  const response = await fetch(`${BASE_URL}/api/admin/recetas`, {
+async function getRecetas(token: string, params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Receta>> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set('page', params.page.toString());
+  if (params?.limit) query.set('limit', params.limit.toString());
+  const queryString = query.toString();
+  const endpoint = `/api/admin/recetas${queryString ? `?${queryString}` : ''}`;
+  
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
     credentials: 'include',
     headers: getHeaders(token),
   });
@@ -218,7 +245,13 @@ async function getRecetas(token: string): Promise<Receta[]> {
     throw new Error('Request failed');
   }
 
-  return response.json();
+  const data = await response.json();
+  return {
+    data: data.recetas,
+    total: data.total,
+    page: data.page,
+    totalPages: data.totalPages,
+  };
 }
 
 async function createReceta(token: string, data: RecetaCreateInput): Promise<Receta> {

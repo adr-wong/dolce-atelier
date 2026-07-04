@@ -29,6 +29,39 @@
   margin: 0 auto 1.5rem;
 }
 
+.iconLoading {
+  width: 80px;
+  height: 80px;
+  background: #f59e0b;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  margin: 0 auto 1.5rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.iconError {
+  width: 80px;
+  height: 80px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  margin: 0 auto 1.5rem;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
 .title {
   font-family: var(--font-serif);
   font-size: 2rem;

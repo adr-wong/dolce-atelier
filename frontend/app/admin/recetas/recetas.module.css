@@ -1,5 +1,6 @@
 .title {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
 }
 
 .table {
@@ -8,6 +9,25 @@
   background: var(--light);
   border-radius: 8px;
   overflow: hidden;
+}
+
+.tableWrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 650px;
+  }
 }
 
 .theadTr {

@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/get-api-url';
+import ChefAnimation from '@/components/ChefAnimation';
 import styles from './mis-recetas.module.css';
 
 interface Receta {
@@ -39,30 +40,50 @@ export default function MisRecetasPage() {
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState<string | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchRecetas = useCallback(async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const res = await fetch(`${getApiUrl()}/api/recetas`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setRecetas(data.recetas || []);
+      }
+    } catch (error) {
+      console.error('Error fetching recetas:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [getToken]);
 
   useEffect(() => {
-    async function fetchRecetas() {
-      try {
-        const token = await getToken();
-        if (!token) return;
+    fetchRecetas();
+  }, [fetchRecetas]);
 
-        const res = await fetch(`${getApiUrl()}/api/recetas`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  useEffect(() => {
+    const hasPendingPayment = recetas.some(
+      (r) => r.estado === 'COTIZADA' && r.cotizacion !== null
+    );
 
-        if (res.ok) {
-          const data = await res.json();
-          setRecetas(data.recetas || []);
-        }
-      } catch (error) {
-        console.error('Error fetching recetas:', error);
-      } finally {
-        setLoading(false);
-      }
+    if (hasPendingPayment) {
+      pollingRef.current = setInterval(fetchRecetas, 3000);
+    } else if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
     }
 
-    fetchRecetas();
-  }, [getToken]);
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+    };
+  }, [recetas, fetchRecetas]);
 
   const handlePay = async (recetaId: string) => {
     try {
@@ -90,25 +111,6 @@ export default function MisRecetasPage() {
       alert('Error al conectar con el servidor');
       setPayingId(null);
     }
-  };
-
-  const handleReject = async (recetaId: string) => {
-    if (!confirm('¿Rechazar esta cotización?')) return;
-    try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(`${getApiUrl()}/api/recetas/${recetaId}`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ estado: 'RECHAZADA' }),
-      });
-      if (res.ok) {
-        setRecetas(recetas.map(r => r._id === recetaId ? { ...r, estado: 'RECHAZADA' } : r));
-      }
-    } catch { /* ignore */ }
   };
 
   const formatDate = (dateStr: string) => {
@@ -179,21 +181,13 @@ export default function MisRecetasPage() {
                     <span className={styles.quoteAmount}>${receta.cotizacion.toFixed(2)}</span>
                   </div>
                   {receta.estado === 'COTIZADA' && (
-                    <div className={styles.quoteActions}>
-                      <button 
-                        onClick={() => handlePay(receta._id)}
-                        disabled={payingId === receta._id}
-                        className={styles.payBtn}
-                      >
-                        {payingId === receta._id ? 'Procesando...' : 'Aceptar y Pagar'}
-                      </button>
-                      <button
-                        onClick={() => handleReject(receta._id)}
-                        className={styles.rejectBtn}
-                      >
-                        Rechazar
-                      </button>
-                    </div>
+                    <button 
+                      onClick={() => handlePay(receta._id)}
+                      disabled={payingId === receta._id}
+                      className={styles.payBtn}
+                    >
+                      {payingId === receta._id ? 'Procesando...' : 'Aceptar y Pagar'}
+                    </button>
                   )}
                   {receta.estado === 'ACEPTADA' && (
                     <span className={styles.acceptedBadge}>✓ Aceptada - En preparación</span>
@@ -210,6 +204,12 @@ export default function MisRecetasPage() {
               {receta.estado === 'REVISANDO' && (
                 <div className={styles.reviewNote}>
                   🔍 Nuestro equipo está revisando tu solicitud
+                </div>
+              )}
+
+              {(receta.estado === 'PENDIENTE' || receta.estado === 'REVISANDO') && (
+                <div className={styles.animationContainer}>
+                  <ChefAnimation estado={receta.estado} />
                 </div>
               )}
 

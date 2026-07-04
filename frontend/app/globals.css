@@ -270,38 +270,3 @@ a {
     transform: translateX(0);
   }
 }
-
-/* HU-006/007/008/040: Accesibilidad */
-.skipLink {
-  position: absolute;
-  top: -100px;
-  left: 8px;
-  background: #c41e3a;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 4px;
-  z-index: 1000;
-  font-size: 14px;
-  text-decoration: none;
-  transition: top 0.2s;
-}
-.skipLink:focus {
-  top: 8px;
-}
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}

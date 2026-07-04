@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState, useTransition, useCallback } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useCarritoStore } from '@/store/carrito';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { Pastel } from '@/lib/types';
@@ -11,14 +11,6 @@ import styles from './catalogo.module.css';
 import { getApiUrl } from '@/lib/get-api-url';
 
 const CATEGORIAS = ['todos', 'chocolate', 'vainilla', 'frutas', 'especial'];
-const ORDEN_OPCIONES = [
-  { value: 'createdAt-desc', label: 'Más recientes' },
-  { value: 'createdAt-asc', label: 'Más antiguos' },
-  { value: 'precio-asc', label: 'Precio: menor a mayor' },
-  { value: 'precio-desc', label: 'Precio: mayor a menor' },
-  { value: 'nombre-asc', label: 'Nombre: A-Z' },
-  { value: 'nombre-desc', label: 'Nombre: Z-A' },
-];
 
 interface CatalogoDatos {
   pasteles: Pastel[];
@@ -39,45 +31,12 @@ export default function CatalogoClient() {
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
 
-  // HU-029: búsqueda con debounce
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
-  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-
-  // HU-030: filtro por rango de precio
-  const [precioMin, setPrecioMin] = useState(searchParams.get('precioMin') || '');
-  const [precioMax, setPrecioMax] = useState(searchParams.get('precioMax') || '');
-
-  // HU-031: ordenamiento
-  const [ordenValue, setOrdenValue] = useState(
-    `${searchParams.get('ordenarPor') || 'createdAt'}-${searchParams.get('orden') || 'desc'}`
-  );
-
-  // Debounce búsqueda: 300ms
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Cargar pasteles
   useEffect(() => {
     async function cargarPasteles() {
       setLoading(true);
       try {
-        const params = new URLSearchParams();
-        params.set('page', String(page));
-        params.set('limit', '12');
-        if (categoria !== 'todos') params.set('categoria', categoria);
-        if (debouncedSearch) params.set('q', debouncedSearch);
-        if (precioMin) params.set('precioMin', precioMin);
-        if (precioMax) params.set('precioMax', precioMax);
-
-        const [ordenarPor, orden] = ordenValue.split('-');
-        params.set('ordenarPor', ordenarPor);
-        params.set('orden', orden);
-
-        const res = await fetch(`${getApiUrl()}/api/pasteles?${params.toString()}`);
+        const catParam = categoria !== 'todos' ? `&categoria=${categoria}` : '';
+        const res = await fetch(`${getApiUrl()}/api/pasteles?page=${page}&limit=12${catParam}`);
         const data = await res.json();
         setDatos(data);
       } catch (error) {
@@ -88,9 +47,14 @@ export default function CatalogoClient() {
       }
     }
     cargarPasteles();
-  }, [categoria, page, debouncedSearch, precioMin, precioMax, ordenValue]);
+  }, [categoria, page]);
 
   const totalItems = items.reduce((sum, item) => sum + item.cantidad, 0);
+
+  const getPastelesFiltrados = () => {
+    if (!datos || !datos.pasteles) return [];
+    return datos.pasteles.filter((p) => p.disponible);
+  };
 
   const handleAgregar = (pastel: Pastel) => {
     agregar(pastel);
@@ -104,14 +68,10 @@ export default function CatalogoClient() {
     });
   };
 
-  const aplicarFiltros = () => {
-    startTransition(() => {
-      // forces re-fetch via state change handled by useEffect
-    });
-  };
-
   return (
-    <main className={`${styles.container} ${isPending ? styles.pending : ''}`}>
+    <main
+      className={`${styles.container} ${isPending ? styles.pending : ''}`}
+    >
       <div className={styles.header}>
         <h1 className={styles.title}>Nuestro Catálogo</h1>
         <Link href="/carrito" className={styles.cartLink}>
@@ -120,7 +80,6 @@ export default function CatalogoClient() {
         </Link>
       </div>
 
-      {/* Categorías */}
       <div className={styles.tabsContainer}>
         {CATEGORIAS.map(cat => {
           const isActive = categoria === cat || (cat === 'todos' && categoria === 'todos');
@@ -136,69 +95,17 @@ export default function CatalogoClient() {
         })}
       </div>
 
-      {/* HU-029: Búsqueda por nombre + HU-030: Filtro precio + HU-031: Orden */}
-      <div className={styles.filtersRow}>
-        <div className={styles.searchBox}>
-          <input
-            type="text"
-            placeholder="Buscar pasteles..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={styles.searchInput}
-          />
-          {searchTerm && (
-            <button
-              className={styles.clearSearch}
-              onClick={() => setSearchTerm('')}
-              aria-label="Limpiar búsqueda"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
-        <div className={styles.priceFilter}>
-          <input
-            type="number"
-            placeholder="Precio min"
-            value={precioMin}
-            onChange={(e) => setPrecioMin(e.target.value)}
-            className={styles.priceInput}
-            min="0"
-          />
-          <span className={styles.priceSeparator}>—</span>
-          <input
-            type="number"
-            placeholder="Precio max"
-            value={precioMax}
-            onChange={(e) => setPrecioMax(e.target.value)}
-            className={styles.priceInput}
-            min="0"
-          />
-        </div>
-
-        <select
-          value={ordenValue}
-          onChange={(e) => setOrdenValue(e.target.value)}
-          className={styles.sortSelect}
-        >
-          {ORDEN_OPCIONES.map(op => (
-            <option key={op.value} value={op.value}>{op.label}</option>
-          ))}
-        </select>
-      </div>
-
       {loading ? (
         <div className={styles.loadingContainer}>
           <p>Cargando pasteles...</p>
         </div>
-      ) : datos && datos.pasteles.length === 0 ? (
+      ) : getPastelesFiltrados().length === 0 ? (
         <div className={styles.emptyContainer}>
-          <p>No hay pasteles que coincidan con tu búsqueda.</p>
+          <p>No hay pasteles disponibles en esta categoría.</p>
         </div>
       ) : (
         <div className={styles.grid}>
-          {datos?.pasteles.map(pastel => (
+          {getPastelesFiltrados().map(pastel => (
             <div key={pastel._id} className={styles.card}>
               <div className={styles.imageContainer}>
                 <Image
