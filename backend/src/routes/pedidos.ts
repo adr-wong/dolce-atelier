@@ -81,4 +81,43 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
         return { pedido };
       }, {
         params: t.Object({ id: t.String() }),
+      })
+      .put('/:id/cancelar', async ({ params, headers }) => {
+        const userId = await authMiddleware(headers);
+        if (!userId) {
+          return new Response(JSON.stringify({ error: 'No autenticado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        const pedido = await pedidoService.obtener(params.id);
+        if (!pedido) {
+          return new Response(JSON.stringify({ error: 'Pedido no encontrado' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (pedido.clerkUserId !== userId) {
+          return new Response(JSON.stringify({ error: 'Acceso denegado' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (pedido.estado !== 'PENDIENTE') {
+          return new Response(
+            JSON.stringify({ error: 'Solo se pueden cancelar pedidos pendientes' }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const actualizado = await pedidoService.actualizarEstado(params.id, {
+          estado: 'CANCELADO',
+        });
+
+        return { pedido: actualizado };
+      }, {
+        params: t.Object({ id: t.String() }),
       });

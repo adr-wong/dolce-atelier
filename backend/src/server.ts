@@ -17,6 +17,7 @@ import {
   usuarioRoutes,
   reembolsoRoutes,
   descuentoRoutes,
+  reportesRoutes,
 } from './routes';
 
 const PASTELES_DATA = [
@@ -222,7 +223,8 @@ export const app = new Elysia()
   .use(uploadRoutes)
   .use(usuarioRoutes)
   .use(reembolsoRoutes)
-  .use(descuentoRoutes);
+  .use(descuentoRoutes)
+  .use(reportesRoutes);
 
 const PORT = parseInt(process.env.PORT || '3001');
 
