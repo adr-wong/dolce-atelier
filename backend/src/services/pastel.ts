@@ -5,7 +5,7 @@ import type { FiltroPasteles } from '../schemas/pastel';
 import type { FilterQuery, SortOrder } from 'mongoose';
 
 export class PastelService {
-  async listar(filtros: FiltroPasteles): Promise<{
+  async listar(filtros: FiltroPasteles = {}): Promise<{
     pasteles: IPastel[];
     total: number;
     page: number;
