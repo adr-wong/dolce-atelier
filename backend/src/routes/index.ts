@@ -11,3 +11,5 @@ export * from './descuentos';
 export * from './reportes';
 export * from './dlq';
 export * from './facturas';
+export * from './perfil';
+export * from './extras';

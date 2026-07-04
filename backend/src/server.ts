@@ -20,6 +20,10 @@ import {
   reportesRoutes,
   dlqRoutes,
   facturaRoutes,
+  perfilRoutes,
+  recetaAbacRoutes,
+  carritoRoutes,
+  metodoPagoRoutes,
 } from './routes';
 
 const PASTELES_DATA = [
@@ -228,7 +232,11 @@ export const app = new Elysia()
   .use(descuentoRoutes)
   .use(reportesRoutes)
   .use(dlqRoutes)
-  .use(facturaRoutes);
+  .use(facturaRoutes)
+  .use(perfilRoutes)
+  .use(recetaAbacRoutes)
+  .use(carritoRoutes)
+  .use(metodoPagoRoutes);
 
 const PORT = parseInt(process.env.PORT || '3001');
 

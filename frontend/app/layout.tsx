@@ -26,6 +26,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="es">
         <body>
+          {/* HU-007: Skip links para accesibilidad */}
+          <a href="#main-content" className="skipLink">
+            Saltar al contenido principal
+          </a>
           <CartMergeProvider>
             <ErrorBoundary>
               <Toaster richColors position="top-right" />
