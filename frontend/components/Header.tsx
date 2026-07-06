@@ -1,6 +1,6 @@
 'use client';
 
-import { UserButton, useUser, SignedIn, SignedOut } from '@clerk/nextjs';
+import { UserButton, useUser, Show } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useMobile } from '@/hooks/useMediaQuery';
@@ -28,9 +28,9 @@ export default function Header() {
           <button className={styles.menuButton} onClick={toggleMenu} aria-label="Toggle menu">
             ☰
           </button>
-          <SignedIn>
+          <Show when="signed-in">
             <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          </Show>
         </div>
       )}
 
@@ -47,28 +47,28 @@ export default function Header() {
         <Link href="/carrito" className={styles.link} onClick={closeMenu}>
           Carrito
         </Link>
-        <SignedIn>
+        <Show when="signed-in">
           <Link href="/pedidos" className={styles.link} onClick={closeMenu}>
             Mis Pedidos
           </Link>
           <Link href="/recetas/mis" className={styles.link} onClick={closeMenu}>
             Mis Recetas
           </Link>
-        </SignedIn>
+        </Show>
         {isAdmin && (
           <Link href="/admin" className={styles.adminLink} onClick={closeMenu}>
             Panel Admin
           </Link>
         )}
-        <SignedOut>
+        <Show when="signed-out">
           <Link href="/sign-in" className={styles.linkSignIn} onClick={closeMenu}>
             Iniciar Sesión
           </Link>
-        </SignedOut>
+        </Show>
         {!isMobile && (
-          <SignedIn>
+          <Show when="signed-in">
             <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          </Show>
         )}
       </nav>
     </header>

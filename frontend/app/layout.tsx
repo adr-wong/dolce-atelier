@@ -23,9 +23,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="es">
-        <body>
+    <html lang="es">
+      <body>
+        <ClerkProvider>
           <CartMergeProvider>
             <ErrorBoundary>
               <Toaster richColors position="top-right" />
@@ -33,8 +33,8 @@ export default function RootLayout({
               {children}
             </ErrorBoundary>
           </CartMergeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }
