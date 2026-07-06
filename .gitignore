@@ -46,3 +46,8 @@ coverage/
 # Next.js build output (generated at runtime)
 frontend/.next/
 backend/dist/
+
+# Playwright
+frontend/test-results/
+frontend/playwright-report/
+frontend/playwright/.cache/
