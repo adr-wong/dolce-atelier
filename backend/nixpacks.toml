@@ -4,5 +4,8 @@ nixPkgs = ["bun"]
 [phases.install]
 cmds = ["bun install --frozen-lockfile"]
 
+[phases.build]
+cmds = ["echo 'no build needed'"]
+
 [start]
 cmd = "bun run src/server.ts"
