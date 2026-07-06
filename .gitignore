@@ -45,3 +45,4 @@ coverage/
 *.ts.map
 # Next.js build output (generated at runtime)
 frontend/.next/
+backend/dist/
