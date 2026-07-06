@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { ClerkOfflineError } from '@clerk/react/errors';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/get-api-url';
 import styles from './mis-recetas.module.css';
@@ -44,7 +45,6 @@ export default function MisRecetasPage() {
     async function fetchRecetas() {
       try {
         const token = await getToken();
-        if (!token) return;
 
         const res = await fetch(`${getApiUrl()}/api/recetas`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -55,7 +55,11 @@ export default function MisRecetasPage() {
           setRecetas(data.recetas || []);
         }
       } catch (error) {
-        console.error('Error fetching recetas:', error);
+        if (ClerkOfflineError.is(error)) {
+          console.error('Offline:', error);
+        } else {
+          console.error('Error fetching recetas:', error);
+        }
       } finally {
         setLoading(false);
       }
@@ -68,7 +72,6 @@ export default function MisRecetasPage() {
     try {
       setPayingId(recetaId);
       const token = await getToken();
-      if (!token) return;
 
       const res = await fetch(`${getApiUrl()}/api/recetas/${recetaId}/aceptar-pagar`, {
         method: 'POST',
@@ -86,8 +89,13 @@ export default function MisRecetasPage() {
         setPayingId(null);
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error al conectar con el servidor');
+      if (ClerkOfflineError.is(error)) {
+        console.error('Offline:', error);
+        alert('Sin conexión a internet');
+      } else {
+        console.error('Error:', error);
+        alert('Error al conectar con el servidor');
+      }
       setPayingId(null);
     }
   };

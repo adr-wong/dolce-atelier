@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { ClerkOfflineError } from '@clerk/react/errors';
 import { getApiUrl } from '@/lib/get-api-url';
 import styles from './receta-exito.module.css';
 
@@ -28,11 +29,6 @@ function RecetaExitoContent() {
     async function confirmarPago() {
       try {
         const token = await getToken();
-        if (!token) {
-          setStatus('error');
-          setErrorMsg('No se pudo autenticar');
-          return;
-        }
 
         const res = await fetch(`${getApiUrl()}/api/recetas/${recetaId}/confirmar-pago`, {
           method: 'POST',
@@ -55,13 +51,23 @@ function RecetaExitoContent() {
             setErrorMsg(data.error || 'Error confirmando el pago');
           }
         }
-      } catch {
-        attempts++;
-        if (attempts < maxAttempts) {
-          setTimeout(confirmarPago, 2000);
+      } catch (error) {
+        if (ClerkOfflineError.is(error)) {
+          attempts++;
+          if (attempts < maxAttempts) {
+            setTimeout(confirmarPago, 2000);
+          } else {
+            setStatus('error');
+            setErrorMsg('Sin conexión a internet');
+          }
         } else {
-          setStatus('error');
-          setErrorMsg('Error de conexion con el servidor');
+          attempts++;
+          if (attempts < maxAttempts) {
+            setTimeout(confirmarPago, 2000);
+          } else {
+            setStatus('error');
+            setErrorMsg('Error de conexion con el servidor');
+          }
         }
       }
     }

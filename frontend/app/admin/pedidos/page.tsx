@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { ClerkOfflineError } from "@clerk/react/errors";
 import { getPedidos, updatePedidoStatus } from "@/lib/adminApi";
 import type { Pedido } from "@/lib/adminApi";
 import { useAdaptiveRows } from "@/hooks/useAdaptiveRows";
@@ -21,13 +22,16 @@ export default function AdminPedidos() {
     async function loadPedidos() {
       try {
         const token = await getToken();
-        if (!token) return;
         const status = filtroEstado || undefined;
-        const result = await getPedidos(token, { status, page: currentPage, limit });
+        const result = await getPedidos(token!, { status, page: currentPage, limit });
         setPedidos(result.data);
         setTotalPages(result.totalPages);
       } catch (error) {
-        console.error("Error loading pedidos:", error);
+        if (ClerkOfflineError.is(error)) {
+          console.error("Offline:", error);
+        } else {
+          console.error("Error loading pedidos:", error);
+        }
       } finally {
         setLoading(false);
       }
@@ -43,11 +47,14 @@ export default function AdminPedidos() {
   const handleStatusChange = async (id: string, status: string) => {
     try {
       const token = await getToken();
-      if (!token) return;
-      await updatePedidoStatus(token, id, status);
+      await updatePedidoStatus(token!, id, status);
       setPedidos(pedidos.map(p => p._id === id ? { ...p, estado: status } : p));
     } catch (error) {
-      console.error("Error updating status:", error);
+      if (ClerkOfflineError.is(error)) {
+        console.error("Offline:", error);
+      } else {
+        console.error("Error updating status:", error);
+      }
     }
   };
 

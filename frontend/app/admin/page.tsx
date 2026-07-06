@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { ClerkOfflineError } from "@clerk/react/errors";
 import { getDashboardStats, type DashboardStats } from "@/lib/adminApi";
 import styles from "./admin-dashboard.module.css";
 
@@ -20,11 +21,14 @@ export default function AdminDashboard() {
     async function loadStats() {
       try {
         const token = await getToken();
-        if (!token) return;
-        const data = await getDashboardStats(token);
+        const data = await getDashboardStats(token!);
         setStats(data);
       } catch (error) {
-        console.error("Error loading stats:", error);
+        if (ClerkOfflineError.is(error)) {
+          console.error("Offline:", error);
+        } else {
+          console.error("Error loading stats:", error);
+        }
       } finally {
         setLoading(false);
       }

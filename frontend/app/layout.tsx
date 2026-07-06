@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        <ClerkProvider>
+        <ClerkProvider afterSignOutUrl="/">
           <CartMergeProvider>
             <ErrorBoundary>
               <Toaster richColors position="top-right" />

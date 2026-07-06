@@ -22,18 +22,16 @@ export default function Header() {
       <Link href="/" className={styles.logo}>
         Dolce <span className={styles.logoAccent}>Atelier</span>
       </Link>
-
       {isMobile && (
         <div className={styles.mobileActions}>
           <button className={styles.menuButton} onClick={toggleMenu} aria-label="Toggle menu">
             ☰
           </button>
           <Show when="signed-in">
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           </Show>
         </div>
       )}
-
       <nav className={`${styles.nav} ${isMobile && menuOpen ? styles.navOpen : ''}`}>
         <Link href="/catalogo" className={styles.link} onClick={closeMenu}>
           Catálogo
@@ -67,7 +65,7 @@ export default function Header() {
         </Show>
         {!isMobile && (
           <Show when="signed-in">
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           </Show>
         )}
       </nav>

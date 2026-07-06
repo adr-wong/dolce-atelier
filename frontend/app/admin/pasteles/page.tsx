@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { ClerkOfflineError } from "@clerk/react/errors";
 import { toast } from "sonner";
 import { getPasteles, createPastel, updatePastel, deletePastel } from "@/lib/adminApi";
 import type { Pastel, PastelCreateInput } from "@/lib/adminApi";
@@ -33,12 +34,15 @@ export default function AdminPasteles() {
     async function loadPasteles() {
       try {
         const token = await getToken();
-        if (!token) return;
-        const result = await getPasteles(token, { page: currentPage, limit });
+        const result = await getPasteles(token!, { page: currentPage, limit });
         setPasteles(result.data);
         setTotalPages(result.totalPages);
       } catch (error) {
-        console.error("Error loading pasteles:", error);
+        if (ClerkOfflineError.is(error)) {
+          console.error("Offline:", error);
+        } else {
+          console.error("Error loading pasteles:", error);
+        }
       } finally {
         setLoading(false);
       }
@@ -68,7 +72,11 @@ export default function AdminPasteles() {
         setFormData({ ...formData, imagen: data.url });
       }
     } catch (error) {
-      console.error("Error uploading:", error);
+      if (ClerkOfflineError.is(error)) {
+        console.error("Offline:", error);
+      } else {
+        console.error("Error uploading:", error);
+      }
     } finally {
       setUploading(false);
     }
@@ -89,16 +97,20 @@ export default function AdminPasteles() {
     try {
       console.log("Creando pastel:", formData);
       const token = await getToken();
-      if (!token) return;
-      const nuevo = await createPastel(token, formData);
+      const nuevo = await createPastel(token!, formData);
       console.log("Creado:", nuevo);
       setPasteles([...pasteles, nuevo]);
       setShowModal(false);
       setFormData({ nombre: "", descripcion: "", precio: 0, categoria: "general", imagen: "" });
       toast.success("Pastel creado exitosamente");
     } catch (error) {
-      console.error("Error creating pastel:", error);
-      toast.error("Error al crear pastel");
+      if (ClerkOfflineError.is(error)) {
+        console.error("Offline:", error);
+        toast.error("Sin conexión a internet");
+      } else {
+        console.error("Error creating pastel:", error);
+        toast.error("Error al crear pastel");
+      }
     }
   };
 
@@ -128,14 +140,18 @@ export default function AdminPasteles() {
     
     try {
       const token = await getToken();
-      if (!token) return;
-      const actualizado = await updatePastel(token, editingPastel._id, formData);
+      const actualizado = await updatePastel(token!, editingPastel._id, formData);
       setPasteles(pasteles.map(p => p._id === editingPastel._id ? actualizado : p));
       closeModal();
       toast.success("Pastel actualizado exitosamente");
     } catch (error) {
-      console.error("Error updating pastel:", error);
-      toast.error("Error al actualizar pastel");
+      if (ClerkOfflineError.is(error)) {
+        console.error("Offline:", error);
+        toast.error("Sin conexión a internet");
+      } else {
+        console.error("Error updating pastel:", error);
+        toast.error("Error al actualizar pastel");
+      }
     }
   };
 
@@ -149,13 +165,17 @@ export default function AdminPasteles() {
     if (!confirm("¿Estás seguro de eliminar este pastel?")) return;
     try {
       const token = await getToken();
-      if (!token) return;
-      await deletePastel(token, id);
+      await deletePastel(token!, id);
       setPasteles(pasteles.filter(p => p._id !== id));
       toast.success("Pastel eliminado exitosamente");
     } catch (error) {
-      console.error("Error deleting pastel:", error);
-      toast.error("Error al eliminar pastel");
+      if (ClerkOfflineError.is(error)) {
+        console.error("Offline:", error);
+        toast.error("Sin conexión a internet");
+      } else {
+        console.error("Error deleting pastel:", error);
+        toast.error("Error al eliminar pastel");
+      }
     }
   };
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { ClerkOfflineError } from '@clerk/react/errors';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCarritoStore } from '@/store/carrito';
@@ -37,11 +38,6 @@ export default function CheckoutPage() {
     setLoading(true);
     try {
       const token = await getToken();
-      if (!token) {
-        console.error('[Checkout] No token available');
-        window.location.href = '/checkout/error?reason=no_token';
-        return;
-      }
 
       const body = {
         email: formData.email,
@@ -73,8 +69,13 @@ export default function CheckoutPage() {
         window.location.href = '/checkout/error';
       }
     } catch (error) {
-      console.error('[Checkout] Error during submission', error);
-      window.location.href = '/checkout/error';
+      if (ClerkOfflineError.is(error)) {
+        console.error('[Checkout] Offline:', error);
+        window.location.href = '/checkout/error?reason=offline';
+      } else {
+        console.error('[Checkout] Error during submission', error);
+        window.location.href = '/checkout/error';
+      }
     } finally {
       setLoading(false);
     }

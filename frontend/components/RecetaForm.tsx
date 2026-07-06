@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { ClerkOfflineError } from '@clerk/react/errors';
 import { toast } from 'sonner';
 import { getApiUrl } from '@/lib/get-api-url';
 import styles from '@/app/recetas/recetas.module.css';
@@ -82,10 +83,6 @@ export default function RecetaForm() {
     
     try {
       const token = await getToken();
-      if (!token) {
-        toast.error('Debes iniciar sesión para enviar una receta');
-        return;
-      }
 
       let archivoUrl: string | null = null;
       if (archivo) {
@@ -124,8 +121,12 @@ export default function RecetaForm() {
         fileInputRef.current.value = '';
       }
     } catch (error) {
-      console.error('Error creating recipe:', error);
-      toast.error(error instanceof Error ? error.message : 'Error al enviar la receta');
+      if (ClerkOfflineError.is(error)) {
+        toast.error('Sin conexión a internet');
+      } else {
+        console.error('Error creating recipe:', error);
+        toast.error(error instanceof Error ? error.message : 'Error al enviar la receta');
+      }
     } finally {
       setLoading(false);
       setUploading(false);

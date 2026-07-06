@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@clerk/nextjs';
+import { ClerkOfflineError } from '@clerk/react/errors';
 import styles from './pedidos.module.css';
 
 import { getApiUrl } from '@/lib/get-api-url';
@@ -52,7 +53,7 @@ export default function PedidosPage() {
         const res = await fetch(`${getApiUrl()}/api/pedidos${params}`, {
           credentials: 'include',
           headers: {
-            ...(token && { 'Authorization': `Bearer ${token}` }),
+            'Authorization': `Bearer ${token}`,
           },
         });
         
@@ -67,8 +68,13 @@ export default function PedidosPage() {
         const data = await res.json();
         setPedidos(data.pedidos || []);
       } catch (err) {
-        console.error('Error:', err);
-        setError('Error al cargar pedidos');
+        if (ClerkOfflineError.is(err)) {
+          console.error('Offline:', err);
+          setError('Sin conexión a internet');
+        } else {
+          console.error('Error:', err);
+          setError('Error al cargar pedidos');
+        }
       } finally {
         setLoading(false);
       }

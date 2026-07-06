@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { ClerkOfflineError } from '@clerk/react/errors';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/get-api-url';
@@ -55,11 +56,6 @@ export default function PedidoDetailPage() {
     async function fetchPedido() {
       try {
         const token = await getToken();
-        if (!token) {
-          setError('No autenticado');
-          setLoading(false);
-          return;
-        }
 
         const res = await fetch(`${getApiUrl()}/api/pedidos/${pedidoId}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -80,8 +76,13 @@ export default function PedidoDetailPage() {
         const data = await res.json();
         setPedido(data.pedido || data);
       } catch (err) {
-        console.error('Error fetching pedido:', err);
-        setError('Error al conectar con el servidor');
+        if (ClerkOfflineError.is(err)) {
+          console.error('Offline:', err);
+          setError('Sin conexión a internet');
+        } else {
+          console.error('Error fetching pedido:', err);
+          setError('Error al conectar con el servidor');
+        }
       } finally {
         setLoading(false);
       }

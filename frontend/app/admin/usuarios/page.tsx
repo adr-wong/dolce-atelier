@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { ClerkOfflineError } from "@clerk/react/errors";
 import { getApiUrl } from "@/lib/get-api-url";
 import styles from "./usuarios.module.css";
 
@@ -22,7 +23,6 @@ export default function AdminUsuarios() {
   useEffect(() => {
     async function getUsuarios() {
       const token = await getToken();
-      if (!token) return;
       
       const res = await fetch(`${getApiUrl()}/api/admin/usuarios`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -34,13 +34,18 @@ export default function AdminUsuarios() {
 
     getUsuarios()
       .then(setUsuarios)
-      .catch(console.error)
+      .catch((error) => {
+        if (ClerkOfflineError.is(error)) {
+          console.error('Offline:', error);
+        } else {
+          console.error(error);
+        }
+      })
       .finally(() => setLoading(false));
   }, [getToken]);
 
   const handleRoleChange = async (id: string, role: string) => {
     const token = await getToken();
-    if (!token) return;
     
     await fetch(`${getApiUrl()}/api/admin/usuarios/${id}/rol`, {
       method: "PUT",

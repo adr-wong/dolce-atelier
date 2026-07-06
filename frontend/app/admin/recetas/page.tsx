@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { ClerkOfflineError } from "@clerk/react/errors";
 import { getRecetas, updateReceta } from "@/lib/adminApi";
 import type { Receta } from "@/lib/adminApi";
 import CotizarModal from "./cotizar-modal";
@@ -23,12 +24,15 @@ export default function AdminRecetas() {
     async function loadRecetas() {
       try {
         const token = await getToken();
-        if (!token) return;
-        const result = await getRecetas(token, { page: currentPage, limit });
+        const result = await getRecetas(token!, { page: currentPage, limit });
         setRecetas(result.data);
         setTotalPages(result.totalPages);
       } catch (error) {
-        console.error("Error loading recetas:", error);
+        if (ClerkOfflineError.is(error)) {
+          console.error("Offline:", error);
+        } else {
+          console.error("Error loading recetas:", error);
+        }
       } finally {
         setLoading(false);
       }
@@ -39,11 +43,14 @@ export default function AdminRecetas() {
   const handleCotizar = async (id: string, cotizacion: number) => {
     try {
       const token = await getToken();
-      if (!token) return;
-      await updateReceta(token, id, { cotizacion, estado: "COTIZADA" });
+      await updateReceta(token!, id, { cotizacion, estado: "COTIZADA" });
       setRecetas(recetas.map(r => r._id === id ? { ...r, cotizacion, estado: "COTIZADA" } : r));
     } catch (error) {
-      console.error("Error cotizando:", error);
+      if (ClerkOfflineError.is(error)) {
+        console.error("Offline:", error);
+      } else {
+        console.error("Error cotizando:", error);
+      }
     }
   };
 
