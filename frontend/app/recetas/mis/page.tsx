@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/get-api-url';
-import ChefAnimation from '@/components/ChefAnimation';
 import styles from './mis-recetas.module.css';
 
 interface Receta {
@@ -40,50 +39,30 @@ export default function MisRecetasPage() {
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState<string | null>(null);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const fetchRecetas = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const res = await fetch(`${getApiUrl()}/api/recetas`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setRecetas(data.recetas || []);
-      }
-    } catch (error) {
-      console.error('Error fetching recetas:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [getToken]);
 
   useEffect(() => {
+    async function fetchRecetas() {
+      try {
+        const token = await getToken();
+        if (!token) return;
+
+        const res = await fetch(`${getApiUrl()}/api/recetas`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setRecetas(data.recetas || []);
+        }
+      } catch (error) {
+        console.error('Error fetching recetas:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchRecetas();
-  }, [fetchRecetas]);
-
-  useEffect(() => {
-    const hasPendingPayment = recetas.some(
-      (r) => r.estado === 'COTIZADA' && r.cotizacion !== null
-    );
-
-    if (hasPendingPayment) {
-      pollingRef.current = setInterval(fetchRecetas, 3000);
-    } else if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
-
-    return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-      }
-    };
-  }, [recetas, fetchRecetas]);
+  }, [getToken]);
 
   const handlePay = async (recetaId: string) => {
     try {
@@ -204,12 +183,6 @@ export default function MisRecetasPage() {
               {receta.estado === 'REVISANDO' && (
                 <div className={styles.reviewNote}>
                   🔍 Nuestro equipo está revisando tu solicitud
-                </div>
-              )}
-
-              {(receta.estado === 'PENDIENTE' || receta.estado === 'REVISANDO') && (
-                <div className={styles.animationContainer}>
-                  <ChefAnimation estado={receta.estado} />
                 </div>
               )}
 

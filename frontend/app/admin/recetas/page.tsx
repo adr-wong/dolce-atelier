@@ -73,49 +73,49 @@ export default function AdminRecetas() {
 
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
-        <thead>
-          <tr className={styles.theadTr}>
-            <th className={styles.th}>ID</th>
-            <th className={styles.th}>Nota</th>
-            <th className={styles.th}>Fecha</th>
-            <th className={styles.th}>Estado</th>
-            <th className={styles.th}>Cotización</th>
-            <th className={styles.th}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recetas.map((receta) => (
-            <tr key={receta._id} className={styles.tr}>
-              <td className={styles.td}>#{receta._id}</td>
-              <td className={styles.td}>{receta.nota ? receta.nota.substring(0, 50) + '...' : '—'}</td>
-              <td className={styles.td}>
-                {new Date(receta.createdAt).toLocaleDateString()}
-              </td>
-              <td className={styles.td}>
-                <span
-                  className={styles.statusBadge}
-                  style={{
-                    background: estadoColors[receta.estado] || "#f3f4f6",
-                  }}
-                >
-                  {receta.estado}
-                </span>
-              </td>
-              <td className={styles.td}>
-                {receta.cotizacion ? `$${receta.cotizacion}` : "—"}
-              </td>
-              <td className={styles.td}>
-                <button
-                  className={styles.cotizarBtn}
-                  onClick={() => openModal(receta)}
-                >
-                  Cotizar
-                </button>
-              </td>
+          <thead>
+            <tr className={styles.theadTr}>
+              <th className={styles.th}>ID</th>
+              <th className={styles.th}>Nota</th>
+              <th className={styles.th}>Fecha</th>
+              <th className={styles.th}>Estado</th>
+              <th className={styles.th}>Cotización</th>
+              <th className={styles.th}>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {recetas.map((receta) => (
+              <tr key={receta._id} className={styles.tr}>
+                <td className={styles.td}>#{receta._id}</td>
+                <td className={styles.td}>{receta.nota ? receta.nota.substring(0, 50) + '...' : '—'}</td>
+                <td className={styles.td}>
+                  {new Date(receta.createdAt).toLocaleDateString()}
+                </td>
+                <td className={styles.td}>
+                  <span
+                    className={styles.statusBadge}
+                    style={{
+                      background: estadoColors[receta.estado] || "#f3f4f6",
+                    }}
+                  >
+                    {receta.estado}
+                  </span>
+                </td>
+                <td className={styles.td}>
+                  {receta.cotizacion ? `$${receta.cotizacion}` : "—"}
+                </td>
+                <td className={styles.td}>
+                  <button
+                    className={styles.cotizarBtn}
+                    onClick={() => openModal(receta)}
+                  >
+                    Cotizar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />

@@ -46,22 +46,33 @@ export async function crearSesionReceta(params: {
   cancelUrl: string;
   customerEmail?: string;
 }) {
-  return stripe.checkout.sessions.create({
+  const unitAmount = Math.round(params.cotizacion * 100 * 1.07);
+
+  const session = await stripe.checkout.sessions.create({
     mode: 'payment',
-    line_items: [{
-      price_data: {
-        currency: 'usd',
-        product_data: { name: `Receta: ${params.nota.substring(0, 50)}` },
-        unit_amount: Math.round(params.cotizacion * 100),
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Receta personalizada: ${params.nota.substring(0, 50)}`,
+          },
+          unit_amount: unitAmount,
+        },
+        quantity: 1,
       },
-      quantity: 1,
-    }],
+    ],
     success_url: params.successUrl,
     cancel_url: params.cancelUrl,
-    metadata: { recetaId: params.recetaId, tipo: 'receta' },
+    metadata: {
+      recetaId: params.recetaId,
+      tipo: 'receta',
+    },
     billing_address_collection: 'required',
     customer_email: params.customerEmail,
   });
+
+  return session;
 }
 
 export async function reembolsarPago(params: {
@@ -75,11 +86,13 @@ export async function reembolsarPago(params: {
     throw new Error('No hay pago asociado a esta sesion');
   }
 
-  return stripe.refunds.create({
+  const refund = await stripe.refunds.create({
     payment_intent: session.payment_intent as string,
     amount: params.amount,
     reason: params.reason || 'requested_by_customer',
   });
+
+  return refund;
 }
 
 // HU-013: Procesar webhook para DLQ retry

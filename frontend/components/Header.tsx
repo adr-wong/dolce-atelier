@@ -1,6 +1,6 @@
 'use client';
 
-import { UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
+import { UserButton, useUser, SignedIn, SignedOut } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useMobile } from '@/hooks/useMediaQuery';

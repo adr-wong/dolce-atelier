@@ -198,17 +198,6 @@
   border: 1px solid #fecaca;
 }
 
-.animationContainer {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: #FFF5E6;
-  border-radius: 8px;
-  border: 1px solid #E8D5B7;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 @media (max-width: 768px) {
   .container {
     padding: 1rem;

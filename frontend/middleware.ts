@@ -13,7 +13,7 @@ export default clerkMiddleware((auth, req) => {
   
   if (isProtectedRoute(req)) {
     console.log(`[Middleware] Protected route accessed: ${url.pathname}`);
-    auth().protect();
+    auth.protect();
   }
 });
 

@@ -41,6 +41,10 @@ const nextConfig = {
     ];
   },
   images: {
+    // Desactivamos la optimización de imágenes porque todas vienen de
+    // Cloudinary/Unsplash (CDNs que ya optimizan). Esto evita que Next.js
+    // genere URLs con localhost (/_next/image?url=...) que fallan al acceder
+    // desde otros dispositivos en la red local.
     unoptimized: true,
     remotePatterns: [
       {
@@ -55,6 +59,7 @@ const nextConfig = {
   },
 
   // Proxy de API: redirige las llamadas del frontend al backend.
+  // En desarrollo usa localhost:3001, en producción usa la variable de entorno.
   async rewrites() {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
     return [
@@ -77,6 +82,10 @@ const nextConfig = {
       {
         source: '/api/upload/:path*',
         destination: `${backendUrl}/api/upload/:path*`,
+      },
+      {
+        source: '/api/usuarios/:path*',
+        destination: `${backendUrl}/api/usuarios/:path*`,
       },
       {
         source: '/api/webhook/:path*',

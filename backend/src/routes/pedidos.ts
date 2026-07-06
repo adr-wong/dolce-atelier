@@ -82,7 +82,6 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
 
         try {
           const result = await pedidoService.crear(userId, body);
-          
           // Cache response for idempotency
           if (idempotencyKey) {
             idempotencyStore.set(idempotencyKey, {
@@ -90,7 +89,7 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
               createdAt: Date.now(),
             });
           }
-          
+
           return result;
         } catch (error) {
           console.error('[BACKEND] Error in POST /api/pedidos:', error);
