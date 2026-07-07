@@ -1,8 +1,9 @@
 import { describe, expect, it, mock } from "bun:test";
 
 // Set env BEFORE any imports
-process.env.BACKEND_URL = "http://localhost:3001";
-process.env.CLERK_SECRET_KEY = "sk_test_fake_key_for_testing";
+process.env.BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+process.env.CLERK_SECRET_KEY =
+  process.env.CLERK_SECRET_KEY || "sk_test_placeholder";
 if (!process.env.MCP_API_KEY) {
   process.env.MCP_API_KEY = "test-api-key-123";
 }
@@ -37,12 +38,12 @@ describe("validateApiKey", () => {
   });
 
   it("returns false when API key does not match", () => {
-    if (!API_KEY) return; // skip in dev mode (no key configured)
+    if (!API_KEY) return;
     expect(validateApiKey("wrong-key")).toBe(false);
   });
 
   it("returns false when API key is null", () => {
-    if (!API_KEY) return; // skip in dev mode (no key configured)
+    if (!API_KEY) return;
     expect(validateApiKey(null)).toBe(false);
   });
 });
@@ -116,7 +117,7 @@ describe("requireAuth", () => {
 
 describe("authenticate", () => {
   it("rejects invalid API key", async () => {
-    if (!API_KEY) return; // skip in dev mode
+    if (!API_KEY) return;
     const headers = new Headers({ "X-API-Key": "invalid-key" });
     const result = await authenticate(headers);
     expect("error" in result).toBe(true);
