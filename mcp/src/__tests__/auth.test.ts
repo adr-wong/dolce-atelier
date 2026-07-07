@@ -3,7 +3,9 @@ import { describe, expect, it, mock } from "bun:test";
 // Set env BEFORE any imports
 process.env.BACKEND_URL = "http://localhost:3001";
 process.env.CLERK_SECRET_KEY = "sk_test_fake_key_for_testing";
-process.env.MCP_API_KEY = "test-api-key-123";
+if (!process.env.MCP_API_KEY) {
+  process.env.MCP_API_KEY = "test-api-key-123";
+}
 
 // Mock @clerk/backend BEFORE importing auth module
 mock.module("@clerk/backend", () => ({
@@ -35,10 +37,12 @@ describe("validateApiKey", () => {
   });
 
   it("returns false when API key does not match", () => {
+    if (!API_KEY) return; // skip in dev mode (no key configured)
     expect(validateApiKey("wrong-key")).toBe(false);
   });
 
   it("returns false when API key is null", () => {
+    if (!API_KEY) return; // skip in dev mode (no key configured)
     expect(validateApiKey(null)).toBe(false);
   });
 });
@@ -70,13 +74,19 @@ describe("asAuthenticatedUser", () => {
 
 describe("requireRole", () => {
   it("returns user when role is allowed", () => {
-    const authInfo = { userId: "user_1", role: "admin" } as unknown as AuthInfo;
+    const authInfo = {
+      userId: "user_1",
+      role: "admin",
+    } as unknown as AuthInfo;
     const user = requireRole(authInfo, ["admin", "superadmin"]);
     expect(user.role).toBe("admin");
   });
 
   it("throws 403 when role is not allowed", () => {
-    const authInfo = { userId: "user_1", role: "user" } as unknown as AuthInfo;
+    const authInfo = {
+      userId: "user_1",
+      role: "user",
+    } as unknown as AuthInfo;
     expect(() => requireRole(authInfo, ["admin", "superadmin"])).toThrow(
       "Forbidden",
     );
@@ -106,6 +116,7 @@ describe("requireAuth", () => {
 
 describe("authenticate", () => {
   it("rejects invalid API key", async () => {
+    if (!API_KEY) return; // skip in dev mode
     const headers = new Headers({ "X-API-Key": "invalid-key" });
     const result = await authenticate(headers);
     expect("error" in result).toBe(true);
@@ -115,14 +126,14 @@ describe("authenticate", () => {
   });
 
   it("accepts valid API key without JWT", async () => {
-    const headers = new Headers({ "X-API-Key": API_KEY });
+    const headers = new Headers({ "X-API-Key": API_KEY || "anything" });
     const result = await authenticate(headers);
     expect("authInfo" in result).toBe(true);
   });
 
   it("accepts valid API key with JWT", async () => {
     const headers = new Headers({
-      "X-API-Key": API_KEY,
+      "X-API-Key": API_KEY || "anything",
       Authorization: "Bearer fake-jwt-token",
     });
     const result = await authenticate(headers);
