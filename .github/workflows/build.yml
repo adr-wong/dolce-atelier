@@ -74,6 +74,9 @@ jobs:
 
       - name: Run tests with coverage
         run: cd mcp && bun test --coverage --coverage-reporter=lcov
+        env:
+          BACKEND_URL: http://localhost:3001
+          CLERK_SECRET_KEY: sk_test_placeholder
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
