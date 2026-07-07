@@ -1,6 +1,7 @@
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { type AuthenticatedUser, authenticate } from "./auth/index.js";
 import { getEnv } from "./env.js";
 import { registerAdminTools } from "./tools/admin.js";
@@ -18,8 +19,8 @@ const rateLimitStore = new Map<
   string,
   { tokens: number; lastRefill: number }
 >();
-const RATE_LIMIT = 60; // requests per window
-const RATE_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT = 60;
+const RATE_WINDOW_MS = 60_000;
 
 function checkRateLimit(key: string): boolean {
   const now = Date.now();
@@ -28,7 +29,6 @@ function checkRateLimit(key: string): boolean {
     lastRefill: now,
   };
 
-  // Refill tokens
   const elapsed = now - bucket.lastRefill;
   const refill = Math.floor(elapsed / RATE_WINDOW_MS) * RATE_LIMIT;
   if (refill > 0) {
@@ -44,6 +44,16 @@ function checkRateLimit(key: string): boolean {
   rateLimitStore.set(key, bucket);
   return true;
 }
+
+// Evict stale rate limit entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, bucket] of rateLimitStore) {
+    if (now - bucket.lastRefill > RATE_WINDOW_MS * 2) {
+      rateLimitStore.delete(key);
+    }
+  }
+}, 300_000);
 
 // ---------------------------------------------------------------------------
 // Structured logger
@@ -65,34 +75,38 @@ function log(
 }
 
 // ---------------------------------------------------------------------------
-// MCP Server
+// Session store (one McpServer + transport per session)
 // ---------------------------------------------------------------------------
-const server = new McpServer({
-  name: "dolce-atelier-mcp",
-  version: "1.0.0",
-});
+interface Session {
+  transport: WebStandardStreamableHTTPServerTransport;
+  server: McpServer;
+}
 
-// --- Stage 0: Ping ---
-server.registerTool(
-  "ping",
-  {
-    description: "Health check tool — returns pong",
-  },
-  async () => ({
-    content: [{ type: "text" as const, text: "pong" }],
-  }),
-);
+const sessions = new Map<string, Session>();
 
-// --- Stage 2: Read-only tools ---
-registerCakeTools(server);
+// ---------------------------------------------------------------------------
+// MCP Server factory — new instance per session
+// ---------------------------------------------------------------------------
+function createServer(): McpServer {
+  const srv = new McpServer({
+    name: "dolce-atelier-mcp",
+    version: "1.0.0",
+  });
 
-// --- Stage 3: Write tools ---
-registerCartTools(server);
-registerOrderTools(server);
-registerRecipeTools(server);
+  srv.registerTool(
+    "ping",
+    { description: "Health check tool — returns pong" },
+    async () => ({ content: [{ type: "text" as const, text: "pong" }] }),
+  );
 
-// --- Stage 4: Admin tools ---
-registerAdminTools(server);
+  registerCakeTools(srv);
+  registerCartTools(srv);
+  registerOrderTools(srv);
+  registerRecipeTools(srv);
+  registerAdminTools(srv);
+
+  return srv;
+}
 
 // ---------------------------------------------------------------------------
 // HTTP server
@@ -105,14 +119,11 @@ Bun.serve({
     const url = new URL(req.url);
     const start = Date.now();
 
-    // Health check (no auth, no rate limit)
     if (url.pathname === "/health") {
       return new Response("OK", { status: 200 });
     }
 
-    // MCP endpoint
     if (url.pathname === "/mcp") {
-      // Rate limit by API key
       const apiKey = req.headers.get("X-API-Key") || "anonymous";
       if (!checkRateLimit(apiKey)) {
         log("warn", "rate_limited", { apiKey: `${apiKey.slice(0, 8)}...` });
@@ -122,7 +133,6 @@ Bun.serve({
         });
       }
 
-      // Authenticate
       const authResult = await authenticate(req.headers);
       if ("error" in authResult) {
         log("warn", "auth_failed", {
@@ -135,42 +145,111 @@ Bun.serve({
       }
 
       const authUser = authResult.authInfo as unknown as AuthenticatedUser;
-
-      // Log successful auth
       log("info", "request", {
         method: req.method,
         userId: authUser.userId,
         role: authUser.role,
       });
 
-      // Handle MCP request (cast back to AuthInfo for SDK)
-      const response = await transport.handleRequest(req, {
-        authInfo: authUser as unknown as AuthInfo,
-      });
-      return response;
+      const sessionId = req.headers.get("mcp-session-id");
+
+      // --- Existing session: route to its transport ---
+      const session = sessionId ? sessions.get(sessionId) : undefined;
+      if (session) {
+        try {
+          return await session.transport.handleRequest(req, {
+            authInfo: authUser as unknown as AuthInfo,
+          });
+        } catch (err) {
+          log("error", "transport_error", {
+            sessionId,
+            error: String(err),
+            duration: Date.now() - start,
+          });
+          return new Response(
+            JSON.stringify({ error: "Internal server error" }),
+            { status: 500, headers: { "Content-Type": "application/json" } },
+          );
+        }
+      }
+
+      // --- Session ID provided but not found ---
+      if (sessionId) {
+        return new Response(JSON.stringify({ error: "Session not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // --- No session ID: only POST with initialize is allowed ---
+      if (req.method === "POST") {
+        let body: unknown;
+        try {
+          body = await req.json();
+        } catch {
+          return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+
+        const msg = body as JSONRPCMessage;
+        if (
+          msg &&
+          typeof msg === "object" &&
+          "method" in msg &&
+          msg.method === "initialize"
+        ) {
+          const newServer = createServer();
+
+          const transport = new WebStandardStreamableHTTPServerTransport({
+            sessionIdGenerator: () => crypto.randomUUID(),
+            onsessioninitialized: (sid) => {
+              sessions.set(sid, { transport, server: newServer });
+              log("info", "session_created", { sessionId: sid });
+            },
+            onsessionclosed: (sid) => {
+              sessions.delete(sid);
+              log("info", "session_closed", { sessionId: sid });
+            },
+          });
+
+          await newServer.connect(transport);
+
+          try {
+            return await transport.handleRequest(req, {
+              parsedBody: body,
+              authInfo: authUser as unknown as AuthInfo,
+            });
+          } catch (err) {
+            log("error", "transport_error", {
+              phase: "initialize",
+              error: String(err),
+              duration: Date.now() - start,
+            });
+            return new Response(
+              JSON.stringify({ error: "Internal server error" }),
+              { status: 500, headers: { "Content-Type": "application/json" } },
+            );
+          }
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ error: "Bad Request: missing or invalid session" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
     }
 
     return new Response("Not Found", { status: 404 });
   },
 });
 
-// ---------------------------------------------------------------------------
-// Transport
-// ---------------------------------------------------------------------------
-const transport = new WebStandardStreamableHTTPServerTransport({
-  sessionIdGenerator: () => crypto.randomUUID(),
-});
-await server.connect(transport);
-
 log("info", "server_started", {
   port: PORT,
   backend: env.BACKEND_URL,
   hasClerkKey: true,
   hasApiKey: !!env.MCP_API_KEY,
-  toolCount: 21,
 });
 
 console.log(`[MCP] Dolce Atelier MCP server on http://localhost:${PORT}`);
-console.log(
-  `[MCP] 21 tools registered (ping, search, cart, orders, recipes, admin)`,
-);
