@@ -19,7 +19,7 @@ function getCart(userId: string): CartItem[] {
   if (!cartStore.has(userId)) {
     cartStore.set(userId, []);
   }
-  return cartStore.get(userId)!;
+  return cartStore.get(userId) ?? [];
 }
 
 // ---------------------------------------------------------------------------
