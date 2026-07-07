@@ -1,3 +1,4 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=adr-wong_dolce-atelier&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=adr-wong_dolce-atelier)
 # Dolce Atelier - Sistema de Gestión de Pastelería
 
 ## 📋 Descripción General
