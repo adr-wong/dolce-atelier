@@ -1,4 +1,8 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=adr-wong_dolce-atelier&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=adr-wong_dolce-atelier)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=adr-wong_dolce-atelier&metric=bugs)](https://sonarcloud.io/summary/new_code?id=adr-wong_dolce-atelier)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=adr-wong_dolce-atelier&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=adr-wong_dolce-atelier)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=adr-wong_dolce-atelier&metric=coverage)](https://sonarcloud.io/summary/new_code?id=adr-wong_dolce-atelier)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=adr-wong_dolce-atelier&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=adr-wong_dolce-atelier)
 # Dolce Atelier - Sistema de Gestión de Pastelería
 
 ## 📋 Descripción General
