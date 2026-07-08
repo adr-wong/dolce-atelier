@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useCarritoStore } from '@/store/carrito';
 import styles from './exito.module.css';
 
 export default function CheckoutExitoContent() {
@@ -18,6 +19,10 @@ export default function CheckoutExitoContent() {
 
   useEffect(() => {
     console.log('[CHECKOUT-EXITO] Pedido confirmado. El email de confirmación será enviado por el webhook de Stripe.');
+    useCarritoStore.getState().limpiar();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('dolce-carrito-anonimo');
+    }
   }, [orderId]);
 
   return (
