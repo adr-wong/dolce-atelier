@@ -4,6 +4,8 @@ import { describe, expect, it } from "bun:test";
 process.env.BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 process.env.CLERK_SECRET_KEY =
   process.env.CLERK_SECRET_KEY || "sk_test_placeholder";
+process.env.MCP_JWT_SECRET =
+  process.env.MCP_JWT_SECRET || "test-secret-for-env-tests";
 
 describe("env", () => {
   it("validates correct env vars", () => {

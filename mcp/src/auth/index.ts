@@ -4,6 +4,7 @@ import {
 } from "@clerk/backend";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { getEnv } from "../env.js";
+import { type McpRole, verifyMcpToken } from "./issuer.js";
 
 // ---------------------------------------------------------------------------
 // Config (validated at startup via src/env.ts)
@@ -87,24 +88,39 @@ export async function authenticate(
     };
   }
 
-  // 2. Verify Clerk JWT (OPTIONAL — null if not provided)
+  // 2. Resolve identity from a Bearer token (MCP-issued JWT preferred, Clerk fallback)
   const authHeader = headers.get("Authorization");
-  const userId = await verifyClerkJwt(authHeader);
-
-  // 3. Get role from Clerk metadata (only if JWT present)
+  let userId: string | null = null;
   let role: AuthenticatedUser["role"] = "user";
   let token: string | undefined;
 
-  if (userId && clerkClient) {
-    token = authHeader?.slice(7);
-    try {
-      const user = await clerkClient.users.getUser(userId);
-      const metadata = user.publicMetadata as { role?: string };
-      if (metadata.role === "admin" || metadata.role === "superadmin") {
-        role = metadata.role;
+  if (authHeader?.startsWith("Bearer ")) {
+    const raw = authHeader.slice(7);
+
+    // 2a. MCP-issued agent token (HS256, signed by MCP_JWT_SECRET)
+    const claims = verifyMcpToken(raw);
+    if (claims) {
+      userId = claims.sub;
+      role = claims.role;
+      token = raw; // backend also trusts MCP-issued JWTs
+    } else {
+      // 2b. Clerk session JWT (fallback — keeps existing behaviour)
+      const clerkId = await verifyClerkJwt(authHeader);
+      if (clerkId) {
+        userId = clerkId;
+        token = raw;
+        if (clerkClient) {
+          try {
+            const user = await clerkClient.users.getUser(userId);
+            const metadata = user.publicMetadata as { role?: string };
+            if (metadata.role === "admin" || metadata.role === "superadmin") {
+              role = metadata.role as McpRole;
+            }
+          } catch {
+            // Default to "user"
+          }
+        }
       }
-    } catch {
-      // Default to "user"
     }
   }
 
