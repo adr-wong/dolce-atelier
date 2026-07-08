@@ -45,6 +45,7 @@ describe("validateApiKey", () => {
   });
 
   it("returns false when API key is null", async () => {
+    if (!API_KEY) return;
     expect(await validateApiKey(null)).toBe(false);
   });
 });

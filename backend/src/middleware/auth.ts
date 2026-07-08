@@ -12,7 +12,6 @@ export interface AuthUser {
 // The MCP server mints these via the OAuth token endpoint; the backend trusts
 // them so agents can call the API on behalf of a user without a Clerk session.
 // ---------------------------------------------------------------------------
-const MCP_JWT_SECRET = process.env.MCP_JWT_SECRET;
 const MCP_ISSUER = 'dolce-atelier-mcp';
 const MCP_AUDIENCE = 'dolce-atelier-mcp';
 
@@ -24,6 +23,7 @@ function b64urlDecode(input: string): Buffer {
 export function mcpClaimsFromHeader(
   authHeader: string | null,
 ): { sub: string; role: string } | null {
+  const MCP_JWT_SECRET = process.env.MCP_JWT_SECRET;
   if (!MCP_JWT_SECRET) return null;
   if (!authHeader?.startsWith('Bearer ')) return null;
   const token = authHeader.split(' ')[1];
