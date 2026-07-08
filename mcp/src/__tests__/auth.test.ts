@@ -4,6 +4,8 @@ import { describe, expect, it, mock } from "bun:test";
 process.env.BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 process.env.CLERK_SECRET_KEY =
   process.env.CLERK_SECRET_KEY || "sk_test_placeholder";
+process.env.MCP_JWT_SECRET =
+  process.env.MCP_JWT_SECRET || "test-secret-for-auth-tests";
 if (!process.env.MCP_API_KEY) {
   process.env.MCP_API_KEY = "test-api-key-123";
 }
@@ -20,15 +22,14 @@ mock.module("@clerk/backend", () => ({
   })),
 }));
 
-import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
-import {
+const {
   asAuthenticatedUser,
   authenticate,
   requireAuth,
   requireRole,
   validateApiKey,
-} from "../auth/index.js";
-import { getEnv } from "../env.js";
+} = await import("../auth/index.js");
+const { getEnv } = await import("../env.js");
 
 const API_KEY = getEnv().MCP_API_KEY ?? "";
 
@@ -53,14 +54,15 @@ describe("asAuthenticatedUser", () => {
     const authInfo = {
       userId: "user_123",
       role: "user",
-    } as unknown as AuthInfo;
+    } as unknown as import("@modelcontextprotocol/sdk/server/auth/types.js").AuthInfo;
     const user = asAuthenticatedUser(authInfo);
     expect(user.userId).toBe("user_123");
     expect(user.role).toBe("user");
   });
 
   it("throws 401 when userId is missing", () => {
-    const authInfo = {} as unknown as AuthInfo;
+    const authInfo =
+      {} as unknown as import("@modelcontextprotocol/sdk/server/auth/types.js").AuthInfo;
     expect(() => asAuthenticatedUser(authInfo)).toThrow(
       "Authentication required",
     );
@@ -78,7 +80,7 @@ describe("requireRole", () => {
     const authInfo = {
       userId: "user_1",
       role: "admin",
-    } as unknown as AuthInfo;
+    } as unknown as import("@modelcontextprotocol/sdk/server/auth/types.js").AuthInfo;
     const user = requireRole(authInfo, ["admin", "superadmin"]);
     expect(user.role).toBe("admin");
   });
@@ -87,7 +89,7 @@ describe("requireRole", () => {
     const authInfo = {
       userId: "user_1",
       role: "user",
-    } as unknown as AuthInfo;
+    } as unknown as import("@modelcontextprotocol/sdk/server/auth/types.js").AuthInfo;
     expect(() => requireRole(authInfo, ["admin", "superadmin"])).toThrow(
       "Forbidden",
     );
@@ -105,7 +107,7 @@ describe("requireAuth", () => {
     const authInfo = {
       userId: "user_1",
       role: "user",
-    } as unknown as AuthInfo;
+    } as unknown as import("@modelcontextprotocol/sdk/server/auth/types.js").AuthInfo;
     const user = requireAuth(authInfo);
     expect(user.userId).toBe("user_1");
   });

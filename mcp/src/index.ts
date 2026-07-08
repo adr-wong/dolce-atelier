@@ -3,7 +3,13 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { type AuthenticatedUser, authenticate } from "./auth/index.js";
+import {
+  corsResponse,
+  handleTokenGrant,
+  tokenUiResponse,
+} from "./auth/tokenEndpoint.js";
 import { getEnv } from "./env.js";
+import { log } from "./logger.js";
 import { registerAdminTools } from "./tools/admin.js";
 import { registerCakeTools } from "./tools/cakes.js";
 import { registerCartTools } from "./tools/cart.js";
@@ -56,25 +62,6 @@ setInterval(() => {
 }, 300_000);
 
 // ---------------------------------------------------------------------------
-// Structured logger
-// ---------------------------------------------------------------------------
-function log(
-  level: "info" | "warn" | "error",
-  msg: string,
-  extra?: Record<string, unknown>,
-) {
-  const entry = {
-    ts: new Date().toISOString(),
-    level,
-    msg,
-    ...extra,
-  };
-  const line = JSON.stringify(entry);
-  if (level === "error") console.error(line);
-  else console.log(line);
-}
-
-// ---------------------------------------------------------------------------
 // Session store (one McpServer + transport per session)
 // ---------------------------------------------------------------------------
 interface Session {
@@ -121,6 +108,28 @@ Bun.serve({
 
     if (url.pathname === "/health") {
       return new Response("OK", { status: 200 });
+    }
+
+    // -------------------------------------------------------------------------
+    // OAuth 2.0 Token endpoint + user-friendly token UI
+    // -------------------------------------------------------------------------
+    if (url.pathname === "/token") {
+      if (req.method === "OPTIONS") {
+        return corsResponse(null);
+      }
+      if (req.method === "GET") {
+        return tokenUiResponse();
+      }
+      if (req.method === "POST") {
+        const result = await handleTokenGrant(req);
+        return corsResponse(result);
+      }
+      return corsResponse(
+        new Response(JSON.stringify({ error: "Method not allowed" }), {
+          status: 405,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
     }
 
     if (url.pathname === "/mcp") {

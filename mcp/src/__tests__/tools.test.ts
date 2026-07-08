@@ -1,15 +1,17 @@
 import { describe, expect, it } from "bun:test";
 
-// Set env BEFORE any imports
+// Set env BEFORE importing any module that reads getEnv() (ESM hoists imports,
+// so we use a dynamic import below after the env is configured).
 process.env.BACKEND_URL = "http://localhost:3001";
 process.env.CLERK_SECRET_KEY = "sk_test_fake_key_for_testing";
+process.env.MCP_JWT_SECRET = "test-secret-for-tools-tests";
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerAdminTools } from "../tools/admin.js";
-import { registerCakeTools } from "../tools/cakes.js";
-import { registerCartTools } from "../tools/cart.js";
-import { registerOrderTools } from "../tools/orders.js";
-import { registerRecipeTools } from "../tools/recipes.js";
+const { McpServer } = await import("@modelcontextprotocol/sdk/server/mcp.js");
+const { registerAdminTools } = await import("../tools/admin.js");
+const { registerCakeTools } = await import("../tools/cakes.js");
+const { registerCartTools } = await import("../tools/cart.js");
+const { registerOrderTools } = await import("../tools/orders.js");
+const { registerRecipeTools } = await import("../tools/recipes.js");
 
 function createTestServer(): McpServer {
   const srv = new McpServer({
