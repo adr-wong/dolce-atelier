@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 // Set env BEFORE any imports
 process.env.BACKEND_URL = "http://localhost:3001";
 process.env.CLERK_SECRET_KEY = "sk_test_fake_key_for_testing";
+process.env.MCP_JWT_SECRET = "test-secret-for-tools-tests";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerAdminTools } from "../tools/admin.js";
