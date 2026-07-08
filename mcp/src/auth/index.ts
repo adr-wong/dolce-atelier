@@ -40,13 +40,21 @@ export function asAuthenticatedUser(
 
 // ---------------------------------------------------------------------------
 // API Key validation (required for ALL requests)
+//   1. No global key configured -> allow all (dev mode, backward compatible)
+//   2. Global server-level key (MCP_API_KEY) -> accept
+//   3. Per-user MCP key (resolved via the backend index) -> accept
 // ---------------------------------------------------------------------------
-export function validateApiKey(apiKey: string | null): boolean {
+import { resolveUserKey } from "./userKeys.js";
+
+export async function validateApiKey(apiKey: string | null): Promise<boolean> {
   if (!API_KEY) {
-    // No API key configured — allow all (dev mode)
+    // No global API key configured — allow all (dev mode)
     return true;
   }
-  return apiKey === API_KEY;
+  if (apiKey && apiKey === API_KEY) return true;
+  if (!apiKey) return false;
+  const userId = await resolveUserKey(apiKey);
+  return userId !== null;
 }
 
 // ---------------------------------------------------------------------------
@@ -79,7 +87,7 @@ export async function authenticate(
 ): Promise<{ authInfo: AuthInfo } | { error: Response }> {
   // 1. Validate API key (MANDATORY)
   const apiKey = headers.get("X-API-Key");
-  if (!validateApiKey(apiKey)) {
+  if (!(await validateApiKey(apiKey))) {
     return {
       error: new Response(JSON.stringify({ error: "Invalid API key" }), {
         status: 401,

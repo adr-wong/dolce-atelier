@@ -34,18 +34,19 @@ const { getEnv } = await import("../env.js");
 const API_KEY = getEnv().MCP_API_KEY ?? "";
 
 describe("validateApiKey", () => {
-  it("returns true when API key matches", () => {
-    expect(validateApiKey(API_KEY)).toBe(true);
+  it("returns true when API key matches the global key", async () => {
+    if (!API_KEY) return;
+    expect(await validateApiKey(API_KEY)).toBe(true);
   });
 
-  it("returns false when API key does not match", () => {
+  it("returns false when API key does not match", async () => {
     if (!API_KEY) return;
-    expect(validateApiKey("wrong-key")).toBe(false);
+    expect(await validateApiKey("wrong-key")).toBe(false);
   });
 
-  it("returns false when API key is null", () => {
+  it("returns false when API key is null", async () => {
     if (!API_KEY) return;
-    expect(validateApiKey(null)).toBe(false);
+    expect(await validateApiKey(null)).toBe(false);
   });
 });
 
