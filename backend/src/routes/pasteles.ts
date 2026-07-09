@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { pastelService } from '../services';
 import { FiltroPastelesSchema } from '../schemas';
-import { verifyToken, verifyAdmin, authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 
 export const pastelRoutes = new Elysia({ prefix: '/api/pasteles' })
   .get('/', async ({ query }) => {

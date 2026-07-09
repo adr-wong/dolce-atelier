@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
-import { verifyAdmin, authMiddleware } from '../middleware/auth';
-import { Pedido, Receta } from '../models';
+import { authMiddleware } from '../middleware/auth';
+import { Pedido } from '../models';
 import { clerkClient } from '../lib/clerk';
 
 export const perfilRoutes = new Elysia({ prefix: '/api/perfil' })
@@ -64,8 +64,8 @@ export const perfilRoutes = new Elysia({ prefix: '/api/perfil' })
       });
     }
 
-    const { currentPassword, newPassword } = body as {
-      currentPassword: string;
+    const { newPassword } = body as {
+      currentPassword?: string;
       newPassword: string;
     };
 

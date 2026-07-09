@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { subirImagen } from './services/cloudinary';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -45,7 +45,9 @@ async function upload() {
   process.exit(0);
 }
 
-upload().catch((err) => {
+try {
+  await upload();
+} catch (err) {
   console.error('❌ Error:', err);
   process.exit(1);
-});
+}

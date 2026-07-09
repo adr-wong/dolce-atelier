@@ -18,15 +18,13 @@ export interface McpTokenClaims {
 }
 
 function b64url(input: Buffer | string): string {
-  return Buffer.from(input)
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  let s = Buffer.from(input).toString("base64").replaceAll("+", "-").replaceAll("/", "_");
+  while (s.endsWith("=")) s = s.slice(0, -1);
+  return s;
 }
 
 function fromB64url(input: string): Buffer {
-  const padded = input.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = input.replaceAll("-", "+").replaceAll("_", "/");
   return Buffer.from(padded, "base64");
 }
 
@@ -66,13 +64,13 @@ export function verifyMcpToken(token: string): McpTokenClaims | null {
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   const [h, p, s] = parts;
-  const expected = crypto
+  let expected = crypto
     .createHmac("sha256", SECRET)
     .update(`${h}.${p}`)
     .digest("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+    .replaceAll("+", "-")
+    .replaceAll("/", "_");
+  while (expected.endsWith("=")) expected = expected.slice(0, -1);
   if (!timingSafeEqual(s, expected)) return null;
 
   let payload: McpTokenClaims;

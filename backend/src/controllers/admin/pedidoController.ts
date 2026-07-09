@@ -32,8 +32,8 @@ export async function listPedidos(context: PedidoControllerContext) {
     };
   }
 
-  const pageNum = parseInt(page || '1');
-  const limitNum = parseInt(limit || '12');
+  const pageNum = Number.parseInt(page || '1');
+  const limitNum = Number.parseInt(limit || '12');
   const skip = (pageNum - 1) * limitNum;
 
   const [pedidos, total] = await Promise.all([

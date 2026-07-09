@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { pedidoService } from '../services';
 import { FiltroPedidosSchema } from '../schemas';
-import { verifyToken, verifyAdmin, authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 
 // HU-012: Idempotency store (in-memory)
 const idempotencyStore = new Map<string, { response: any; createdAt: number }>();
@@ -25,8 +25,9 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
     }
 
     const esAdmin = (headers['x-user-role'] || headers['X-User-Role']) === 'admin';
+    const limite = filtro.limit ? Number.parseInt(filtro.limit) : undefined;
     const pedidos = esAdmin
-      ? await pedidoService.listarTodos(filtro.estado, filtro.limit ? parseInt(filtro.limit) : undefined)
+      ? await pedidoService.listarTodos(filtro.estado, limite)
       : await pedidoService.listarPorUsuario(userId, filtro.estado);
 
     return { pedidos };

@@ -16,7 +16,7 @@ const MCP_ISSUER = 'dolce-atelier-mcp';
 const MCP_AUDIENCE = 'dolce-atelier-mcp';
 
 function b64urlDecode(input: string): Buffer {
-  const padded = input.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = input.replaceAll('-', '+').replaceAll('_', '/');
   return Buffer.from(padded, 'base64');
 }
 
@@ -31,13 +31,15 @@ export function mcpClaimsFromHeader(
   if (parts.length !== 3) return null;
   const [h, p, s] = parts;
 
-  const expected = crypto
+  let expected = crypto
     .createHmac('sha256', MCP_JWT_SECRET)
     .update(`${h}.${p}`)
     .digest('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .replaceAll('+', '-')
+    .replaceAll('/', '_');
+  while (expected.endsWith('=')) {
+    expected = expected.slice(0, -1);
+  }
 
   const a = Buffer.from(s);
   const b = Buffer.from(expected);

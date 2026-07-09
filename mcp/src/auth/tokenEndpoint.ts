@@ -54,90 +54,11 @@ export async function handleTokenGrant(req: Request): Promise<Response> {
     );
   }
 
-  const grantType = params.grant_type;
+  const credentials = await handleClientCredentials(params);
+  if (credentials) return credentials;
 
-  // --- Machine flow: client_credentials ---
-  if (grantType === "client_credentials") {
-    const client = authenticateClient(
-      params.client_id ?? "",
-      params.client_secret ?? "",
-    );
-    if (!client) {
-      log("warn", "token_grant_failed", { grant: "client_credentials" });
-      return new Response(
-        JSON.stringify({
-          error: "invalid_client",
-          error_description: "Unknown client or bad secret",
-        }),
-        { status: 401, headers: { "Content-Type": "application/json" } },
-      );
-    }
-    const accessToken = signMcpToken({
-      userId: client.userId,
-      role: client.role,
-    });
-    log("info", "token_issued", {
-      grant: "client_credentials",
-      userId: client.userId,
-      role: client.role,
-    });
-    return new Response(
-      JSON.stringify({
-        access_token: accessToken,
-        token_type: "Bearer",
-        expires_in: env.MCP_TOKEN_TTL,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  }
-
-  // --- Human flow: exchange a Clerk session token for an MCP agent token ---
-  if (
-    grantType === "clerk_exchange" ||
-    grantType === "urn:ietf:params:oauth:grant-type:token-exchange"
-  ) {
-    const clerkToken = params.clerk_token ?? params.subject_token;
-    if (!clerkToken) {
-      return new Response(
-        JSON.stringify({
-          error: "invalid_request",
-          error_description: "clerk_token is required",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
-    }
-    const userId = await verifyClerkJwt(`Bearer ${clerkToken}`);
-    if (!userId) {
-      log("warn", "token_grant_failed", { grant: "clerk_exchange" });
-      return new Response(
-        JSON.stringify({
-          error: "invalid_grant",
-          error_description: "Clerk token verification failed",
-        }),
-        { status: 401, headers: { "Content-Type": "application/json" } },
-      );
-    }
-    let role: McpRole = "user";
-    try {
-      const user = await clerkClient.users.getUser(userId);
-      const metadata = user.publicMetadata as { role?: string };
-      if (metadata.role === "admin" || metadata.role === "superadmin") {
-        role = metadata.role as McpRole;
-      }
-    } catch {
-      // Default to "user"
-    }
-    const accessToken = signMcpToken({ userId, role });
-    log("info", "token_issued", { grant: "clerk_exchange", userId, role });
-    return new Response(
-      JSON.stringify({
-        access_token: accessToken,
-        token_type: "Bearer",
-        expires_in: env.MCP_TOKEN_TTL,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
-  }
+  const clerk = await handleClerkExchange(params);
+  if (clerk) return clerk;
 
   return new Response(
     JSON.stringify({
@@ -145,6 +66,102 @@ export async function handleTokenGrant(req: Request): Promise<Response> {
       error_description: "Supported: client_credentials, clerk_exchange",
     }),
     { status: 400, headers: { "Content-Type": "application/json" } },
+  );
+}
+
+async function handleClientCredentials(
+  params: Record<string, string>,
+): Promise<Response | null> {
+  if (params.grant_type !== "client_credentials") return null;
+
+  const client = authenticateClient(
+    params.client_id ?? "",
+    params.client_secret ?? "",
+  );
+  if (!client) {
+    log("warn", "token_grant_failed", { grant: "client_credentials" });
+    return new Response(
+      JSON.stringify({
+        error: "invalid_client",
+        error_description: "Unknown client or bad secret",
+      }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  const accessToken = signMcpToken({
+    userId: client.userId,
+    role: client.role,
+  });
+  log("info", "token_issued", {
+    grant: "client_credentials",
+    userId: client.userId,
+    role: client.role,
+  });
+  return new Response(
+    JSON.stringify({
+      access_token: accessToken,
+      token_type: "Bearer",
+      expires_in: env.MCP_TOKEN_TTL,
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } },
+  );
+}
+
+async function handleClerkExchange(
+  params: Record<string, string>,
+): Promise<Response | null> {
+  const grantType = params.grant_type;
+  if (
+    grantType !== "clerk_exchange" &&
+    grantType !== "urn:ietf:params:oauth:grant-type:token-exchange"
+  ) {
+    return null;
+  }
+
+  const clerkToken = params.clerk_token ?? params.subject_token;
+  if (!clerkToken) {
+    return new Response(
+      JSON.stringify({
+        error: "invalid_request",
+        error_description: "clerk_token is required",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  const userId = await verifyClerkJwt(`Bearer ${clerkToken}`);
+  if (!userId) {
+    log("warn", "token_grant_failed", { grant: "clerk_exchange" });
+    return new Response(
+      JSON.stringify({
+        error: "invalid_grant",
+        error_description: "Clerk token verification failed",
+      }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  let role: McpRole = "user";
+  try {
+    const user = await clerkClient.users.getUser(userId);
+    const metadata = user.publicMetadata as { role?: string };
+    if (metadata.role === "admin" || metadata.role === "superadmin") {
+      role = metadata.role as McpRole;
+    }
+  } catch {
+    // Default to "user"
+  }
+
+  const accessToken = signMcpToken({ userId, role });
+  log("info", "token_issued", { grant: "clerk_exchange", userId, role });
+  return new Response(
+    JSON.stringify({
+      access_token: accessToken,
+      token_type: "Bearer",
+      expires_in: env.MCP_TOKEN_TTL,
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } },
   );
 }
 

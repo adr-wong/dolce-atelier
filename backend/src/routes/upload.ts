@@ -1,4 +1,4 @@
-import { Elysia, t } from 'elysia';
+import { Elysia } from 'elysia';
 import { verifyAdmin } from '../middleware/auth';
 import { subirReceta, subirImagen } from '../services';
 

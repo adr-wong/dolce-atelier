@@ -12,7 +12,7 @@ function getCloudinary() {
 export { getCloudinary };
 
 export async function subirImagen(buffer: Buffer, folder: string = 'dolce-atelier'): Promise<string> {
-  const cloud = getCloudinary();
+  getCloudinary();
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -36,7 +36,7 @@ export async function subirImagen(buffer: Buffer, folder: string = 'dolce-atelie
 }
 
 export async function subirReceta(buffer: Buffer, nombreArchivo: string): Promise<string> {
-  const cloud = getCloudinary();
+  getCloudinary();
   return new Promise((resolve, reject) => {
     const uploadStream = cloud.uploader.upload_stream(
       {
@@ -60,13 +60,14 @@ export async function subirReceta(buffer: Buffer, nombreArchivo: string): Promis
 }
 
 export async function eliminarImagen(publicId: string): Promise<boolean> {
-  const cloud = getCloudinary();
-  const result = await cloud.uploader.destroy(publicId);
+  getCloudinary();
+  const result = await cloudinary.uploader.destroy(publicId);
   return result.result === 'ok';
 }
 
 export function extraerPublicId(url: string): string | null {
-  const match = url.match(/\/upload\/v\d+\/(.+)\.\w+$/);
+  const regex = /\/upload\/v\d+\/(.+)\.\w+$/;
+  const match = regex.exec(url);
   if (!match) return null;
   return match[1];
 }

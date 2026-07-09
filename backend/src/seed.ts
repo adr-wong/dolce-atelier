@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { subirImagen } from './services/cloudinary';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -171,7 +171,9 @@ async function seed() {
   process.exit(0);
 }
 
-seed().catch((err) => {
+try {
+  await seed();
+} catch (err) {
   console.error('❌ Error:', err);
   process.exit(1);
-});
+}

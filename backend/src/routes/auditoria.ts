@@ -30,7 +30,7 @@ export const auditoriaRoutes = new Elysia({ prefix: '/api/admin/auditoria' })
 
         const logs = await AuditLog.find(filtro)
           .sort({ createdAt: -1 })
-          .limit(parseInt(limite || '100'));
+          .limit(Number.parseInt(limite || '100'));
 
         return { logs };
       }, {

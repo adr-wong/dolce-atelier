@@ -125,7 +125,8 @@ async function getPasteles(token: string, params?: { search?: string; page?: num
   if (params?.page) query.set('page', params.page.toString());
   if (params?.limit) query.set('limit', params.limit.toString());
   const queryString = query.toString();
-  const endpoint = `/api/admin/pasteles${queryString ? `?${queryString}` : ''}`;
+  const suffix = queryString ? `?${queryString}` : '';
+  const endpoint = `/api/admin/pasteles${suffix}`;
   
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     credentials: 'include',
@@ -194,7 +195,8 @@ async function getPedidos(token: string, params?: { status?: string; date?: stri
   if (params?.page) query.set('page', params.page.toString());
   if (params?.limit) query.set('limit', params.limit.toString());
   const queryString = query.toString();
-  const endpoint = `/api/admin/pedidos${queryString ? `?${queryString}` : ''}`;
+  const suffix = queryString ? `?${queryString}` : '';
+  const endpoint = `/api/admin/pedidos${suffix}`;
   
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     credentials: 'include',
@@ -234,7 +236,8 @@ async function getRecetas(token: string, params?: { page?: number; limit?: numbe
   if (params?.page) query.set('page', params.page.toString());
   if (params?.limit) query.set('limit', params.limit.toString());
   const queryString = query.toString();
-  const endpoint = `/api/admin/recetas${queryString ? `?${queryString}` : ''}`;
+  const suffix = queryString ? `?${queryString}` : '';
+  const endpoint = `/api/admin/recetas${suffix}`;
   
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     credentials: 'include',

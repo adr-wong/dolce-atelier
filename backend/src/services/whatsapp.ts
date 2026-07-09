@@ -73,7 +73,7 @@ export async function enviarMensaje(
   try {
     const chatId = numero.includes('@c.us')
       ? numero
-      : `${numero.replace(/[^0-9]/g, '')}@c.us`;
+        : `${numero.replace(/\D/g, '')}@c.us`;
 
     await client.sendMessage(chatId, mensaje);
     console.log(`[WHATSAPP] ✅ Mensaje enviado a ${numero}`);

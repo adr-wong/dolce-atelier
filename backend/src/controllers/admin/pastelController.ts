@@ -1,6 +1,4 @@
 import { Pastel } from '../../models';
-import type { IPastel } from '../../models/Pastel';
-
 interface PastelCreateInput {
   nombre: string;
   descripcion?: string;
