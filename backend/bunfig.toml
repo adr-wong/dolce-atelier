@@ -1,2 +1,3 @@
 [test]
 concurrency = 1
+preload = ["./src/__tests__/preload.ts"]
