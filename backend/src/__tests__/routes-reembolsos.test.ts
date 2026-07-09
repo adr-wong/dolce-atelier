@@ -3,14 +3,12 @@ import { Elysia } from "elysia";
 import {
   modelsMock,
   modelState,
-  stripeMockModule,
   auditLogMockModule,
   adminAuthHeader,
   userAuthHeader,
 } from "./helpers";
 
 mock.module("../models", () => modelsMock);
-mock.module("../services/stripe", () => stripeMockModule);
 mock.module("../services/auditLog", () => auditLogMockModule);
 
 const { reembolsoRoutes } = await import("../routes/reembolsos");

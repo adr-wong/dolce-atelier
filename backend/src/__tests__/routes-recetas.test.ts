@@ -1,9 +1,8 @@
 import { describe, it, expect, mock } from "bun:test";
 import { Elysia } from "elysia";
-import { servicesMock, stripeMockModule, userAuthHeader } from "./helpers";
+import { servicesMock, userAuthHeader } from "./helpers";
 
 mock.module("../services", () => servicesMock);
-mock.module("../services/stripe", () => stripeMockModule);
 
 const { recetaRoutes } = await import("../routes/recetas");
 

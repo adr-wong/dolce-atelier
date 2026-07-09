@@ -38,7 +38,7 @@ export async function subirImagen(buffer: Buffer, folder: string = 'dolce-atelie
 export async function subirReceta(buffer: Buffer, nombreArchivo: string): Promise<string> {
   getCloudinary();
   return new Promise((resolve, reject) => {
-    const uploadStream = cloud.uploader.upload_stream(
+    const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: 'dolce-atelier/recetas',
         resource_type: 'raw',

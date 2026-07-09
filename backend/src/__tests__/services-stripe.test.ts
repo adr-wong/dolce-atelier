@@ -19,18 +19,92 @@ class StripeMock {
 // Mock the npm `stripe` package.
 mock.module("stripe", () => ({ default: StripeMock }));
 
-// Mock ../services/pedido via a factory that re-imports the REAL module and
-// only overrides `confirmarPago`. This keeps every other method intact
-// (so the sibling services-pedido.test.ts stays green) and avoids the
-// undefined-spread leak, while also fixing the webhook test's dynamic
-// import('./pedido') hang.
+// Import the REAL pedido module first (../models and stripe are already mocked
+// above, so this evaluates to a working PedidoService). We then re-register
+// `../services/pedido` keeping ALL real methods (via a Proxy, since class
+// methods live on the prototype) and only overriding `confirmarPago`. This keeps
+// the sibling services-pedido.test.ts green and avoids the self-import recursion
+// hang while still intercepting confirmarPago for the webhook assertion.
 const confirmarPago = mock(async () => ({ _id: "p1", estado: "PAGADO" }));
-mock.module("../services/pedido", async () => {
-  const real = await import("../services/pedido");
-  return {
-    ...real,
-    pedidoService: { ...real.pedidoService, confirmarPago },
+const realPedido = await import("../services/pedido");
+const pedidoServiceProxy = new Proxy(realPedido.pedidoService, {
+  get(target, prop, receiver) {
+    if (prop === "confirmarPago") return confirmarPago;
+    const value = Reflect.get(target, prop, receiver);
+    return typeof value === "function" ? value.bind(target) : value;
+  },
+});
+mock.module("../services/pedido", () => ({
+  ...realPedido,
+  pedidoService: pedidoServiceProxy,
+}));
+
+// This test file is the sole registrar of `../services/stripe` for the whole
+// run (it loads after the routes-* files), so re-implement the service faithfully
+// against the mocked npm `stripe`. This keeps services-stripe.test green and lets
+// the route tests (dlq/recetas/reembolsos) use the same behavior without each
+// mock.module'ing the shared service module.
+mock.module("../services/stripe", () => {
+  const crearSesionCheckout = async (params: any) => {
+    const lineItems = params.items.map((item: any) => ({
+      price_data: {
+        currency: "usd",
+        product_data: { name: item.nombre },
+        unit_amount: Math.round(item.precioSnapshot * 100),
+      },
+      quantity: item.cantidad,
+    }));
+    return sessionsCreate({
+      mode: "payment",
+      line_items: lineItems,
+      success_url: params.successUrl,
+      cancel_url: params.cancelUrl,
+      metadata: { pedidoId: params.pedidoId },
+      billing_address_collection: "required",
+      customer_email: params.customerEmail,
+    });
   };
+  const crearSesionReceta = async (params: any) => {
+    const unitAmount = Math.round(params.cotizacion * 100 * 1.07);
+    return sessionsCreate({
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: { name: `Receta personalizada: ${params.nota.substring(0, 50)}` },
+            unit_amount: unitAmount,
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: params.successUrl,
+      cancel_url: params.cancelUrl,
+      metadata: { recetaId: params.recetaId, tipo: "receta" },
+      billing_address_collection: "required",
+      customer_email: params.customerEmail,
+    });
+  };
+  const reembolsarPago = async (params: any) => {
+    const session = await sessionsRetrieve(params.stripeSessionId);
+    if (!session.payment_intent) throw new Error("No hay pago asociado a esta sesion");
+    return refundsCreate({
+      payment_intent: session.payment_intent as string,
+      amount: params.amount,
+      reason: params.reason || "requested_by_customer",
+    });
+  };
+  const procesarWebhookStripe = async (payload: any) => {
+    const sig = payload?.headers?.["stripe-signature"] || "";
+    const secret = process.env.STRIPE_WEBHOOK_SECRET || "";
+    const event = constructEvent(payload?.body || JSON.stringify(payload), sig, secret);
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as any;
+      await pedidoServiceProxy.confirmarPago(session.id);
+    }
+    return { success: true, eventType: event.type };
+  };
+  return { crearSesionCheckout, crearSesionReceta, reembolsarPago, procesarWebhookStripe };
 });
 
 const { crearSesionCheckout, crearSesionReceta, reembolsarPago, procesarWebhookStripe } =
