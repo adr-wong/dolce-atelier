@@ -44,7 +44,7 @@ export function asAuthenticatedUser(
 //   2. Global server-level key (MCP_API_KEY) -> accept
 //   3. Per-user MCP key (resolved via the backend index) -> accept
 // ---------------------------------------------------------------------------
-import { resolveUserKey } from "./userKeys.js";
+import { resolveSessionToken, resolveUserKey } from "./userKeys.js";
 
 export async function validateApiKey(apiKey: string | null): Promise<boolean> {
   if (!API_KEY) {
@@ -130,6 +130,25 @@ async function resolveIdentity(authHeader: string | null): Promise<{
     identity.userId = claims.sub;
     identity.role = claims.role;
     identity.token = raw; // backend also trusts MCP-issued JWTs
+    return identity;
+  }
+
+  // 2c. Backend-issued opaque session token (enables immediate revocation)
+  const sessionUserId = await resolveSessionToken(raw);
+  if (sessionUserId) {
+    identity.userId = sessionUserId;
+    identity.token = raw;
+    if (clerkClient) {
+      try {
+        const user = await clerkClient.users.getUser(sessionUserId);
+        const metadata = user.publicMetadata as { role?: string };
+        if (metadata.role === "admin" || metadata.role === "superadmin") {
+          identity.role = metadata.role as McpRole;
+        }
+      } catch {
+        // Default to "user"
+      }
+    }
     return identity;
   }
 

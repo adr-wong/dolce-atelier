@@ -2,7 +2,7 @@ import { describe, it, expect, mock } from "bun:test";
 import crypto from "node:crypto";
 
 // Env must be set BEFORE importing modules that capture it at load time.
-process.env.MCP_JWT_SECRET =
+  process.env.MCP_JWT_SECRET =
   process.env.MCP_JWT_SECRET || "test-backend-mcp-secret-1234567890";
 
 // --- Mock Clerk + Mongo BEFORE importing the service/route ---
@@ -40,7 +40,6 @@ const fakeCollection = {
     return indexStore.find((d) => d.keyHash === q.keyHash) ?? null;
   }),
 };
-
 // Capture the REAL connectDB BEFORE mocking lib/db so that db.test.ts (which
 // imports connectDB from ../lib/db) still exercises the real implementation.
 const realConnectDB = (await import("../lib/db")).connectDB;

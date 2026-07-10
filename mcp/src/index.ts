@@ -2,6 +2,7 @@ import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
 import { type AuthenticatedUser, authenticate } from "./auth/index.js";
 import {
   corsResponse,
@@ -84,6 +85,32 @@ function createServer(): McpServer {
     "ping",
     { description: "Health check tool — returns pong" },
     async () => ({ content: [{ type: "text" as const, text: "pong" }] }),
+  );
+
+  srv.registerTool(
+    "list_tools",
+    {
+      description:
+        "Lists all tools this MCP server exposes, with their descriptions and input schemas. Use this to discover available capabilities.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      // biome-ignore lint/suspicious/noExplicitAny: SDK stores tools in a private property
+      const registered = (srv as any)._registeredTools as Record<
+        string,
+        { description?: string; inputSchema?: unknown }
+      >;
+      const list = Object.entries(registered).map(([name, tool]) => ({
+        name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+      }));
+      return {
+        content: [
+          { type: "text" as const, text: JSON.stringify(list, null, 2) },
+        ],
+      };
+    },
   );
 
   registerCakeTools(srv);
