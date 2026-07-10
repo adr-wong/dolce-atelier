@@ -46,7 +46,7 @@ export function rateLimit(opts: RateLimitOptions) {
 
     // Siempre agregar headers informativos
     set.headers = {
-      ...(set.headers || {}),
+      ...set.headers,
       'X-RateLimit-Limit': String(max),
       'X-RateLimit-Remaining': String(remaining),
       'X-RateLimit-Reset': String(Math.ceil(record.resetAt / 1000)),

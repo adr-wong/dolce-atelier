@@ -97,40 +97,7 @@ export async function authenticate(
   }
 
   // 2. Resolve identity from a Bearer token (MCP-issued JWT preferred, Clerk fallback)
-  const authHeader = headers.get("Authorization");
-  let userId: string | null = null;
-  let role: AuthenticatedUser["role"] = "user";
-  let token: string | undefined;
-
-  if (authHeader?.startsWith("Bearer ")) {
-    const raw = authHeader.slice(7);
-
-    // 2a. MCP-issued agent token (HS256, signed by MCP_JWT_SECRET)
-    const claims = verifyMcpToken(raw);
-    if (claims) {
-      userId = claims.sub;
-      role = claims.role;
-      token = raw; // backend also trusts MCP-issued JWTs
-    } else {
-      // 2b. Clerk session JWT (fallback — keeps existing behaviour)
-      const clerkId = await verifyClerkJwt(authHeader);
-      if (clerkId) {
-        userId = clerkId;
-        token = raw;
-        if (clerkClient) {
-          try {
-            const user = await clerkClient.users.getUser(userId);
-            const metadata = user.publicMetadata as { role?: string };
-            if (metadata.role === "admin" || metadata.role === "superadmin") {
-              role = metadata.role as McpRole;
-            }
-          } catch {
-            // Default to "user"
-          }
-        }
-      }
-    }
-  }
+  const { userId, role, token } = await resolveIdentity(headers.get("Authorization"));
 
   return {
     authInfo: {
@@ -138,6 +105,55 @@ export async function authenticate(
       ...(userId ? { userId, role, token } : {}),
     } as unknown as AuthInfo,
   };
+}
+
+async function resolveIdentity(authHeader: string | null): Promise<{
+  userId: string | null;
+  role: AuthenticatedUser["role"];
+  token?: string;
+}> {
+  const identity: {
+    userId: string | null;
+    role: AuthenticatedUser["role"];
+    token?: string;
+  } = { userId: null, role: "user" };
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    return identity;
+  }
+
+  const raw = authHeader.slice(7);
+
+  // 2a. MCP-issued agent token (HS256, signed by MCP_JWT_SECRET)
+  const claims = verifyMcpToken(raw);
+  if (claims) {
+    identity.userId = claims.sub;
+    identity.role = claims.role;
+    identity.token = raw; // backend also trusts MCP-issued JWTs
+    return identity;
+  }
+
+  // 2b. Clerk session JWT (fallback — keeps existing behaviour)
+  const clerkId = await verifyClerkJwt(authHeader);
+  if (!clerkId) {
+    return identity;
+  }
+
+  identity.userId = clerkId;
+  identity.token = raw;
+  if (clerkClient) {
+    try {
+      const user = await clerkClient.users.getUser(clerkId);
+      const metadata = user.publicMetadata as { role?: string };
+      if (metadata.role === "admin" || metadata.role === "superadmin") {
+        identity.role = metadata.role as McpRole;
+      }
+    } catch {
+      // Default to "user"
+    }
+  }
+
+  return identity;
 }
 
 // ---------------------------------------------------------------------------

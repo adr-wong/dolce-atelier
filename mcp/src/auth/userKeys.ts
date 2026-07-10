@@ -19,7 +19,8 @@ export async function resolveUserKey(apiKey: string): Promise<string | null> {
   }
 
   try {
-    const base = env.BACKEND_URL.replace(/\/+$/, "");
+    let base = env.BACKEND_URL;
+    while (base.endsWith("/")) base = base.slice(0, -1);
     const res = await fetch(`${base}/api/mcp/validate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

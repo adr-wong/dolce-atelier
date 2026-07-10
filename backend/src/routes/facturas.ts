@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { Pedido } from '../models';
-import { verifyToken, authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 
 export const facturaRoutes = new Elysia({ prefix: '/api/facturas' })
   // HU-022: Descargar factura PDF

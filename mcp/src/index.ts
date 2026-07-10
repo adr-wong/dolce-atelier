@@ -100,6 +100,155 @@ function createServer(): McpServer {
 // ---------------------------------------------------------------------------
 const PORT = env.PORT;
 
+function handleTokenRoute(req: Request): Response {
+  if (req.method === "OPTIONS") {
+    return corsResponse(null);
+  }
+  if (req.method === "GET") {
+    return tokenUiResponse();
+  }
+  if (req.method === "POST") {
+    return corsResponse(handleTokenGrant(req));
+  }
+  return corsResponse(
+    new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    }),
+  );
+}
+
+async function handleMcp(req: Request, start: number): Promise<Response> {
+  const apiKey = req.headers.get("X-API-Key") || "anonymous";
+  if (!checkRateLimit(apiKey)) {
+    log("warn", "rate_limited", { apiKey: `${apiKey.slice(0, 8)}...` });
+    return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+      status: 429,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const authResult = await authenticate(req.headers);
+  if ("error" in authResult) {
+    log("warn", "auth_failed", {
+      method: req.method,
+      hasApiKey: !!req.headers.get("X-API-Key"),
+      hasAuth: !!req.headers.get("Authorization"),
+      duration: Date.now() - start,
+    });
+    return authResult.error;
+  }
+
+  const authUser = authResult.authInfo as unknown as AuthenticatedUser;
+  log("info", "request", {
+    method: req.method,
+    userId: authUser.userId,
+    role: authUser.role,
+  });
+
+  const sessionId = req.headers.get("mcp-session-id");
+
+  // --- Existing session: route to its transport ---
+  const session = sessionId ? sessions.get(sessionId) : undefined;
+  if (session) {
+    try {
+      return await session.transport.handleRequest(req, {
+        authInfo: authUser as unknown as AuthInfo,
+      });
+    } catch (err) {
+      log("error", "transport_error", {
+        sessionId,
+        error: String(err),
+        duration: Date.now() - start,
+      });
+      return new Response(
+        JSON.stringify({ error: "Internal server error" }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
+  }
+
+  // --- Session ID provided but not found ---
+  if (sessionId) {
+    return new Response(JSON.stringify({ error: "Session not found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // --- No session ID: only POST with initialize is allowed ---
+  if (req.method === "POST") {
+    return handleInitialize(req, authUser, start);
+  }
+
+  return new Response(
+    JSON.stringify({ error: "Bad Request: missing or invalid session" }),
+    { status: 400, headers: { "Content-Type": "application/json" } },
+  );
+}
+
+async function handleInitialize(
+  req: Request,
+  authUser: AuthenticatedUser,
+  start: number,
+): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const msg = body as JSONRPCMessage;
+  if (
+    !msg ||
+    typeof msg !== "object" ||
+    !("method" in msg) ||
+    msg.method !== "initialize"
+  ) {
+    return new Response(
+      JSON.stringify({ error: "Bad Request: missing or invalid session" }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  const newServer = createServer();
+
+  const transport = new WebStandardStreamableHTTPServerTransport({
+    sessionIdGenerator: () => crypto.randomUUID(),
+    onsessioninitialized: (sid) => {
+      sessions.set(sid, { transport, server: newServer });
+      log("info", "session_created", { sessionId: sid });
+    },
+    onsessionclosed: (sid) => {
+      sessions.delete(sid);
+      log("info", "session_closed", { sessionId: sid });
+    },
+  });
+
+  await newServer.connect(transport);
+
+  try {
+    return await transport.handleRequest(req, {
+      parsedBody: body,
+      authInfo: authUser as unknown as AuthInfo,
+    });
+  } catch (err) {
+    log("error", "transport_error", {
+      phase: "initialize",
+      error: String(err),
+      duration: Date.now() - start,
+    });
+    return new Response(
+      JSON.stringify({ error: "Internal server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  }
+}
+
 Bun.serve({
   port: PORT,
   async fetch(req) {
@@ -110,144 +259,12 @@ Bun.serve({
       return new Response("OK", { status: 200 });
     }
 
-    // -------------------------------------------------------------------------
-    // OAuth 2.0 Token endpoint + user-friendly token UI
-    // -------------------------------------------------------------------------
     if (url.pathname === "/token") {
-      if (req.method === "OPTIONS") {
-        return corsResponse(null);
-      }
-      if (req.method === "GET") {
-        return tokenUiResponse();
-      }
-      if (req.method === "POST") {
-        const result = await handleTokenGrant(req);
-        return corsResponse(result);
-      }
-      return corsResponse(
-        new Response(JSON.stringify({ error: "Method not allowed" }), {
-          status: 405,
-          headers: { "Content-Type": "application/json" },
-        }),
-      );
+      return handleTokenRoute(req);
     }
 
     if (url.pathname === "/mcp") {
-      const apiKey = req.headers.get("X-API-Key") || "anonymous";
-      if (!checkRateLimit(apiKey)) {
-        log("warn", "rate_limited", { apiKey: `${apiKey.slice(0, 8)}...` });
-        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
-          status: 429,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      const authResult = await authenticate(req.headers);
-      if ("error" in authResult) {
-        log("warn", "auth_failed", {
-          method: req.method,
-          hasApiKey: !!req.headers.get("X-API-Key"),
-          hasAuth: !!req.headers.get("Authorization"),
-          duration: Date.now() - start,
-        });
-        return authResult.error;
-      }
-
-      const authUser = authResult.authInfo as unknown as AuthenticatedUser;
-      log("info", "request", {
-        method: req.method,
-        userId: authUser.userId,
-        role: authUser.role,
-      });
-
-      const sessionId = req.headers.get("mcp-session-id");
-
-      // --- Existing session: route to its transport ---
-      const session = sessionId ? sessions.get(sessionId) : undefined;
-      if (session) {
-        try {
-          return await session.transport.handleRequest(req, {
-            authInfo: authUser as unknown as AuthInfo,
-          });
-        } catch (err) {
-          log("error", "transport_error", {
-            sessionId,
-            error: String(err),
-            duration: Date.now() - start,
-          });
-          return new Response(
-            JSON.stringify({ error: "Internal server error" }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-          );
-        }
-      }
-
-      // --- Session ID provided but not found ---
-      if (sessionId) {
-        return new Response(JSON.stringify({ error: "Session not found" }), {
-          status: 404,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      // --- No session ID: only POST with initialize is allowed ---
-      if (req.method === "POST") {
-        let body: unknown;
-        try {
-          body = await req.json();
-        } catch {
-          return new Response(JSON.stringify({ error: "Invalid JSON" }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-
-        const msg = body as JSONRPCMessage;
-        if (
-          msg &&
-          typeof msg === "object" &&
-          "method" in msg &&
-          msg.method === "initialize"
-        ) {
-          const newServer = createServer();
-
-          const transport = new WebStandardStreamableHTTPServerTransport({
-            sessionIdGenerator: () => crypto.randomUUID(),
-            onsessioninitialized: (sid) => {
-              sessions.set(sid, { transport, server: newServer });
-              log("info", "session_created", { sessionId: sid });
-            },
-            onsessionclosed: (sid) => {
-              sessions.delete(sid);
-              log("info", "session_closed", { sessionId: sid });
-            },
-          });
-
-          await newServer.connect(transport);
-
-          try {
-            return await transport.handleRequest(req, {
-              parsedBody: body,
-              authInfo: authUser as unknown as AuthInfo,
-            });
-          } catch (err) {
-            log("error", "transport_error", {
-              phase: "initialize",
-              error: String(err),
-              duration: Date.now() - start,
-            });
-            return new Response(
-              JSON.stringify({ error: "Internal server error" }),
-              { status: 500, headers: { "Content-Type": "application/json" } },
-            );
-          }
-        }
-      }
-
-      return new Response(
-        JSON.stringify({ error: "Bad Request: missing or invalid session" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+      return handleMcp(req, start);
     }
 
     return new Response("Not Found", { status: 404 });

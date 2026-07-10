@@ -242,7 +242,7 @@ export const app = new Elysia()
   .use(mcpRoutes)
   .use(auditoriaRoutes);
 
-const PORT = parseInt(process.env.PORT || '3001');
+const PORT = Number.parseInt(process.env.PORT || '3001');
 
 if (process.env.NODE_ENV !== 'test') {
   process.on('unhandledRejection', (reason) => {
@@ -274,5 +274,5 @@ if (process.env.NODE_ENV !== 'test') {
     }
   }
 
-  start();
+  await start();
 }

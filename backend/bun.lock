@@ -16,7 +16,7 @@
         "elysia": "^1.4.28",
         "fast-decode-uri-component": "github:delvedor/fast-decode-uri-component",
         "mongodb": "^7.2.0",
-        "mongoose": "^8.0.0",
+        "mongoose": "8.0.4",
         "nodemailer": "^9.0.1",
         "qrcode-terminal": "^0.12.0",
         "resend": "^6.1.3",

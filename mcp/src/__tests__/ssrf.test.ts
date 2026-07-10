@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, mock } from "bun:test";
 import { validateImageUrl } from "../ssrf.js";
 
 describe("validateImageUrl", () => {
@@ -21,13 +21,46 @@ describe("validateImageUrl", () => {
   });
 
   it("accepts allowed host (resolves to public IP)", async () => {
+    // Avoid real DNS by mocking the lookup to a public address.
+    mock.module(
+      "node:dns/promises",
+      () => ({ lookup: async () => ({ address: "8.8.8.8", family: 4 }) }),
+    );
     const result = await validateImageUrl(
       "https://res.cloudinary.com/test/image.jpg",
     );
-    expect(typeof result.ok).toBe("boolean");
+    expect(result.ok).toBe(true);
   });
 
-  it("rejects private IP resolution", async () => {
+  it("rejects when lookup resolves to a private IP", async () => {
+    mock.module(
+      "node:dns/promises",
+      () => ({ lookup: async () => ({ address: "10.0.0.5", family: 4 }) }),
+    );
+    const result = await validateImageUrl(
+      "https://res.cloudinary.com/test/image.jpg",
+    );
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("private IP");
+  });
+
+  it("rejects when DNS resolution fails", async () => {
+    mock.module(
+      "node:dns/promises",
+      () => ({
+        lookup: async () => {
+          throw new Error("getaddrinfo ENOTFOUND");
+        },
+      }),
+    );
+    const result = await validateImageUrl(
+      "https://images.unsplash.com/test/image.jpg",
+    );
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("DNS resolution failed");
+  });
+
+  it("rejects private IP patterns (range match)", () => {
     const PRIVATE_RANGES = [
       /^10\./,
       /^172\.(1[6-9]|2\d|3[01])\./,
@@ -40,7 +73,6 @@ describe("validateImageUrl", () => {
       /^fd00:/,
       /^fe80:/,
     ];
-
     const privateIPs = [
       "10.0.0.1",
       "172.16.0.1",
@@ -53,14 +85,12 @@ describe("validateImageUrl", () => {
       "fd00::1",
       "fe80::1",
     ];
-
     for (const ip of privateIPs) {
-      const matched = PRIVATE_RANGES.some((r) => r.test(ip));
-      expect(matched).toBe(true);
+      expect(PRIVATE_RANGES.some((r) => r.test(ip))).toBe(true);
     }
   });
 
-  it("rejects public IP patterns correctly", () => {
+  it("accepts public IP patterns (no range match)", () => {
     const PRIVATE_RANGES = [
       /^10\./,
       /^172\.(1[6-9]|2\d|3[01])\./,
@@ -73,11 +103,9 @@ describe("validateImageUrl", () => {
       /^fd00:/,
       /^fe80:/,
     ];
-
     const publicIPs = ["8.8.8.8", "1.1.1.1", "203.0.113.1", "172.15.0.1"];
     for (const ip of publicIPs) {
-      const matched = PRIVATE_RANGES.some((r) => r.test(ip));
-      expect(matched).toBe(false);
+      expect(PRIVATE_RANGES.some((r) => r.test(ip))).toBe(false);
     }
   });
 });

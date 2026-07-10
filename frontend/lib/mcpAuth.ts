@@ -17,7 +17,8 @@ export async function exchangeMcpToken(
   clerkToken: string,
   mcpUrl: string,
 ): Promise<McpTokenResponse> {
-  const base = mcpUrl.replace(/\/+$/, "");
+  let base = mcpUrl;
+  while (base.endsWith("/")) base = base.slice(0, -1);
   const res = await fetch(`${base}/token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -48,7 +49,8 @@ export function buildOpencodeSnippet({
   apiKey,
   jwt,
 }: OpencodeSnippetInput): string {
-  const base = mcpUrl.replace(/\/+$/, "");
+  let base = mcpUrl;
+  while (base.endsWith("/")) base = base.slice(0, -1);
   return JSON.stringify(
     {
       mcp: {

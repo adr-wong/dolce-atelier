@@ -18,8 +18,8 @@ export const useCarritoStore = create<CarritoState>()(
       items: [],
       agregar: (pastel) => {
         const items = get().items;
-        const existente = items.find(i => i.pastel._id === pastel._id);
-        if (existente) {
+        const existe = items.some(i => i.pastel._id === pastel._id);
+        if (existe) {
           set({
             items: items.map(i =>
               i.pastel._id === pastel._id

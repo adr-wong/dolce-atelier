@@ -26,7 +26,6 @@ export const reportesRoutes = new Elysia({ prefix: '/api/admin/reportes' })
         let fechaInicio: Date;
 
         if (desde && hasta) {
-          fechaInicio = new Date(desde);
           match.createdAt = { $gte: new Date(desde), $lte: new Date(hasta) };
         } else {
           switch (periodo) {
@@ -90,7 +89,6 @@ export const reportesRoutes = new Elysia({ prefix: '/api/admin/reportes' })
         let fechaInicio: Date;
 
         if (desde && hasta) {
-          fechaInicio = new Date(desde);
           match.createdAt = { $gte: new Date(desde), $lte: new Date(hasta) };
         } else {
           switch (periodo) {
@@ -120,7 +118,7 @@ export const reportesRoutes = new Elysia({ prefix: '/api/admin/reportes' })
         const header = 'ID,Email,Estado,Total,Método Entrega,Fecha\n';
         const rows = pedidos.map((p: any) => {
           const id = p._id.toString();
-          const email = (p.email || '').replace(/,/g, ' ');
+          const email = (p.email || '').replaceAll(',', ' ');
           const estado = p.estado;
           const total = p.total;
           const metodo = p.metodoEntrega || '';
@@ -147,7 +145,7 @@ export const reportesRoutes = new Elysia({ prefix: '/api/admin/reportes' })
       // HU-036: Pasteles más vendidos
       .get('/mas-vendidos', async ({ query }) => {
         const { limite } = query as { limite?: string };
-        const limit = parseInt(limite || '10');
+        const limit = Number.parseInt(limite || '10');
 
         const pipeline = [
           { $match: { estado: { $in: ['PAGADO', 'PREPARANDO', 'LISTO', 'EN_CAMINO', 'ENTREGADO'] } } },

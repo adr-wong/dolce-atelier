@@ -62,8 +62,7 @@ export const webhookRoutes = new Elysia({ prefix: '/api/webhook' })
           await recetaService.aceptar(recetaId);
           console.log(`[WEBHOOK] Receta ${recetaId} marcada como ACEPTADA`);
         }
-      } else {
-        if (email) {
+      } else if (email) {
           console.log('[WEBHOOK] Confirmando pago...');
           pedidoService.confirmarPagoConEmail(session.id, email).then(pedido => {
             if (pedido) {
@@ -92,16 +91,15 @@ export const webhookRoutes = new Elysia({ prefix: '/api/webhook' })
             console.error('[WEBHOOK] Error confirming payment:', err)
           );
         }
-      }
 
-      auditLogService.log({
-        action: 'WEBHOOK_CHECKOUT_COMPLETED',
-        resource: '/api/webhook/stripe',
-        method: 'POST',
-        metadata: { sessionId: session.id, tipo: tipo || 'pedido' },
-        statusCode: 200,
-      });
-    }
+        auditLogService.log({
+          action: 'WEBHOOK_CHECKOUT_COMPLETED',
+          resource: '/api/webhook/stripe',
+          method: 'POST',
+          metadata: { sessionId: session.id, tipo: tipo || 'pedido' },
+          statusCode: 200,
+        });
+      }
 
     return { received: true };
   });

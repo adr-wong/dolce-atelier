@@ -12,6 +12,7 @@
 # Environment / secret files
 /.env
 /.env.local
+/frontend/.env
 /frontend/.env.local
 /backend/.env
 /.env.*       # any other env files
@@ -51,3 +52,6 @@ backend/dist/
 frontend/test-results/
 frontend/playwright-report/
 frontend/playwright/.cache/
+
+# Coverage status (contains Sonar token)
+COVERAGE_STATUS.md
