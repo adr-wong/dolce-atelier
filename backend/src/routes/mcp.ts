@@ -6,6 +6,12 @@ import {
   deleteUserMcpKey,
   findUserIdByKey,
 } from "../services/mcpKey";
+import {
+  createUserMcpSession,
+  listUserMcpSessions,
+  revokeUserMcpSession,
+  findUserIdBySession,
+} from "../services/mcpSession";
 
 async function requireUserId(request: Request): Promise<string | null> {
   return verifyToken(request.headers.get("Authorization"));
@@ -83,5 +89,70 @@ export const mcpRoutes = new Elysia({ prefix: "/api/mcp" })
     },
     {
       body: t.Object({ apiKey: t.String() }),
+    },
+  )
+  .get("/sessions", async ({ request, set }) => {
+    const userId = await requireUserId(request);
+    if (!userId) {
+      set.status = 401;
+      return { error: "No autenticado" };
+    }
+    return { sessions: await listUserMcpSessions(userId) };
+  })
+  .post(
+    "/sessions",
+    async ({ request, body, set }) => {
+      const userId = await requireUserId(request);
+      if (!userId) {
+        set.status = 401;
+        return { error: "No autenticado" };
+      }
+      const { label } = body as { label?: string };
+      const { token, record } = await createUserMcpSession(userId, label);
+      return {
+        id: record.id,
+        token,
+        label: record.label,
+        createdAt: record.createdAt,
+        expiresAt: record.expiresAt,
+        last4: record.last4,
+      };
+    },
+    {
+      body: t.Object({ label: t.Optional(t.String()) }),
+    },
+  )
+  .delete(
+    "/sessions/:id",
+    async ({ request, params, set }) => {
+      const userId = await requireUserId(request);
+      if (!userId) {
+        set.status = 401;
+        return { error: "No autenticado" };
+      }
+      const ok = await revokeUserMcpSession(userId, params.id);
+      if (!ok) {
+        set.status = 404;
+        return { error: "Sesión no encontrada" };
+      }
+      return { success: true };
+    },
+    {
+      params: t.Object({ id: t.String() }),
+    },
+  )
+  .post(
+    "/session/validate",
+    async ({ body, set }) => {
+      const { token } = body as { token: string };
+      const userId = await findUserIdBySession(token);
+      if (!userId) {
+        set.status = 401;
+        return { error: "invalid" };
+      }
+      return { userId };
+    },
+    {
+      body: t.Object({ token: t.String() }),
     },
   );

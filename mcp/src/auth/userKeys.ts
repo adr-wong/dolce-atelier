@@ -40,3 +40,37 @@ export async function resolveUserKey(apiKey: string): Promise<string | null> {
     return null;
   }
 }
+
+// Resolves an opaque backend-issued session token to its owner via the backend.
+// Returns the userId, or null when the token is invalid/expired/revoked.
+// Results are cached briefly to avoid a backend round-trip on every request.
+export async function resolveSessionToken(
+  token: string,
+): Promise<string | null> {
+  const cached = cache.get(token);
+  if (cached && cached.exp > Date.now()) {
+    return cached.userId;
+  }
+
+  try {
+    let base = env.BACKEND_URL;
+    while (base.endsWith("/")) base = base.slice(0, -1);
+    const res = await fetch(`${base}/api/mcp/session/validate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    });
+
+    if (!res.ok) {
+      cache.set(token, { userId: null, exp: Date.now() + CACHE_TTL_MS });
+      return null;
+    }
+
+    const data = (await res.json()) as ValidateResponse;
+    const userId = data.userId ?? null;
+    cache.set(token, { userId, exp: Date.now() + CACHE_TTL_MS });
+    return userId;
+  } catch {
+    return null;
+  }
+}
