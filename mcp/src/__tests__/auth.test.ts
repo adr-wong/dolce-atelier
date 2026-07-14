@@ -6,6 +6,8 @@ process.env.CLERK_SECRET_KEY =
   process.env.CLERK_SECRET_KEY || "sk_test_placeholder";
 process.env.MCP_JWT_SECRET =
   process.env.MCP_JWT_SECRET || "test-secret-for-auth-tests";
+process.env.MCP_PUBLIC_URL =
+  process.env.MCP_PUBLIC_URL || "http://localhost:3002";
 
 // Mock @clerk/backend BEFORE importing auth module
 mock.module("@clerk/backend", () => ({
