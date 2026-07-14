@@ -1,7 +1,8 @@
 import { createClerkClient } from "@clerk/backend";
 import { getEnv } from "../../env.js";
-import type { McpRole } from "../issuer.js";
 import { verifyClerkJwt } from "../index.js";
+import type { McpRole } from "../issuer.js";
+import { resolveClerkRole } from "../issuer.js";
 import { generateAuthCode, getClient } from "./codes.js";
 
 const env = getEnv();
@@ -81,11 +82,7 @@ export async function handleAuthorize(req: Request): Promise<Response> {
   // Validate client exists
   const client = await getClient(client_id);
   if (!client) {
-    return buildErrorRedirect(
-      redirect_uri,
-      "unauthorized_client",
-      state,
-    );
+    return buildErrorRedirect(redirect_uri, "unauthorized_client", state);
   }
 
   // Validate redirect_uri is registered
@@ -98,11 +95,7 @@ export async function handleAuthorize(req: Request): Promise<Response> {
     return buildErrorRedirect(redirect_uri, "invalid_request", state);
   }
   if (code_challenge_method !== "S256") {
-    return buildErrorRedirect(
-      redirect_uri,
-      "invalid_request",
-      state,
-    );
+    return buildErrorRedirect(redirect_uri, "invalid_request", state);
   }
 
   // Redirect to the frontend consent page with the same OAuth params.
@@ -147,18 +140,12 @@ export async function handleApprove(req: Request): Promise<Response> {
 
   const clerk_token =
     typeof body.clerk_token === "string" ? body.clerk_token : null;
-  const client_id =
-    typeof body.client_id === "string" ? body.client_id : null;
+  const client_id = typeof body.client_id === "string" ? body.client_id : null;
   const redirect_uri =
     typeof body.redirect_uri === "string" ? body.redirect_uri : null;
   const state = typeof body.state === "string" ? body.state : null;
-  const scope = typeof body.scope === "string" ? body.scope : null;
   const code_challenge =
     typeof body.code_challenge === "string" ? body.code_challenge : null;
-  const code_challenge_method =
-    typeof body.code_challenge_method === "string"
-      ? body.code_challenge_method
-      : null;
 
   if (!clerk_token || !client_id || !redirect_uri || !code_challenge) {
     return json(
@@ -184,10 +171,7 @@ export async function handleApprove(req: Request): Promise<Response> {
   let role: McpRole = "user";
   try {
     const user = await clerkClient.users.getUser(userId);
-    const metadata = user.publicMetadata as { role?: string };
-    if (metadata.role === "admin" || metadata.role === "superadmin") {
-      role = metadata.role as McpRole;
-    }
+    role = resolveClerkRole(user);
   } catch {
     // Default to "user"
   }

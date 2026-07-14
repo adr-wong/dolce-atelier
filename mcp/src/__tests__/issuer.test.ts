@@ -1,46 +1,109 @@
 import { describe, expect, it } from "bun:test";
+import crypto from "node:crypto";
 
-process.env.BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
-process.env.CLERK_SECRET_KEY =
-  process.env.CLERK_SECRET_KEY || "sk_test_placeholder";
 process.env.MCP_JWT_SECRET =
   process.env.MCP_JWT_SECRET || "test-secret-for-issuer-tests";
 
-const { signMcpToken, verifyMcpToken } = await import("../auth/issuer.js");
+const issuer = await import("../auth/issuer.js");
 
-describe("issuer", () => {
-  it("round-trips a signed token", () => {
-    const token = signMcpToken({ userId: "user_123", role: "user" });
-    const claims = verifyMcpToken(token);
+describe("issuer — access token", () => {
+  it("roundtrips a signed access token", () => {
+    const token = issuer.signMcpToken({ userId: "user_1", role: "user" });
+    const claims = issuer.verifyMcpToken(token);
     expect(claims).not.toBeNull();
-    expect(claims?.sub).toBe("user_123");
+    expect(claims?.sub).toBe("user_1");
     expect(claims?.role).toBe("user");
     expect(claims?.iss).toBe("dolce-atelier-mcp");
+    expect(claims?.aud).toBe("dolce-atelier-mcp");
   });
 
-  it("rejects a tampered token", () => {
-    const token = signMcpToken({ userId: "user_123", role: "user" });
-    const tampered = `${token.slice(0, -2)}aa`;
-    expect(verifyMcpToken(tampered)).toBeNull();
+  it("roundtrips an admin token", () => {
+    const token = issuer.signMcpToken({ userId: "admin_1", role: "superadmin" });
+    const claims = issuer.verifyMcpToken(token);
+    expect(claims?.role).toBe("superadmin");
+  });
+
+  it("honours a custom ttl", () => {
+    const token = issuer.signMcpToken({
+      userId: "u",
+      role: "user",
+      ttlSeconds: 10,
+    });
+    expect(issuer.verifyMcpToken(token)?.exp).toBeGreaterThan(
+      Math.floor(Date.now() / 1000),
+    );
+  });
+
+  it("rejects a tampered signature", () => {
+    const token = issuer.signMcpToken({ userId: "u", role: "user" });
+    const [h, p] = token.split(".");
+    expect(issuer.verifyMcpToken(`${h}.${p}.deadbeef`)).toBeNull();
+  });
+
+  it("rejects a malformed token", () => {
+    expect(issuer.verifyMcpToken("not.a.jwt")).toBeNull();
+    expect(issuer.verifyMcpToken("garbage")).toBeNull();
   });
 
   it("rejects an expired token", () => {
-    const token = signMcpToken({
-      userId: "user_123",
+    const token = issuer.signMcpToken({
+      userId: "u",
       role: "user",
       ttlSeconds: -10,
     });
-    expect(verifyMcpToken(token)).toBeNull();
+    expect(issuer.verifyMcpToken(token)).toBeNull();
+  });
+});
+
+describe("issuer — refresh token", () => {
+  it("roundtrips a signed refresh token", () => {
+    const token = issuer.signMcpRefreshToken({
+      clientId: "client_1",
+      userId: "user_1",
+      role: "user",
+    });
+    const claims = issuer.verifyMcpRefreshToken(token);
+    expect(claims).not.toBeNull();
+    expect(claims?.sub).toBe("user_1");
+    expect(claims?.clientId).toBe("client_1");
+    expect(claims?.purpose).toBe("refresh");
   });
 
-  it("rejects a random non-JWT string", () => {
+  it("rejects a malformed refresh token", () => {
+    expect(issuer.verifyMcpRefreshToken("a.b.c.d")).toBeNull();
+    expect(issuer.verifyMcpRefreshToken("nope")).toBeNull();
+  });
+
+  it("rejects an expired refresh token", () => {
+    const token = issuer.signMcpRefreshToken({
+      clientId: "client_1",
+      userId: "user_1",
+      role: "user",
+      ttlSeconds: -10,
+    });
+    expect(issuer.verifyMcpRefreshToken(token)).toBeNull();
+  });
+});
+
+describe("issuer — resolveClerkRole", () => {
+  it("maps admin and superadmin", () => {
+    expect(issuer.resolveClerkRole({ publicMetadata: { role: "admin" } })).toBe(
+      "admin",
+    );
     expect(
-      verifyMcpToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.abc"),
-    ).toBeNull();
+      issuer.resolveClerkRole({ publicMetadata: { role: "superadmin" } }),
+    ).toBe("superadmin");
   });
 
-  it("carries admin role", () => {
-    const token = signMcpToken({ userId: "user_admin", role: "admin" });
-    expect(verifyMcpToken(token)?.role).toBe("admin");
+  it("defaults everything else to user", () => {
+    expect(issuer.resolveClerkRole({ publicMetadata: { role: "user" } })).toBe(
+      "user",
+    );
+    expect(issuer.resolveClerkRole({ publicMetadata: {} })).toBe("user");
+    expect(issuer.resolveClerkRole({ publicMetadata: null })).toBe("user");
+    expect(issuer.resolveClerkRole({})).toBe("user");
+    expect(issuer.resolveClerkRole({ publicMetadata: { role: "bogus" } })).toBe(
+      "user",
+    );
   });
 });

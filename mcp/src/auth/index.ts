@@ -4,7 +4,7 @@ import {
 } from "@clerk/backend";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { getEnv } from "../env.js";
-import { type McpRole, verifyMcpToken } from "./issuer.js";
+import { resolveClerkRole, verifyMcpToken } from "./issuer.js";
 import { resolveSessionToken } from "./userKeys.js";
 
 // ---------------------------------------------------------------------------
@@ -76,16 +76,13 @@ export async function authenticate(
   if (!userId) {
     const resourceMetadata = `${getEnv().MCP_PUBLIC_URL}/.well-known/oauth-protected-resource`;
     return {
-      error: new Response(
-        JSON.stringify({ error: "unauthorized" }),
-        {
-          status: 401,
-          headers: {
-            "Content-Type": "application/json",
-            "WWW-Authenticate": `Bearer resource_metadata="${resourceMetadata}"`,
-          },
+      error: new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: {
+          "Content-Type": "application/json",
+          "WWW-Authenticate": `Bearer resource_metadata="${resourceMetadata}"`,
         },
-      ),
+      }),
     };
   }
 
@@ -131,10 +128,7 @@ async function resolveIdentity(authHeader: string | null): Promise<{
     if (clerkClient) {
       try {
         const user = await clerkClient.users.getUser(sessionUserId);
-        const metadata = user.publicMetadata as { role?: string };
-        if (metadata.role === "admin" || metadata.role === "superadmin") {
-          identity.role = metadata.role as McpRole;
-        }
+        identity.role = resolveClerkRole(user);
       } catch {
         // Default to "user"
       }
@@ -153,10 +147,7 @@ async function resolveIdentity(authHeader: string | null): Promise<{
   if (clerkClient) {
     try {
       const user = await clerkClient.users.getUser(clerkId);
-      const metadata = user.publicMetadata as { role?: string };
-      if (metadata.role === "admin" || metadata.role === "superadmin") {
-        identity.role = metadata.role as McpRole;
-      }
+      identity.role = resolveClerkRole(user);
     } catch {
       // Default to "user"
     }

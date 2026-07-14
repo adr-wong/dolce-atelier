@@ -20,6 +20,17 @@ export interface McpTokenClaims {
 // Default lifetime of refresh tokens (30 days). Overridable per-call.
 export const MCP_REFRESH_TTL_SECONDS = 30 * 24 * 3600;
 
+// Resolve the effective MCP role from a Clerk user's public metadata.
+// Only `admin` / `superadmin` are privileged; anything else (including a
+// missing/empty role or a Clerk error) maps to the default `"user"`.
+export function resolveClerkRole(user: {
+  publicMetadata?: { role?: string } | null;
+}): McpRole {
+  const role = (user.publicMetadata as { role?: string } | undefined)?.role;
+  if (role === "admin" || role === "superadmin") return role;
+  return "user";
+}
+
 export interface McpRefreshClaims {
   clientId: string;
   sub: string;
@@ -32,7 +43,10 @@ export interface McpRefreshClaims {
 }
 
 function b64url(input: Buffer | string): string {
-  let s = Buffer.from(input).toString("base64").replaceAll("+", "-").replaceAll("/", "_");
+  let s = Buffer.from(input)
+    .toString("base64")
+    .replaceAll("+", "-")
+    .replaceAll("/", "_");
   while (s.endsWith("=")) s = s.slice(0, -1);
   return s;
 }
