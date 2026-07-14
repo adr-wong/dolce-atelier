@@ -4,15 +4,10 @@ import { verifyClerkJwt } from "../index.js";
 import type { McpRole } from "../issuer.js";
 import { resolveClerkRole } from "../issuer.js";
 import { generateAuthCode, getClient } from "./codes.js";
+import { CORS_HEADERS } from "../tokenEndpoint.js";
 
 const env = getEnv();
 const clerkClient = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
-
-const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -37,7 +32,10 @@ function buildErrorRedirect(
   if (state) params.set("state", state);
   return new Response(null, {
     status: 302,
-    headers: { Location: `${redirectUri}?${params.toString()}` },
+    headers: {
+      Location: `${redirectUri}?${params.toString()}`,
+      ...CORS_HEADERS,
+    },
   });
 }
 
@@ -112,7 +110,10 @@ export async function handleAuthorize(req: Request): Promise<Response> {
   while (base.endsWith("/")) base = base.slice(0, -1);
   return new Response(null, {
     status: 302,
-    headers: { Location: `${base}/mcp-authorize?${params.toString()}` },
+    headers: {
+      Location: `${base}/mcp-authorize?${params.toString()}`,
+      ...CORS_HEADERS,
+    },
   });
 }
 

@@ -4,7 +4,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { type AuthenticatedUser, authenticate } from "./auth/index.js";
-import { corsResponse, handleTokenGrant } from "./auth/tokenEndpoint.js";
+import { CORS_HEADERS, corsResponse, handleTokenGrant } from "./auth/tokenEndpoint.js";
 import { getEnv } from "./env.js";
 import { handleRegister } from "./auth/oauth/register.js";
 import { metadataRoutes } from "./auth/oauth/metadata.js";
@@ -277,6 +277,10 @@ Bun.serve({
   async fetch(req) {
     const url = new URL(req.url);
     const start = Date.now();
+
+    if (req.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
 
     if (url.pathname === "/health") {
       return new Response("OK", { status: 200 });
