@@ -1,4 +1,9 @@
 /** @type {import('next').NextConfig} */
+const mcpOrigin = new URL(
+  process.env.NEXT_PUBLIC_MCP_URL ||
+    "https://hospitable-healing-production.up.railway.app"
+).origin;
+
 const nextConfig = {
   async headers() {
     return [
@@ -13,7 +18,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://*.clerk.com https://*.clerk.accounts.dev",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://api.stripe.com https://res.cloudinary.com",
+              `connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://api.stripe.com https://res.cloudinary.com ${mcpOrigin}`,
               "frame-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://js.stripe.com https://hooks.stripe.com",
               "object-src 'none'",
               "base-uri 'self'",
