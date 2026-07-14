@@ -4,9 +4,10 @@ import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 
-const MCP_BASE =
+const MCP_BASE = (
   process.env.NEXT_PUBLIC_MCP_URL ||
-  "https://hospitable-healing-production.up.railway.app";
+  "https://hospitable-healing-production.up.railway.app"
+).replace(/\/$/, "");
 
 function ConsentInner() {
   const params = useSearchParams();
