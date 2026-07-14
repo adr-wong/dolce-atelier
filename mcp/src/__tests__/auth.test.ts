@@ -6,9 +6,6 @@ process.env.CLERK_SECRET_KEY =
   process.env.CLERK_SECRET_KEY || "sk_test_placeholder";
 process.env.MCP_JWT_SECRET =
   process.env.MCP_JWT_SECRET || "test-secret-for-auth-tests";
-if (!process.env.MCP_API_KEY) {
-  process.env.MCP_API_KEY = "test-api-key-123";
-}
 
 // Mock @clerk/backend BEFORE importing auth module
 mock.module("@clerk/backend", () => ({
@@ -27,28 +24,7 @@ const {
   authenticate,
   requireAuth,
   requireRole,
-  validateApiKey,
 } = await import("../auth/index.js");
-const { getEnv } = await import("../env.js");
-
-const API_KEY = getEnv().MCP_API_KEY ?? "";
-
-describe("validateApiKey", () => {
-  it("returns true when API key matches the global key", async () => {
-    if (!API_KEY) return;
-    expect(await validateApiKey(API_KEY)).toBe(true);
-  });
-
-  it("returns false when API key does not match", async () => {
-    if (!API_KEY) return;
-    expect(await validateApiKey("wrong-key")).toBe(false);
-  });
-
-  it("returns false when API key is null", async () => {
-    if (!API_KEY) return;
-    expect(await validateApiKey(null)).toBe(false);
-  });
-});
 
 describe("asAuthenticatedUser", () => {
   it("extracts user from valid AuthInfo", () => {
@@ -119,8 +95,7 @@ describe("requireAuth", () => {
 });
 
 describe("authenticate", () => {
-  it("rejects invalid API key", async () => {
-    if (!API_KEY) return;
+  it("rejects when no valid token is present", async () => {
     const headers = new Headers({ "X-API-Key": "invalid-key" });
     const result = await authenticate(headers);
     expect("error" in result).toBe(true);
@@ -129,17 +104,8 @@ describe("authenticate", () => {
     }
   });
 
-  it("accepts valid API key without JWT", async () => {
-    const headers = new Headers({ "X-API-Key": API_KEY || "anything" });
-    const result = await authenticate(headers);
-    expect("authInfo" in result).toBe(true);
-  });
-
-  it("accepts valid API key with JWT", async () => {
-    const headers = new Headers({
-      "X-API-Key": API_KEY || "anything",
-      Authorization: "Bearer fake-jwt-token",
-    });
+  it("accepts a valid Bearer token", async () => {
+    const headers = new Headers({ Authorization: "Bearer fake-jwt-token" });
     const result = await authenticate(headers);
     expect("authInfo" in result).toBe(true);
   });

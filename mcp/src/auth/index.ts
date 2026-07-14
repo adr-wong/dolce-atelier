@@ -5,12 +5,12 @@ import {
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { getEnv } from "../env.js";
 import { type McpRole, verifyMcpToken } from "./issuer.js";
+import { resolveSessionToken } from "./userKeys.js";
 
 // ---------------------------------------------------------------------------
 // Config (validated at startup via src/env.ts)
 // ---------------------------------------------------------------------------
 const env = getEnv();
-const API_KEY = env.MCP_API_KEY;
 const CLERK_SECRET_KEY = env.CLERK_SECRET_KEY;
 const BACKEND_URL = env.BACKEND_URL;
 
@@ -39,25 +39,6 @@ export function asAuthenticatedUser(
 }
 
 // ---------------------------------------------------------------------------
-// API Key validation (required for ALL requests)
-//   1. No global key configured -> allow all (dev mode, backward compatible)
-//   2. Global server-level key (MCP_API_KEY) -> accept
-//   3. Per-user MCP key (resolved via the backend index) -> accept
-// ---------------------------------------------------------------------------
-import { resolveSessionToken, resolveUserKey } from "./userKeys.js";
-
-export async function validateApiKey(apiKey: string | null): Promise<boolean> {
-  if (!API_KEY) {
-    // No global API key configured — allow all (dev mode)
-    return true;
-  }
-  if (apiKey && apiKey === API_KEY) return true;
-  if (!apiKey) return false;
-  const userId = await resolveUserKey(apiKey);
-  return userId !== null;
-}
-
-// ---------------------------------------------------------------------------
 // Clerk JWT verification (OPTIONAL — public tools don't need it)
 // ---------------------------------------------------------------------------
 export async function verifyClerkJwt(
@@ -80,24 +61,33 @@ export async function verifyClerkJwt(
 }
 
 // ---------------------------------------------------------------------------
-// Full authenticate: API key required, JWT optional
+// Full authenticate: a valid Bearer token is required. Resolves identity from
+// the MCP-issued JWT (preferred), the backend opaque session token, or a Clerk
+// session JWT fallback. On no/invalid token, returns 401 with a WWW-Authenticate
+// header so RFC-compliant clients trigger the OAuth flow.
 // ---------------------------------------------------------------------------
 export async function authenticate(
   headers: Headers,
 ): Promise<{ authInfo: AuthInfo } | { error: Response }> {
-  // 1. Validate API key (MANDATORY)
-  const apiKey = headers.get("X-API-Key");
-  if (!(await validateApiKey(apiKey))) {
+  const { userId, role, token } = await resolveIdentity(
+    headers.get("Authorization"),
+  );
+
+  if (!userId) {
+    const resourceMetadata = `${getEnv().MCP_PUBLIC_URL}/.well-known/oauth-protected-resource`;
     return {
-      error: new Response(JSON.stringify({ error: "Invalid API key" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      }),
+      error: new Response(
+        JSON.stringify({ error: "unauthorized" }),
+        {
+          status: 401,
+          headers: {
+            "Content-Type": "application/json",
+            "WWW-Authenticate": `Bearer resource_metadata="${resourceMetadata}"`,
+          },
+        },
+      ),
     };
   }
-
-  // 2. Resolve identity from a Bearer token (MCP-issued JWT preferred, Clerk fallback)
-  const { userId, role, token } = await resolveIdentity(headers.get("Authorization"));
 
   return {
     authInfo: {
