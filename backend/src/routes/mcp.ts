@@ -12,6 +12,13 @@ import {
   revokeUserMcpSession,
   findUserIdBySession,
 } from "../services/mcpSession";
+import {
+  upsertOAuthClient,
+  getOAuthClient,
+  createOAuthRefresh,
+  getOAuthRefresh,
+  revokeOAuthRefresh,
+} from "../services/mcpOAuth";
 
 async function requireUserId(request: Request): Promise<string | null> {
   return verifyToken(request.headers.get("Authorization"));
@@ -155,4 +162,118 @@ export const mcpRoutes = new Elysia({ prefix: "/api/mcp" })
     {
       body: t.Object({ token: t.String() }),
     },
-  );
+  )
+  // Internal, UNAUTHENTICATED: persist a dynamically-registered OAuth client
+  // (public, PKCE) created by the MCP server per RFC 7591. Mirrors the no-auth
+  // pattern of /validate above.
+  .post(
+    "/oauth/clients",
+    async ({ body, set }) => {
+      const c = body as {
+        client_id: string;
+        redirect_uris: string[];
+        scope?: string;
+        client_name?: string | null;
+      };
+      if (!c.client_id || !Array.isArray(c.redirect_uris)) {
+        set.status = 400;
+        return { error: "client_id and redirect_uris are required" };
+      }
+      const stored = await upsertOAuthClient({
+        client_id: c.client_id,
+        redirect_uris: c.redirect_uris,
+        scope: c.scope ?? "openid profile email",
+        client_name: c.client_name ?? null,
+        createdAt: new Date().toISOString(),
+      });
+      set.status = 201;
+      return stored;
+    },
+    {
+      body: t.Object({
+        client_id: t.String(),
+        redirect_uris: t.Array(t.String()),
+        scope: t.Optional(t.String()),
+        client_name: t.Optional(t.Union([t.String(), t.Null()])),
+      }),
+    },
+  )
+  // Internal, UNAUTHENTICATED: look up a stored OAuth client by client_id.
+  // Mirrors the no-auth pattern of /validate and /oauth/clients.
+  .get("/oauth/client", async ({ request, set }) => {
+    const url = new URL(request.url);
+    const clientId = url.searchParams.get("client_id");
+    if (!clientId) {
+      set.status = 400;
+      return { error: "client_id requerido" };
+    }
+    const client = await getOAuthClient(clientId);
+    if (!client) {
+      set.status = 404;
+      return { error: "Cliente no encontrado" };
+    }
+    return client;
+  })
+  // Internal, UNAUTHENTICATED: persist a refresh token issued by the MCP
+  // server. Mirrors the no-auth pattern of /validate above.
+  .post(
+    "/oauth/refresh",
+    async ({ body, set }) => {
+      const r = body as {
+        token: string;
+        clientId: string;
+        userId: string;
+        role?: string;
+        expiresAt: string;
+      };
+      if (!r.token || !r.clientId || !r.userId || !r.expiresAt) {
+        set.status = 400;
+        return { error: "token, clientId, userId and expiresAt are required" };
+      }
+      const stored = await createOAuthRefresh({
+        token: r.token,
+        clientId: r.clientId,
+        userId: r.userId,
+        role: r.role ?? "user",
+        expiresAt: r.expiresAt,
+      });
+      set.status = 201;
+      return stored;
+    },
+    {
+      body: t.Object({
+        token: t.String(),
+        clientId: t.String(),
+        userId: t.String(),
+        role: t.Optional(t.String()),
+        expiresAt: t.String(),
+      }),
+    },
+  )
+  // Internal, UNAUTHENTICATED: look up a stored refresh token. Returns the
+  // record, or 404 when unknown (e.g. revoked/rotated).
+  .get("/oauth/refresh", async ({ request, set }) => {
+    const url = new URL(request.url);
+    const token = url.searchParams.get("token");
+    if (!token) {
+      set.status = 400;
+      return { error: "token requerido" };
+    }
+    const rec = await getOAuthRefresh(token);
+    if (!rec) {
+      set.status = 404;
+      return { error: "Refresh token no encontrado" };
+    }
+    return rec;
+  })
+  // Internal, UNAUTHENTICATED: revoke a stored refresh token.
+  .delete("/oauth/refresh", async ({ request, set }) => {
+    const url = new URL(request.url);
+    const token = url.searchParams.get("token");
+    if (!token) {
+      set.status = 400;
+      return { error: "token requerido" };
+    }
+    await revokeOAuthRefresh(token);
+    return { success: true };
+  });

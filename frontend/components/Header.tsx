@@ -52,9 +52,6 @@ export default function Header() {
           <Link href="/recetas/mis" className={styles.link} onClick={closeMenu}>
             Mis Recetas
           </Link>
-          <Link href="/mi-cuenta/mcp" className={styles.link} onClick={closeMenu}>
-            Acceso MCP
-          </Link>
         </Show>
         {isAdmin && (
           <Link href="/admin" className={styles.adminLink} onClick={closeMenu}>

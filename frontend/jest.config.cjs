@@ -16,6 +16,7 @@ module.exports = {
     'lib/**/*.ts',
     'store/**/*.ts',
     'hooks/**/*.ts',
+    'app/**/*.tsx',
     '!**/*.d.ts',
     '!**/node_modules/**',
   ],

@@ -1,7 +1,7 @@
 interface McpServerConfig {
   type: "remote";
   url: string;
-  headers: Record<string, string>;
+  oauth: Record<string, unknown>;
 }
 
 interface OpencodeConfig {
@@ -12,6 +12,7 @@ interface OpencodeConfig {
 
 const CONFIG_PATH = "/home/awong/Programas/DS9/semestral/opencode.json";
 const SCHEMA_URL = "https://opencode.ai/config.json";
+const DEFAULT_BASE_URL = "https://hospitable-healing-production.up.railway.app";
 
 function printHelp(): void {
   console.log(`setup.ts - Configura el servidor MCP de Dolce Atelier en opencode.json
@@ -21,13 +22,14 @@ Uso:
 
 Opciones:
   --url <url>        URL base del servidor MCP (sin /mcp). Por defecto se usa
-                     MCP_URL, luego http://localhost:<PORT>, luego http://localhost:3002.
-  --api-key <key>    X-API-Key del servidor MCP.
-  --token <token>   Token de sesión del frontend.
+                      MCP_URL, luego https://hospitable-healing-production.up.railway.app.
+  --api-key <key>    (obsoleto) ignorado, se usa OAuth en su lugar.
+  --token <token>   (obsoleto) ignorado, se usa OAuth en su lugar.
   -h, --help         Muestra esta ayuda.
 
 Variables de entorno equivalentes:
-  MCP_URL, MCP_API_KEY, MCP_ACCESS_TOKEN
+  MCP_URL (MCP_API_KEY y MCP_ACCESS_TOKEN ya no se usan; el cliente negocia
+  el token vía OAuth 2.0 / PKCE).
 
 Si un valor falta y se ejecuta de forma interactiva, se solicitará con un prompt.
 `);
@@ -60,9 +62,7 @@ function parseArgs(argv: string[]): {
 function resolveBaseUrl(argUrl?: string): string {
   const base = argUrl ?? process.env.MCP_URL;
   if (base) return base;
-  const port = process.env.PORT;
-  if (port) return `http://localhost:${port}`;
-  return "http://localhost:3002";
+  return DEFAULT_BASE_URL;
 }
 
 async function ask(promptText: string, envValue?: string): Promise<string> {
@@ -82,8 +82,10 @@ async function main(): Promise<void> {
   }
 
   const base = resolveBaseUrl(args.url);
-  const apiKey = await ask("X-API-Key del servidor MCP: ", args.apiKey ?? process.env.MCP_API_KEY);
-  const token = await ask("Token de sesión del frontend: ", args.token ?? process.env.MCP_ACCESS_TOKEN);
+  // Las banderas --api-key/--token y MCP_API_KEY/MCP_ACCESS_TOKEN son obsoletas:
+  // el cliente obtiene el token mediante el flujo OAuth 2.0 / PKCE del servidor.
+  await ask("(ignorado) X-API-Key del servidor MCP: ", args.apiKey ?? process.env.MCP_API_KEY);
+  await ask("(ignorado) Token de sesión del frontend: ", args.token ?? process.env.MCP_ACCESS_TOKEN);
 
   const mcpUrl = base.replace(/\/+$/, "") + "/mcp";
 
@@ -99,10 +101,7 @@ async function main(): Promise<void> {
   config.mcp["dolce-atelier"] = {
     type: "remote",
     url: mcpUrl,
-    headers: {
-      "X-API-Key": apiKey || "YOUR_MCP_API_KEY",
-      Authorization: `Bearer ${token || "TU_SESSION_TOKEN"}`,
-    },
+    oauth: {},
   };
 
   await Bun.write(CONFIG_PATH, JSON.stringify(config, null, 2) + "\n");

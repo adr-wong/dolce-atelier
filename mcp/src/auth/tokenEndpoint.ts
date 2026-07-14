@@ -1,12 +1,17 @@
-import { createClerkClient } from "@clerk/backend";
+import crypto from "node:crypto";
 import { getEnv } from "../env.js";
 import { log } from "../logger.js";
-import { authenticateClient } from "./clients.js";
-import { verifyClerkJwt } from "./index.js";
-import { type McpRole, signMcpToken } from "./issuer.js";
+import { getClient, consumeAuthCode } from "./oauth/codes.js";
+import {
+  type McpRole,
+  signMcpToken,
+  signMcpRefreshToken,
+  verifyMcpRefreshToken,
+  MCP_REFRESH_TTL_SECONDS,
+} from "./issuer.js";
+import { callBackend } from "./index.js";
 
 const env = getEnv();
-const clerkClient = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
 
 // ---------------------------------------------------------------------------
 // CORS helper (lets the app / any harness call the /token endpoint)
@@ -27,12 +32,35 @@ export function corsResponse(body: Response | null): Response {
   return body;
 }
 
+function jsonError(
+  error: string,
+  error_description: string,
+  status: number,
+): Response {
+  return new Response(
+    JSON.stringify({ error, error_description }),
+    { status, headers: { "Content-Type": "application/json" } },
+  );
+}
+
+function tokenResponse(access_token: string, refresh_token: string): Response {
+  return new Response(
+    JSON.stringify({
+      access_token,
+      token_type: "Bearer",
+      expires_in: env.MCP_TOKEN_TTL,
+      refresh_token,
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } },
+  );
+}
+
 // ---------------------------------------------------------------------------
 // OAuth 2.0 Token endpoint (grant handler)
-//   - grant_type=client_credentials        → machine agents (seeded clients)
-//   - grant_type=clerk_exchange             → human-in-the-loop (reuses Clerk)
-//     body: { clerk_token: "<clerk session jwt>" }
-// Returns: { access_token, token_type: "Bearer", expires_in }
+//   - grant_type=authorization_code  → PKCE-bound auth code exchange
+//   - grant_type=refresh_token       → rotate and issue a new access token
+// Both grants mint an MCP JWT Bearer (HS256) access token plus a refresh token
+// that is persisted (revocation-capable) in the backend.
 // ---------------------------------------------------------------------------
 export async function handleTokenGrant(req: Request): Promise<Response> {
   let params: Record<string, string> = {};
@@ -45,214 +73,209 @@ export async function handleTokenGrant(req: Request): Promise<Response> {
       for (const [k, v] of form.entries()) params[k] = v;
     }
   } catch {
-    return new Response(
-      JSON.stringify({
-        error: "invalid_request",
-        error_description: "Bad body",
-      }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
-    );
+    return jsonError("invalid_request", "Bad body", 400);
   }
 
-  const credentials = await handleClientCredentials(params);
-  if (credentials) return credentials;
-
-  const clerk = await handleClerkExchange(params);
-  if (clerk) return clerk;
-
-  return new Response(
-    JSON.stringify({
-      error: "unsupported_grant_type",
-      error_description: "Supported: client_credentials, clerk_exchange",
-    }),
-    { status: 400, headers: { "Content-Type": "application/json" } },
-  );
-}
-
-async function handleClientCredentials(
-  params: Record<string, string>,
-): Promise<Response | null> {
-  if (params.grant_type !== "client_credentials") return null;
-
-  const client = authenticateClient(
-    params.client_id ?? "",
-    params.client_secret ?? "",
-  );
-  if (!client) {
-    log("warn", "token_grant_failed", { grant: "client_credentials" });
-    return new Response(
-      JSON.stringify({
-        error: "invalid_client",
-        error_description: "Unknown client or bad secret",
-      }),
-      { status: 401, headers: { "Content-Type": "application/json" } },
-    );
-  }
-
-  const accessToken = signMcpToken({
-    userId: client.userId,
-    role: client.role,
-  });
-  log("info", "token_issued", {
-    grant: "client_credentials",
-    userId: client.userId,
-    role: client.role,
-  });
-  return new Response(
-    JSON.stringify({
-      access_token: accessToken,
-      token_type: "Bearer",
-      expires_in: env.MCP_TOKEN_TTL,
-    }),
-    { status: 200, headers: { "Content-Type": "application/json" } },
-  );
-}
-
-async function handleClerkExchange(
-  params: Record<string, string>,
-): Promise<Response | null> {
   const grantType = params.grant_type;
-  if (
-    grantType !== "clerk_exchange" &&
-    grantType !== "urn:ietf:params:oauth:grant-type:token-exchange"
-  ) {
-    return null;
+
+  if (grantType === "authorization_code") {
+    return handleAuthorizationCode(params);
+  }
+  if (grantType === "refresh_token") {
+    return handleRefreshToken(params);
   }
 
-  const clerkToken = params.clerk_token ?? params.subject_token;
-  if (!clerkToken) {
-    return new Response(
-      JSON.stringify({
-        error: "invalid_request",
-        error_description: "clerk_token is required",
-      }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
-    );
-  }
-
-  const userId = await verifyClerkJwt(`Bearer ${clerkToken}`);
-  if (!userId) {
-    log("warn", "token_grant_failed", { grant: "clerk_exchange" });
-    return new Response(
-      JSON.stringify({
-        error: "invalid_grant",
-        error_description: "Clerk token verification failed",
-      }),
-      { status: 401, headers: { "Content-Type": "application/json" } },
-    );
-  }
-
-  let role: McpRole = "user";
-  try {
-    const user = await clerkClient.users.getUser(userId);
-    const metadata = user.publicMetadata as { role?: string };
-    if (metadata.role === "admin" || metadata.role === "superadmin") {
-      role = metadata.role as McpRole;
-    }
-  } catch {
-    // Default to "user"
-  }
-
-  const accessToken = signMcpToken({ userId, role });
-  log("info", "token_issued", { grant: "clerk_exchange", userId, role });
-  return new Response(
-    JSON.stringify({
-      access_token: accessToken,
-      token_type: "Bearer",
-      expires_in: env.MCP_TOKEN_TTL,
-    }),
-    { status: 200, headers: { "Content-Type": "application/json" } },
+  return jsonError(
+    "unsupported_grant_type",
+    "Supported: authorization_code, refresh_token",
+    400,
   );
 }
 
 // ---------------------------------------------------------------------------
-// Minimal user-friendly token UI (GET /token)
+// authorization_code grant (RFC 6749 + PKCE RFC 7636)
 // ---------------------------------------------------------------------------
-export function tokenUiResponse(): Response {
-  const html = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dolce Atelier — MCP Agent Token</title>
-<style>
-  :root { color-scheme: light dark; }
-  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
-  h1 { font-size: 1.4rem; }
-  .card { border: 1px solid #ccc; border-radius: 12px; padding: 1rem 1.25rem; margin: 1rem 0; }
-  label { display: block; font-weight: 600; margin-top: .75rem; }
-  input, textarea, select { width: 100%; padding: .5rem; margin-top: .25rem; box-sizing: border-box; }
-  button { margin-top: 1rem; padding: .55rem 1rem; border: 0; border-radius: 8px; background: #c2410c; color: #fff; cursor: pointer; }
-  pre { background: #1118; color: #eee; padding: .75rem; border-radius: 8px; overflow:auto; white-space: pre-wrap; }
-  code { font-family: ui-monospace, monospace; }
-  .hint { color: #888; font-size: .85rem; }
-</style>
-</head>
-<body>
-<h1>Dolce Atelier — MCP Agent Token</h1>
-<p class="hint">Get a short-lived JWT your agent (opencode, etc.) can use as <code>Authorization: Bearer &lt;token&gt;</code> against the MCP server.</p>
+async function handleAuthorizationCode(
+  params: Record<string, string>,
+): Promise<Response> {
+  const clientId = params.client_id ?? "";
+  const code = params.code ?? "";
+  const codeVerifier = params.code_verifier ?? "";
+  const redirectUri = params.redirect_uri ?? "";
 
-<div class="card">
-  <h3>Machine agent (OAuth client_credentials)</h3>
-  <label>client_id</label><input id="cid" placeholder="mcp_demo" />
-  <label>client_secret</label><input id="csec" type="password" placeholder="..." />
-  <button onclick="clientCreds()">Issue token</button>
-</div>
-
-<div class="card">
-  <h3>Human (reuse Clerk login)</h3>
-  <p class="hint">Paste a Clerk session token (e.g. from your app via <code>clerk.session.getToken()</code>).</p>
-  <label>clerk_token</label><textarea id="ctok" rows="3" placeholder="eyJ..."></textarea>
-  <button onclick="clerkExchange()">Exchange for agent token</button>
-</div>
-
-<div class="card">
-  <h3>Access token</h3>
-  <pre id="out">—</pre>
-  <button onclick="copyToken()">Copy token</button>
-</div>
-
-<div class="card">
-  <h3>opencode.json snippet</h3>
-  <pre id="oc">{
-  "mcp": {
-    "dolce-atelier": {
-      "type": "remote",
-      "url": "${env.PORT ? `http://localhost:${env.PORT}` : "MCP_URL"}/mcp",
-      "headers": {
-        "X-API-Key": "YOUR_MCP_API_KEY",
-        "Authorization": "Bearer " + token
-      }
-    }
+  // 1. The client must be a registered public client.
+  if (!clientId) {
+    return jsonError("invalid_client", "client_id is required", 400);
   }
-}</pre>
-  <p class="hint">Put the token in an env var (e.g. <code>MCP_ACCESS_TOKEN</code>) and reference it with <code>{env:MCP_ACCESS_TOKEN}</code>.</p>
-</div>
+  const client = await getClient(clientId);
+  if (!client) {
+    log("warn", "token_grant_failed", {
+      grant: "authorization_code",
+      reason: "unknown_client",
+    });
+    return jsonError("invalid_client", "Unknown client_id", 400);
+  }
 
-<script>
-const TOKEN_URL = window.location.origin + "/token";
-async function post(body) {
-  const r = await fetch(TOKEN_URL, {
+  // 2. The auth code must exist, be unexpired, and match the client.
+  const rec = consumeAuthCode(code);
+  if (!rec) {
+    log("warn", "token_grant_failed", {
+      grant: "authorization_code",
+      reason: "bad_or_expired_code",
+    });
+    return jsonError("invalid_grant", "Authorization code invalid", 400);
+  }
+  if (rec.client_id !== clientId) {
+    log("warn", "token_grant_failed", {
+      grant: "authorization_code",
+      reason: "client_mismatch",
+    });
+    return jsonError("invalid_grant", "client_id mismatch", 400);
+  }
+  if (redirectUri && rec.redirect_uri !== redirectUri) {
+    log("warn", "token_grant_failed", {
+      grant: "authorization_code",
+      reason: "redirect_uri_mismatch",
+    });
+    return jsonError("invalid_grant", "redirect_uri mismatch", 400);
+  }
+
+  // 3. PKCE: S256(code_verifier) must match the stored code_challenge.
+  const verifier = Buffer.from(codeVerifier);
+  const challenge = crypto
+    .createHash("sha256")
+    .update(verifier)
+    .digest("base64")
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
+  const expected = Buffer.from(rec.code_challenge);
+  if (
+    verifier.length === 0 ||
+    expected.length !== challenge.length ||
+    !crypto.timingSafeEqual(Buffer.from(challenge), expected)
+  ) {
+    log("warn", "token_grant_failed", {
+      grant: "authorization_code",
+      reason: "pkce_mismatch",
+    });
+    return jsonError("invalid_grant", "PKCE verification failed", 400);
+  }
+
+  // 4. Mint the access + refresh tokens.
+  const role = rec.role;
+  const accessToken = signMcpToken({ userId: rec.userId, role });
+  const refreshToken = signMcpRefreshToken({
+    clientId,
+    userId: rec.userId,
+    role,
+  });
+
+  const refreshExpiresAt = new Date(
+    (Math.floor(Date.now() / 1000) + MCP_REFRESH_TTL_SECONDS) * 1000,
+  ).toISOString();
+  const persist = await callBackend("/api/mcp/oauth/refresh", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: {
+      token: refreshToken,
+      clientId,
+      userId: rec.userId,
+      role,
+      expiresAt: refreshExpiresAt,
+    },
+    timeout: 10000,
   });
-  return r.json();
-}
-async function clientCreds() {
-  const data = await post({ grant_type: "client_credentials", client_id: cid.value, client_secret: csec.value });
-  out.textContent = data.access_token ? data.access_token : JSON.stringify(data, null, 2);
-}
-async function clerkExchange() {
-  const data = await post({ grant_type: "clerk_exchange", clerk_token: ctok.value });
-  out.textContent = data.access_token ? data.access_token : JSON.stringify(data, null, 2);
-}
-function copyToken() { navigator.clipboard.writeText(out.textContent); }
-</script>
-</body>
-</html>`;
-  return new Response(html, {
-    status: 200,
-    headers: { "Content-Type": "text/html; charset=utf-8" },
+  if (!persist.ok) {
+    log("error", "refresh_persist_failed", {
+      grant: "authorization_code",
+      status: persist.status,
+    });
+    return jsonError("server_error", "Failed to persist refresh token", 500);
+  }
+
+  log("info", "token_issued", {
+    grant: "authorization_code",
+    userId: rec.userId,
+    role,
   });
+  return tokenResponse(accessToken, refreshToken);
+}
+
+// ---------------------------------------------------------------------------
+// refresh_token grant (rotation)
+// ---------------------------------------------------------------------------
+async function handleRefreshToken(
+  params: Record<string, string>,
+): Promise<Response> {
+  const refreshToken = params.refresh_token ?? "";
+  if (!refreshToken) {
+    return jsonError("invalid_request", "refresh_token is required", 400);
+  }
+
+  const claims = verifyMcpRefreshToken(refreshToken);
+  if (!claims) {
+    log("warn", "token_grant_failed", {
+      grant: "refresh_token",
+      reason: "invalid_or_expired",
+    });
+    return jsonError("invalid_grant", "Refresh token invalid or expired", 400);
+  }
+
+  // Check the refresh token hasn't been revoked / rotated away.
+  const lookup = await callBackend(
+    `/api/mcp/oauth/refresh?token=${encodeURIComponent(refreshToken)}`,
+    { method: "GET", timeout: 10000 },
+  );
+  if (!lookup.ok) {
+    log("warn", "token_grant_failed", {
+      grant: "refresh_token",
+      reason: "revoked",
+    });
+    return jsonError("invalid_grant", "Refresh token revoked", 400);
+  }
+
+  const { sub: userId, role, clientId } = claims;
+
+  // Mint a fresh access token (role may legitimately stay as issued).
+  const accessToken = signMcpToken({ userId, role: role as McpRole });
+
+  // Rotate the refresh token: revoke the old, persist the new.
+  const newRefresh = signMcpRefreshToken({
+    clientId,
+    userId,
+    role: role as McpRole,
+  });
+  const refreshExpiresAt = new Date(
+    (Math.floor(Date.now() / 1000) + MCP_REFRESH_TTL_SECONDS) * 1000,
+  ).toISOString();
+
+  await callBackend(
+    `/api/mcp/oauth/refresh?token=${encodeURIComponent(refreshToken)}`,
+    { method: "DELETE", timeout: 10000 },
+  );
+  const persist = await callBackend("/api/mcp/oauth/refresh", {
+    method: "POST",
+    body: {
+      token: newRefresh,
+      clientId,
+      userId,
+      role,
+      expiresAt: refreshExpiresAt,
+    },
+    timeout: 10000,
+  });
+  if (!persist.ok) {
+    log("error", "refresh_persist_failed", {
+      grant: "refresh_token",
+      status: persist.status,
+    });
+    return jsonError("server_error", "Failed to persist refresh token", 500);
+  }
+
+  log("info", "token_issued", {
+    grant: "refresh_token",
+    userId,
+    role,
+  });
+  return tokenResponse(accessToken, newRefresh);
 }

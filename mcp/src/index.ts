@@ -4,12 +4,11 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { type AuthenticatedUser, authenticate } from "./auth/index.js";
-import {
-  corsResponse,
-  handleTokenGrant,
-  tokenUiResponse,
-} from "./auth/tokenEndpoint.js";
+import { corsResponse, handleTokenGrant } from "./auth/tokenEndpoint.js";
 import { getEnv } from "./env.js";
+import { handleRegister } from "./auth/oauth/register.js";
+import { metadataRoutes } from "./auth/oauth/metadata.js";
+import { handleAuthorize, handleApprove } from "./auth/oauth/authorize.js";
 import { log } from "./logger.js";
 import { registerAdminTools } from "./tools/admin.js";
 import { registerCakeTools } from "./tools/cakes.js";
@@ -127,15 +126,12 @@ function createServer(): McpServer {
 // ---------------------------------------------------------------------------
 const PORT = env.PORT;
 
-function handleTokenRoute(req: Request): Response {
+async function handleTokenRoute(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
     return corsResponse(null);
   }
-  if (req.method === "GET") {
-    return tokenUiResponse();
-  }
   if (req.method === "POST") {
-    return corsResponse(handleTokenGrant(req));
+    return corsResponse(await handleTokenGrant(req));
   }
   return corsResponse(
     new Response(JSON.stringify({ error: "Method not allowed" }), {
@@ -286,6 +282,21 @@ Bun.serve({
       return new Response("OK", { status: 200 });
     }
 
+    const meta = metadataRoutes(req);
+    if (meta) return meta;
+
+    if (url.pathname === "/register") {
+      return handleRegister(req);
+    }
+
+    if (url.pathname === "/authorize" && req.method === "GET") {
+      return handleAuthorize(req);
+    }
+
+    if (url.pathname === "/authorize/approve" && req.method === "POST") {
+      return handleApprove(req);
+    }
+
     if (url.pathname === "/token") {
       return handleTokenRoute(req);
     }
@@ -302,7 +313,6 @@ log("info", "server_started", {
   port: PORT,
   backend: env.BACKEND_URL,
   hasClerkKey: true,
-  hasApiKey: !!env.MCP_API_KEY,
 });
 
 console.log(`[MCP] Dolce Atelier MCP server on http://localhost:${PORT}`);
