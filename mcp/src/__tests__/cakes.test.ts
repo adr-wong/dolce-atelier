@@ -5,6 +5,7 @@ process.env.BACKEND_URL = "http://localhost:3001";
 process.env.CLERK_SECRET_KEY = "sk_test_placeholder";
 process.env.MCP_JWT_SECRET = "test-secret";
 process.env.MCP_API_KEY = "test-key";
+process.env.MCP_PUBLIC_URL = "http://localhost:3002";
 
 // Prevent real network: stub global fetch (callBackend uses it). The real
 // requireAuth/requireRole just read authInfo, so handlers run unmodified.
