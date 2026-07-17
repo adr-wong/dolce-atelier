@@ -37,7 +37,7 @@ export async function listPedidos(context: PedidoControllerContext) {
   const skip = (pageNum - 1) * limitNum;
 
   const [pedidos, total] = await Promise.all([
-    Pedido.find(q).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+    Pedido.find(q).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
     Pedido.countDocuments(q),
   ]);
 
@@ -76,5 +76,5 @@ export async function updatePedidoStatus(context: PedidoControllerContext) {
   });
 
   set.status = 200;
-  return result;
+  return result.toJSON();
 }

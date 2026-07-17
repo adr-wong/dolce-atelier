@@ -97,15 +97,31 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
           throw error;
         }
       })
-      .put('/:id/estado', async ({ params, body }) => {
-        const pedido = await pedidoService.actualizarEstado(params.id, body);
-        if (!pedido) {
-          return new Response(JSON.stringify({ error: 'Pedido no encontrado' }), {
-            status: 404,
+      .put('/:id/estado', async ({ params, body, headers }) => {
+        const userId = await authMiddleware(headers);
+        if (!userId) {
+          return new Response(JSON.stringify({ error: 'No autenticado' }), {
+            status: 401,
             headers: { 'Content-Type': 'application/json' },
           });
         }
-        return { pedido };
+
+        try {
+          const pedido = await pedidoService.actualizarEstado(params.id, body);
+          if (!pedido) {
+            return new Response(JSON.stringify({ error: 'Pedido no encontrado' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+          return { pedido };
+        } catch (err: any) {
+          const status = err.statusCode || 400;
+          return new Response(JSON.stringify({ error: err.message }), {
+            status,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
       }, {
         params: t.Object({ id: t.String() }),
       })

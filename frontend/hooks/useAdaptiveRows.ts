@@ -10,7 +10,16 @@ const LAYOUT_PADDING = 64;
 const BORDER_PADDING = 8;
 
 export function useAdaptiveRows(): number {
-  const [rows, setRows] = useState(10);
+  const [rows, setRows] = useState(() => {
+    if (typeof window === 'undefined') return 12;
+    const available = window.innerHeight
+      - LAYOUT_PADDING
+      - TITLE_HEIGHT
+      - HEADER_HEIGHT
+      - PAGINATION_HEIGHT
+      - BORDER_PADDING;
+    return Math.max(3, Math.floor(available / ROW_HEIGHT));
+  });
 
   useEffect(() => {
     function calc() {

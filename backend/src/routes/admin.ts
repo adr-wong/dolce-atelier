@@ -9,11 +9,8 @@ const isDev = process.env.NODE_ENV === 'development';
 const skipAuth = isDev && process.env.SKIP_AUTH === 'true';
 
 export const adminRoutes = new Elysia({ prefix: '/api/admin' })
-  .guard(async ({ headers, set, path }) => {
-    console.log(`[ADMIN] ${path} - Auth header:`, headers.get('authorization')?.substring(0, 30) + '?');
-    
+  .guard(async ({ headers, set }) => {
     if (skipAuth) {
-      console.log('[ADMIN] Skip auth enabled');
       return;
     }
     

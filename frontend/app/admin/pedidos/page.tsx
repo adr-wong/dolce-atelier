@@ -53,6 +53,8 @@ export default function AdminPedidos() {
       if (ClerkOfflineError.is(error)) {
         console.error("Offline:", error);
       } else {
+        const message = error instanceof Error ? error.message : "Error updating status";
+        alert(message);
         console.error("Error updating status:", error);
       }
     }

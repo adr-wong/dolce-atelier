@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { ClerkOfflineError } from "@clerk/react/errors";
 import { getApiUrl } from "@/lib/get-api-url";
+import { useAdaptiveRows } from "@/hooks/useAdaptiveRows";
+import Pagination from "@/components/Pagination";
 import styles from "./usuarios.module.css";
 
 type Usuario = {
@@ -15,34 +17,46 @@ type Usuario = {
   role: string;
 };
 
+type UsuariosResponse = {
+  usuarios: Usuario[];
+  total: number;
+  page: number;
+  totalPages: number;
+};
+
 export default function AdminUsuarios() {
   const { getToken } = useAuth();
+  const limit = useAdaptiveRows();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     async function getUsuarios() {
-      const token = await getToken();
-      
-      const res = await fetch(`${getApiUrl()}/api/admin/usuarios`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (!res.ok) throw new Error("Error cargando usuarios");
-      return res.json();
-    }
-
-    getUsuarios()
-      .then(setUsuarios)
-      .catch((error) => {
+      try {
+        const token = await getToken();
+        const res = await fetch(
+          `${getApiUrl()}/api/admin/usuarios?page=${currentPage}&limit=${limit}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error("Error cargando usuarios");
+        const data: UsuariosResponse = await res.json();
+        setUsuarios(data.usuarios);
+        setTotalPages(data.totalPages);
+      } catch (error) {
         if (ClerkOfflineError.is(error)) {
           console.error('Offline:', error);
         } else {
           console.error(error);
         }
-      })
-      .finally(() => setLoading(false));
-  }, [getToken]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getUsuarios();
+  }, [getToken, currentPage, limit]);
 
   const handleRoleChange = async (id: string, role: string) => {
     const token = await getToken();
@@ -68,7 +82,7 @@ export default function AdminUsuarios() {
   if (loading) return <div>Cargando...</div>;
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <h1 className={styles.title}>Gestión de Usuarios</h1>
 
       <div className={styles.tableWrapper}>
@@ -118,6 +132,8 @@ export default function AdminUsuarios() {
         </tbody>
       </table>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
     </div>
   );
 }

@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useMobile } from '@/hooks/useMediaQuery';
 import styles from './admin-layout.module.css';
 
 export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   const isMobile = useMobile();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -46,7 +48,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
               key={item.href}
               href={item.href}
               onClick={closeSidebar}
-              className={styles.sidebarLink}
+              className={`${styles.sidebarLink} ${pathname === item.href ? styles.sidebarLinkActive : ''}`}
             >
               {item.label}
             </Link>

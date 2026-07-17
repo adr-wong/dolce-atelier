@@ -51,6 +51,7 @@ describe("PedidoService", () => {
   });
 
   it("actualizarEstado validates estado", async () => {
+    state.findByIdResult = { _id: "p1", estado: "PENDIENTE" };
     state.findByIdAndUpdateResult = { _id: "p1", estado: "PAGADO" };
     const r = await pedidoService.actualizarEstado("p1", { estado: "PAGADO" });
     expect(r?.estado).toBe("PAGADO");

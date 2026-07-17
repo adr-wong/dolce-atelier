@@ -3,6 +3,16 @@ import type { IPedido } from '../models/Pedido';
 import { CrearPedidoSchema, ActualizarEstadoSchema } from '../schemas/pedido';
 import { crearSesionCheckout } from './stripe';
 
+const allowedTransitions: Record<IPedido['estado'], IPedido['estado'][]> = {
+  PENDIENTE: ['PAGADO', 'CANCELADO'],
+  PAGADO: ['PREPARANDO', 'CANCELADO'],
+  PREPARANDO: ['LISTO', 'CANCELADO'],
+  LISTO: ['EN_CAMINO', 'CANCELADO'],
+  EN_CAMINO: ['ENTREGADO', 'CANCELADO'],
+  ENTREGADO: [],
+  CANCELADO: [],
+};
+
 export class PedidoService {
   async listarPorUsuario(clerkUserId: string, estado?: string): Promise<IPedido[]> {
     const filtro: Record<string, unknown> = { clerkUserId };
@@ -131,7 +141,17 @@ export class PedidoService {
 
   async actualizarEstado(id: string, data: unknown): Promise<IPedido | null> {
     const validado = ActualizarEstadoSchema.parse(data);
-    return Pedido.findByIdAndUpdate(id, validado, { new: true });
+    const pedido = await Pedido.findById(id);
+    if (!pedido) return null;
+
+    const allowed = allowedTransitions[pedido.estado]?.includes(validado.estado);
+    if (!allowed) {
+      const err = new Error(`Transición no válida: ${pedido.estado} → ${validado.estado}`) as Error & { statusCode: number };
+      err.statusCode = 400;
+      throw err;
+    }
+
+    return Pedido.findByIdAndUpdate(id, { $set: { estado: validado.estado, updatedAt: new Date() } }, { new: true });
   }
 
   async confirmarPago(stripeSessionId: string): Promise<IPedido | null> {

@@ -21,17 +21,26 @@ export const usuarioRoutes = new Elysia({ prefix: '/api/admin/usuarios' })
     }
   }, (app) =>
     app
-      .get('/', async () => {
-        const users = await clerkClient.users.getUserList({ limit: 100 });
-        
-        return users.data.map(user => ({
-          id: user.id,
-          email: user.emailAddresses[0]?.emailAddress || 'Sin email',
-          firstName: user.firstName,
-          lastName: user.lastName,
-          createdAt: user.createdAt,
-          role: (user.publicMetadata as { role?: string })?.role || 'user',
-        }));
+      .get('/', async ({ query }) => {
+        const page = Number(query?.page) || 1;
+        const limit = Number(query?.limit) || 12;
+        const offset = (page - 1) * limit;
+
+        const users = await clerkClient.users.getUserList({ limit, offset });
+
+        return {
+          usuarios: users.data.map(user => ({
+            id: user.id,
+            email: user.emailAddresses[0]?.emailAddress || 'Sin email',
+            firstName: user.firstName,
+            lastName: user.lastName,
+            createdAt: user.createdAt,
+            role: (user.publicMetadata as { role?: string })?.role || 'user',
+          })),
+          total: users.totalCount,
+          page,
+          totalPages: Math.ceil(users.totalCount / limit),
+        };
       })
       .put('/:id/rol', async ({ params, body }) => {
         const { role } = body as { role: string };
