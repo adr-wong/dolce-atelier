@@ -7,12 +7,16 @@ import { getRecetas, updateReceta } from "@/lib/adminApi";
 import type { Receta } from "@/lib/adminApi";
 import CotizarModal from "./cotizar-modal";
 import { useAdaptiveRows } from "@/hooks/useAdaptiveRows";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import Pagination from "@/components/Pagination";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
+import EmptyState from "@/components/EmptyState";
 import styles from "./recetas.module.css";
 
 export default function AdminRecetas() {
   const { getToken } = useAuth();
   const limit = useAdaptiveRows();
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -72,58 +76,124 @@ export default function AdminRecetas() {
     RECHAZADA: "#fee2e2",
   };
 
-  if (loading) return <div>Cargando...</div>;
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <h1 className={styles.title}>Gestión de Recetas</h1>
+        <LoadingSkeleton type="table" rows={6} />
+      </div>
+    );
+  }
+
+  if (recetas.length === 0) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <h1 className={styles.title}>Gestión de Recetas</h1>
+        <EmptyState
+          icon="📝"
+          title="No hay recetas"
+          description="Aún no se han solicitado recetas personalizadas"
+        />
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <h1 className={styles.title}>Gestión de Recetas</h1>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr className={styles.theadTr}>
-              <th className={styles.th}>ID</th>
-              <th className={styles.th}>Nota</th>
-              <th className={styles.th}>Fecha</th>
-              <th className={styles.th}>Estado</th>
-              <th className={styles.th}>Cotización</th>
-              <th className={styles.th}>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recetas.map((receta) => (
-              <tr key={receta._id} className={styles.tr}>
-                <td className={styles.td}>#{receta._id}</td>
-                <td className={styles.td}>{receta.nota ? receta.nota.substring(0, 50) + '...' : '—'}</td>
-                <td className={styles.td}>
+      {isMobile ? (
+        <div className={styles.mobileCards}>
+          {recetas.map((receta) => (
+            <div key={receta._id} className={styles.card}>
+              <div className={styles.cardRow}>
+                <span className={styles.cardLabel}>ID</span>
+                <span className={styles.cardValue}>#{receta._id}</span>
+              </div>
+              <div className={styles.cardRow}>
+                <span className={styles.cardLabel}>Nota</span>
+                <span className={styles.cardValue}>{receta.nota ? receta.nota.substring(0, 60) + (receta.nota.length > 60 ? '...' : '') : '—'}</span>
+              </div>
+              <div className={styles.cardRow}>
+                <span className={styles.cardLabel}>Fecha</span>
+                <span className={styles.cardValue}>
                   {new Date(receta.createdAt).toLocaleDateString()}
-                </td>
-                <td className={styles.td}>
-                  <span
-                    className={styles.statusBadge}
-                    style={{
-                      background: estadoColors[receta.estado] || "#f3f4f6",
-                    }}
-                  >
-                    {receta.estado}
-                  </span>
-                </td>
-                <td className={styles.td}>
+                </span>
+              </div>
+              <div className={styles.cardRow}>
+                <span className={styles.cardLabel}>Estado</span>
+                <span
+                  className={styles.statusBadge}
+                  style={{ background: estadoColors[receta.estado] || "#f3f4f6" }}
+                >
+                  {receta.estado}
+                </span>
+              </div>
+              <div className={styles.cardRow}>
+                <span className={styles.cardLabel}>Cotización</span>
+                <span className={styles.cardValue}>
                   {receta.cotizacion ? `$${receta.cotizacion}` : "—"}
-                </td>
-                <td className={styles.td}>
-                  <button
-                    className={styles.cotizarBtn}
-                    onClick={() => openModal(receta)}
-                  >
-                    Cotizar
-                  </button>
-                </td>
+                </span>
+              </div>
+              <div className={styles.cardActions}>
+                <button
+                  className={styles.cotizarBtn}
+                  onClick={() => openModal(receta)}
+                >
+                  Cotizar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr className={styles.theadTr}>
+                <th className={styles.th}>ID</th>
+                <th className={styles.th}>Nota</th>
+                <th className={styles.th}>Fecha</th>
+                <th className={styles.th}>Estado</th>
+                <th className={styles.th}>Cotización</th>
+                <th className={styles.th}>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {recetas.map((receta) => (
+                <tr key={receta._id} className={styles.tr}>
+                  <td className={styles.td}>#{receta._id}</td>
+                  <td className={styles.td}>{receta.nota ? receta.nota.substring(0, 50) + '...' : '—'}</td>
+                  <td className={styles.td}>
+                    {new Date(receta.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className={styles.td}>
+                    <span
+                      className={styles.statusBadge}
+                      style={{
+                        background: estadoColors[receta.estado] || "#f3f4f6",
+                      }}
+                    >
+                      {receta.estado}
+                    </span>
+                  </td>
+                  <td className={styles.td}>
+                    {receta.cotizacion ? `$${receta.cotizacion}` : "—"}
+                  </td>
+                  <td className={styles.td}>
+                    <button
+                      className={styles.cotizarBtn}
+                      onClick={() => openModal(receta)}
+                    >
+                      Cotizar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 

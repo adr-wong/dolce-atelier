@@ -5,6 +5,60 @@
   overflow: hidden;
 }
 
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  z-index: 100;
+}
+
+.topBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.brandAccent {
+  color: #e11d48;
+}
+
+.topBarLink {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-decoration: none;
+  border: 1px solid #e5e7eb;
+}
+
+.topBarLink:hover {
+  background: #f9fafb;
+  color: #1f2937;
+}
+
 .sidebarToggle {
   display: none;
 }
@@ -43,6 +97,7 @@
   padding: 2rem 1rem;
   position: relative;
   height: 100vh;
+  padding-top: 72px;
   overflow-x: hidden;
   flex-shrink: 0;
   display: block;
@@ -86,7 +141,9 @@
   color: #fff;
   text-decoration: none;
   font-size: 0.9rem;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .sidebarLinkActive {
@@ -100,10 +157,17 @@
   }
 }
 
+.navIcon {
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+}
+
 .main {
   flex: 1;
   min-height: 0;
   padding: 2rem;
+  padding-top: 72px;
   margin-left: 0;
   width: 100%;
   max-width: 100%;
@@ -118,4 +182,27 @@
     padding: 6rem 0.75rem 1rem;
     overflow-y: auto;
   }
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.breadcrumbLink {
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+  color: #e11d48;
+}
+
+.breadcrumbCurrent {
+  color: #1f2937;
+  font-weight: 500;
 }

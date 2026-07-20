@@ -62,3 +62,64 @@
   border-radius: 8px;
   cursor: pointer;
 }
+
+/* ---- Mobile cards ---- */
+.mobileCards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.card {
+  background: var(--light);
+  border-radius: 8px;
+  border: 1px solid #eee;
+  padding: 1rem;
+}
+
+.cardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+}
+
+.cardRow + .cardRow {
+  border-top: 1px solid #eee;
+}
+
+.cardLabel {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.78rem;
+}
+
+.cardValue {
+  color: #1a1a1a;
+  text-align: right;
+  word-break: break-word;
+}
+
+.cardActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
+}
+
+.cardActions button {
+  flex: 1;
+  padding: 0.4rem;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  background: #10b981;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-align: center;
+}

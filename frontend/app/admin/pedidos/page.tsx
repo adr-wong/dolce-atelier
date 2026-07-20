@@ -7,7 +7,14 @@ import { getPedidos, updatePedidoStatus } from "@/lib/adminApi";
 import type { Pedido } from "@/lib/adminApi";
 import { useAdaptiveRows } from "@/hooks/useAdaptiveRows";
 import Pagination from "@/components/Pagination";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import styles from "./pedidos.module.css";
+
+interface PedidoItem {
+  nombre?: string;
+  precioSnapshot?: number;
+  cantidad?: number;
+}
 
 export default function AdminPedidos() {
   const { getToken } = useAuth();
@@ -17,6 +24,8 @@ export default function AdminPedidos() {
   const [filtroEstado, setFiltroEstado] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [detailPedido, setDetailPedido] = useState<Pedido | null>(null);
+  const [statusChange, setStatusChange] = useState<{ id: string; newStatus: string } | null>(null);
 
   useEffect(() => {
     async function loadPedidos() {
@@ -44,11 +53,11 @@ export default function AdminPedidos() {
     setCurrentPage(1);
   };
 
-  const handleStatusChange = async (id: string, status: string) => {
+  const confirmChange = async (id: string, newStatus: string) => {
     try {
       const token = await getToken();
-      await updatePedidoStatus(token!, id, status);
-      setPedidos(pedidos.map(p => p._id === id ? { ...p, estado: status } : p));
+      await updatePedidoStatus(token!, id, newStatus);
+      setPedidos(pedidos.map(p => p._id === id ? { ...p, estado: newStatus } : p));
     } catch (error) {
       if (ClerkOfflineError.is(error)) {
         console.error("Offline:", error);
@@ -57,6 +66,18 @@ export default function AdminPedidos() {
         alert(message);
         console.error("Error updating status:", error);
       }
+    }
+  };
+
+  const handleStatusChange = (id: string, newStatus: string) => {
+    const pedido = pedidos.find(p => p._id === id);
+    if (
+      newStatus === "CANCELADO" ||
+      (pedido && pedido.estado === "PENDIENTE" && newStatus !== "PENDIENTE")
+    ) {
+      setStatusChange({ id, newStatus });
+    } else {
+      confirmChange(id, newStatus);
     }
   };
 
@@ -106,7 +127,15 @@ export default function AdminPedidos() {
         <tbody>
           {pedidos.map((pedido) => (
             <tr key={pedido._id} className={styles.tr}>
-              <td className={styles.td}>#{pedido._id}</td>
+              <td className={styles.td}>
+                <button
+                  type="button"
+                  className={styles.orderIdButton}
+                  onClick={() => setDetailPedido(pedido)}
+                >
+                  #{pedido._id}
+                </button>
+              </td>
               <td className={styles.td}>
                 {new Date(pedido.createdAt).toLocaleDateString()}
               </td>
@@ -143,6 +172,81 @@ export default function AdminPedidos() {
       </div>
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+
+      {detailPedido && (
+        <div className={styles.modalOverlay} onClick={() => setDetailPedido(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Pedido #{detailPedido._id}</h2>
+              <span
+                className={styles.statusBadge}
+                style={{ background: estadoColors[detailPedido.estado] || "#f3f4f6" }}
+              >
+                {detailPedido.estado.replace('_', ' ')}
+              </span>
+            </div>
+
+            <div className={styles.orderDetailSection}>
+              <h4>Información de entrega</h4>
+              <div className={styles.orderInfo}>
+                <p>Método: {detailPedido.metodoEntrega === 'delivery' ? '🏠 A domicilio' : '🏪 Retirar en tienda'}</p>
+                {detailPedido.direccionEnvio && <p>Dirección: {detailPedido.direccionEnvio}</p>}
+                <p>Fecha: {new Date(detailPedido.createdAt).toLocaleString()}</p>
+              </div>
+            </div>
+
+            <div className={styles.orderDetailSection}>
+              <h4>Items</h4>
+              <div className={styles.orderItems}>
+                {(detailPedido.items as PedidoItem[]).map((item, i) => {
+                  const precio = item.precioSnapshot ?? 0;
+                  const cantidad = item.cantidad ?? 1;
+                  const subtotal = precio * cantidad;
+                  return (
+                    <div key={i} className={styles.orderItem}>
+                      <div className={styles.orderItemTop}>
+                        <span className={styles.orderItemName}>{item.nombre ?? 'Producto'}</span>
+                        <span className={styles.orderItemPrice}>${precio.toFixed(2)}</span>
+                      </div>
+                      <div className={styles.orderItemBottom}>
+                        <span>{cantidad} x ${precio.toFixed(2)}</span>
+                        <span>= ${subtotal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={styles.orderTotal}>
+              Total: ${detailPedido.total.toFixed(2)}
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.btnSecondary}
+                onClick={() => setDetailPedido(null)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!statusChange}
+        title="Cambiar estado"
+        message={`¿Confirmas cambiar el estado del pedido a ${statusChange?.newStatus}?`}
+        confirmLabel="Confirmar"
+        variant={statusChange?.newStatus === "CANCELADO" ? "danger" : "info"}
+        onConfirm={() => {
+          if (statusChange) confirmChange(statusChange.id, statusChange.newStatus);
+          setStatusChange(null);
+        }}
+        onCancel={() => setStatusChange(null)}
+      />
     </div>
   );
 }

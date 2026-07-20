@@ -70,3 +70,148 @@
   border-radius: 8px;
   border: 1px solid #ddd;
 }
+
+.orderIdButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #e11d48;
+  font-weight: 500;
+  text-decoration: underline;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+/* ---- Modal ---- */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 90vw;
+  max-width: 550px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.modalTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.orderDetailSection {
+  margin-bottom: 1.25rem;
+}
+
+.orderDetailSection h4 {
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.orderInfo {
+  font-size: 0.88rem;
+  color: #666;
+}
+
+.orderInfo p {
+  margin: 0.25rem 0;
+}
+
+.orderItems {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.orderItem {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.orderItemTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.orderItemName {
+  font-weight: 500;
+  font-size: 0.88rem;
+}
+
+.orderItemPrice {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.orderItemBottom {
+  display: flex;
+  justify-content: space-between;
+  color: #9ca3af;
+  font-size: 0.78rem;
+  margin-top: 0.15rem;
+}
+
+.orderTotal {
+  text-align: right;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  justify-content: flex-end;
+}
+
+.btnPrimary {
+  padding: 0.55rem 1.25rem;
+  background: #e11d48;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.btnSecondary {
+  padding: 0.5rem 1rem;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btnSecondary:hover {
+  background: #f9fafb;
+}

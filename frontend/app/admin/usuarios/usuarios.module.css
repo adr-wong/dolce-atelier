@@ -2,6 +2,66 @@
   margin-bottom: 2rem;
 }
 
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  flex: 1;
+  min-width: 200px;
+}
+
+.mobileCards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  padding: 1rem;
+}
+
+.cardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+}
+
+.cardRow + .cardRow {
+  border-top: 1px solid #eee;
+}
+
+.cardLabel {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.78rem;
+}
+
+.cardValue {
+  color: #1a1a1a;
+  text-align: right;
+  word-break: break-word;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
