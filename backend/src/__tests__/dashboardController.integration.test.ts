@@ -1,8 +1,30 @@
-import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { describe, it, expect, beforeAll, afterAll, mock } from 'bun:test';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { getDashboardStats } from '../controllers/admin/dashboardController';
-import { Pastel, Pedido, Receta } from '../models';
+
+// Import the REAL model classes directly from their sub-files. These are NOT
+// mocked by the unit test (which only mocks the '../models' index barrel), so
+// they always resolve to the real mongoose models regardless of test ordering.
+import { Pastel } from '../models/Pastel';
+import { Pedido } from '../models/Pedido';
+import { Receta } from '../models/Receta';
+
+// Re-register the '../models' barrel with the REAL models. This overrides any
+// process-global module mock left by other test files (e.g. the unit test) and
+// guarantees the controller (imported dynamically below) uses real models.
+mock.module('../models', () => ({
+  Pastel,
+  Pedido,
+  Receta,
+  WebhookEvent: {},
+  AuditLog: {},
+  CodigoDescuento: {},
+  Categoria: {},
+}));
+
+// Import the controller AFTER the barrel re-registration so it binds to the
+// real models above.
+const { getDashboardStats } = await import('../controllers/admin/dashboardController');
 
 let mongoServer: MongoMemoryServer;
 

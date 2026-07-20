@@ -1,4 +1,4 @@
-import { describe, it, expect, mock } from 'bun:test';
+import { describe, it, expect, mock, afterAll } from 'bun:test';
 
 // Mock the models module BEFORE importing the controller (controllers import from
 // '../../models' which resolves to the index module). This never hits the database.
@@ -28,6 +28,12 @@ mock.module('../models', () => ({
   CodigoDescuento: {},
   Categoria: {},
 }));
+
+// Restore the global module mock after this file's tests so it does not leak
+// into other test files (e.g. the integration test that needs the real models).
+afterAll(() => {
+  mock.restore();
+});
 
 const { getDashboardStats } = await import('../controllers/admin/dashboardController');
 
