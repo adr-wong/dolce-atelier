@@ -225,8 +225,11 @@ async function updatePedidoStatus(token: string, id: string, status: string): Pr
   });
 
   if (!response.ok) {
-    const body = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(body.error || 'Request failed');
+    const body = (await response.json().catch(() => null)) ?? {};
+    const msg =
+      (body && typeof body === 'object' && 'error' in body && typeof body.error === 'string' && body.error) ||
+      'Request failed';
+    throw new Error(msg);
   }
 
   return response.json();
