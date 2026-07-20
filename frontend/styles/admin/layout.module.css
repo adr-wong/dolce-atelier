@@ -1,0 +1,241 @@
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---- Top Bar ---- */
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  z-index: 100;
+}
+
+.topBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: var(--text-primary);
+}
+
+.brand {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.brandAccent {
+  color: var(--primary);
+}
+
+.topBarLink {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid var(--border);
+}
+
+.topBarLink:hover {
+  background: #f9fafb;
+  color: var(--text-primary);
+}
+
+/* ---- Sidebar ---- */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  color: #fff;
+  padding: 1.5rem 0;
+  position: fixed;
+  top: 56px;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 90;
+  transition: transform 0.3s ease;
+}
+
+.sidebarTitle {
+  padding: 0 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.75rem;
+  flex: 1;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: #d1d5db;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.navLink:hover {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+
+.navLinkActive {
+  background: rgba(225,29,72,0.12);
+  color: #fff;
+  border-left-color: var(--primary);
+}
+
+.navIcon {
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.sidebarFooter {
+  padding: 0 1.25rem;
+  margin-top: auto;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 1rem;
+}
+
+.backLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+
+.backLink:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.06);
+}
+
+/* ---- Main Content ---- */
+.main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  margin-top: 56px;
+  padding: 1.5rem 2rem;
+  background: var(--bg-page);
+  min-height: calc(100vh - 56px);
+}
+
+/* ---- Breadcrumbs ---- */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.breadcrumbLink {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+  color: var(--primary);
+}
+
+.breadcrumbCurrent {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 767px) {
+  .hamburger {
+    display: block;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  .sidebarBackdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 89;
+    top: 56px;
+  }
+
+  .sidebarBackdropVisible {
+    display: block;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 1rem 0.75rem;
+  }
+
+  .brand {
+    font-size: 1rem;
+  }
+
+  .topBarLink {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 0.75rem 0.5rem;
+  }
+}

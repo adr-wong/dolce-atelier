@@ -39,9 +39,126 @@
   padding: 2rem;
 }
 
+.panelsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.panel {
+  background: var(--light);
+  border-radius: 8px;
+  border: 1px solid #eee;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.panelHeader {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1f2937;
+}
+
+.panelBody {
+  padding: 0.75rem 0;
+}
+
+.recentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  color: inherit;
+}
+
+.recentRow + .recentRow {
+  border-top: 1px solid #eee;
+}
+
+.recentLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.recentId {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #1f2937;
+}
+
+.recentDate {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.recentTotal {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1f2937;
+}
+
+.statusList {
+  padding: 0.25rem 1.25rem;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+}
+
+.statusRow + .statusRow {
+  border-top: 1px solid #eee;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.statusCount {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.statusBar {
+  flex: 1;
+  height: 4px;
+  background: #eee;
+  border-radius: 2px;
+  margin: 0 1rem;
+  overflow: hidden;
+}
+
+.statusBarFill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.emptyPanel {
+  padding: 2rem;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 1023px) {
   .statsGrid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .panelsGrid {
+    grid-template-columns: 1fr;
   }
 }
 

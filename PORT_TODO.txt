@@ -1,0 +1,74 @@
+================================================================
+ TAREA: VERIFICACION DE CAMBIOS PORTADOS (parcial_1 -> semestral)
+================================================================
+Origen accidental: commit 7eccc0f en https://github.com/GabC507/parcial_1
+Destino:          https://github.com/adr-wong/dolce-atelier  (rama main)
+Port realizado por: subagente (orquestador). Sin pruebas de flujo todavia.
+Estado estatico:  tsc --noEmit (archivos tocados) OK + next build OK en los 5 lotes.
+Pendiente:        PRUEBAS DE FLUJO/RUNTIME a cargo de otra persona (este archivo).
+
+----------------------------------------------------------------
+ ARCHIVOS COPIADOS VERBATIM (Lote 1) - revisar que compilan/funcionan
+----------------------------------------------------------------
+frontend/components/ConfirmDialog.tsx
+frontend/components/EmptyState.tsx
+frontend/components/LoadingSkeleton.tsx
+frontend/components/SearchInput.tsx
+frontend/components/StatusBadge.tsx
+frontend/styles/admin/dashboard.module.css
+frontend/styles/admin/layout.module.css
+frontend/styles/admin/shared.module.css
+frontend/styles/tokens.css
+frontend/errores.txt
+
+----------------------------------------------------------------
+ BACKEND (Lote 2)
+----------------------------------------------------------------
+backend/src/controllers/admin/dashboardController.ts
+  - Nuevos campos en getDashboardStats: pedidosPendientes, totalIngresos, statusBreakdown
+  - recentPedidos ahora con _id, estado, total, createdAt, items
+
+----------------------------------------------------------------
+ FRONTEND - ADMIN UI (Lotes 3, 4, 5)
+----------------------------------------------------------------
+frontend/app/admin/AdminLayoutClient.tsx      (Lote 3) top bar + breadcrumb + iconos nav
+frontend/app/admin/admin-layout.module.css    (Lote 3)
+frontend/app/admin/page.tsx                    (Lote 3) paneles "Pedidos Recientes" + "Estado de Pedidos"
+frontend/app/admin/admin-dashboard.module.css  (Lote 3)
+
+frontend/app/admin/pedidos/page.tsx           (Lote 4) modal de detalle + ConfirmDialog de estado
+frontend/app/admin/pedidos.module.css         (Lote 4)
+frontend/app/admin/recetas/page.tsx           (Lote 4) mobile cards + LoadingSkeleton/EmptyState
+frontend/app/admin/recetas.module.css         (Lote 4)
+
+frontend/app/admin/pasteles/page.tsx          (Lote 5) busqueda + filtro categoria + delete ConfirmDialog + mobile + loading/empty
+frontend/app/admin/pasteles.module.css        (Lote 5)
+frontend/app/admin/usuarios/page.tsx          (Lote 5) busqueda + role-change ConfirmDialog + mobile + loading/empty
+frontend/app/admin/usuarios.module.css        (Lote 5)
+
+----------------------------------------------------------------
+ CHECKLIST DE PRUEBAS (para quien retome)
+----------------------------------------------------------------
+[ ] BUILD: npx next build (frontend) -> debe seguir en verde
+[ ] BACKEND: getDashboardStats devuelve pedidosPendientes/totalIngresos/statusBreakdown
+            y recentPedidos trae items/_id/estado
+[ ] ADMIN /admin: se ve top bar (Dolce Atelier + Tienda + UserButton), breadcrumb, iconos en nav
+[ ] ADMIN /admin: panel "Pedidos Recientes" lista pedidos; panel "Estado de Pedidos" con barras por estado
+[ ] ADMIN /admin/pedidos: clic en #id abre modal de detalle (datos entrega + items + total)
+[ ] ADMIN /admin/pedidos: cambiar estado a CANCELADO (o PENDIENTE->otro) pide confirmacion (ConfirmDialog)
+[ ] ADMIN /admin/recetas: vista mobile muestra cards; LoadingSkeleton mientras carga; EmptyState si vacio
+[ ] ADMIN /admin/pasteles: busqueda por nombre; filtro por categoria; eliminar pide confirmacion;
+                            vista mobile en cards; loading/empty states; PAGINACION sigue funcionando
+[ ] ADMIN /admin/usuarios: busqueda por email/nombre; cambio de rol pide confirmacion;
+                            vista mobile en cards; loading/empty; PAGINACION servidor intacta
+[ ] Componentes reutilizados: ConfirmDialog, EmptyState, LoadingSkeleton, SearchInput, StatusBadge renderizan OK
+
+----------------------------------------------------------------
+ NOTAS / NO TOCADO (ya superior en semestral, no portar)
+----------------------------------------------------------------
+- catalogo, checkout/exito, checkout/receta/exito, recetas/mis, app/layout.tsx, globals.css
+  (NO copiar el @import '../styles/tokens.css' de globals.css -> rompe build)
+- Header.tsx, Pagination.tsx, RecetaForm.tsx, lib/adminApi.ts, next.config.js, stripe.ts
+- backend/src/routes/upload.ts: ruta /cliente NO agregada (semestral usa Cloudinary)
+- Baseline conocido: ~320 errores tsc en __tests__/*.test.ts (falta @types/jest), ajenos a este port.
+================================================================
