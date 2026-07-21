@@ -62,10 +62,27 @@ export default function CheckoutPage() {
 
       const data = await response.json();
 
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+      if (!data.pedido?._id) {
+        console.error('[Checkout] No pedido created in response', data);
+        window.location.href = '/checkout/error';
+        return;
+      }
+
+      const pagoRes = await fetch(`${getApiUrl()}/api/pedidos/${data.pedido._id}/pagar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+
+      const pagoData = await pagoRes.json();
+
+      if (pagoData.checkoutUrl) {
+        window.location.href = pagoData.checkoutUrl;
       } else {
-        console.error('[Checkout] No checkout URL in response', data);
+        console.error('[Checkout] No checkout URL in payment response', pagoData);
         window.location.href = '/checkout/error';
       }
     } catch (error) {
