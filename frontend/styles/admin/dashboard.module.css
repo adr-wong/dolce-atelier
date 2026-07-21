@@ -5,11 +5,11 @@
 .title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
 }
 
 .subtitle {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #666);
   font-size: 0.9rem;
   margin-top: 0.25rem;
 }
@@ -17,16 +17,16 @@
 /* ---- Stat Cards ---- */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1.25rem;
   margin-bottom: 2rem;
 }
 
 .statCard {
-  background: var(--bg-card);
+  background: var(--bg-card, #ffffff);
   padding: 1.25rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border, #e5e7eb);
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -34,13 +34,13 @@
 }
 
 .statCard:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md, 0 4px 20px rgba(0,0,0,0.1));
 }
 
 .statIcon {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,15 +48,15 @@
   flex-shrink: 0;
 }
 
-.statIconBlue { background: var(--info-light); color: var(--info); }
-.statIconAmber { background: var(--warning-light); color: var(--warning); }
-.statIconGreen { background: var(--success-light); color: var(--success); }
-.statIconPurple { background: var(--purple-light); color: var(--purple); }
-.statIconRose { background: var(--primary-light); color: var(--primary); }
+.statIconBlue { background: var(--info-light, #dbeafe); color: var(--info, #3b82f6); }
+.statIconAmber { background: var(--warning-light, #fef3c7); color: var(--warning, #f59e0b); }
+.statIconGreen { background: var(--success-light, #dcfce7); color: var(--success, #10b981); }
+.statIconPurple { background: var(--purple-light, #f3e8ff); color: var(--purple, #8b5cf6); }
+.statIconRose { background: var(--primary-light, #fce7ef); color: var(--primary, #E11D48); }
 
 .statLabel {
   display: block;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #666);
   font-size: 0.8rem;
   margin-bottom: 0.25rem;
 }
@@ -64,20 +64,9 @@
 .statValue {
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
   margin-bottom: 0.25rem;
 }
-
-.statTrend {
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.trendUp { color: var(--success); }
-.trendDown { color: var(--danger); }
-.trendNeutral { color: var(--text-muted); }
 
 /* ---- Panels ---- */
 .panelsGrid {
@@ -87,18 +76,18 @@
 }
 
 .panel {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  background: var(--bg-card, #ffffff);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border, #e5e7eb);
   overflow: hidden;
 }
 
 .panelHeader {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border, #e5e7eb);
   font-weight: 600;
   font-size: 0.95rem;
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -124,7 +113,7 @@
 }
 
 .recentRow + .recentRow {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border, #e5e7eb);
 }
 
 .recentLeft {
@@ -136,12 +125,12 @@
 .recentId {
   font-weight: 500;
   font-size: 0.9rem;
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
 }
 
 .recentDate {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--text-muted, #9ca3af);
 }
 
 .recentRight {
@@ -151,7 +140,7 @@
 .recentTotal {
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
 }
 
 /* Status breakdown */
@@ -168,7 +157,7 @@
 }
 
 .statusRow + .statusRow {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border, #e5e7eb);
 }
 
 .statusDot {
@@ -181,13 +170,13 @@
 
 .statusCount {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
 }
 
 .statusBar {
   flex: 1;
   height: 4px;
-  background: var(--border);
+  background: var(--border, #e5e7eb);
   border-radius: 2px;
   margin: 0 1rem;
   overflow: hidden;
@@ -202,8 +191,12 @@
 .emptyPanel {
   padding: 2rem;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-muted, #9ca3af);
   font-size: 0.9rem;
+}
+
+.loading {
+  padding: 2rem;
 }
 
 /* ---- Responsive ---- */

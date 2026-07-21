@@ -6,8 +6,16 @@ export interface DashboardStats {
   totalPedidos: number;
   totalRecetas: number;
   totalPasteles: number;
-  ingresosMes: number;
-  recentPedidos: unknown[];
+  pedidosPendientes: number;
+  totalIngresos: number;
+  statusBreakdown: Record<string, number>;
+  recentPedidos: {
+    _id: string;
+    estado: string;
+    total: number;
+    createdAt: string;
+    items: unknown[];
+  }[];
 }
 
 export interface Pastel {
@@ -86,7 +94,7 @@ function getHeaders(token: string) {
 }
 
 async function getDashboardStats(token: string): Promise<DashboardStats> {
-  const response = await fetch(`${BASE_URL}/api/admin/stats`, {
+  const response = await fetch(`${BASE_URL}/api/admin/dashboard`, {
     credentials: 'include',
     headers: getHeaders(token),
   });
@@ -97,11 +105,13 @@ async function getDashboardStats(token: string): Promise<DashboardStats> {
 
   const data = await response.json();
   return {
-    totalPedidos: data.stats.pedidosHoy,
-    totalRecetas: data.stats.recetasPendientes,
-    totalPasteles: data.stats.productos,
-    ingresosMes: data.stats.ingresosMes,
-    recentPedidos: [],
+    totalPedidos: data.totalPedidos,
+    totalRecetas: data.totalRecetas,
+    totalPasteles: data.totalPasteles,
+    pedidosPendientes: data.pedidosPendientes,
+    totalIngresos: data.totalIngresos,
+    statusBreakdown: data.statusBreakdown,
+    recentPedidos: data.recentPedidos,
   };
 }
 

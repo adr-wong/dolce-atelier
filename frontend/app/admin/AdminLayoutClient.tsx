@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { useMobile } from '@/hooks/useMediaQuery';
 import { useAuth, UserButton } from '@clerk/nextjs';
+import { useMobile } from '@/hooks/useMediaQuery';
 import styles from './admin-layout.module.css';
 
 const NAV_ITEMS = [
@@ -32,13 +32,26 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
+  const isActive = (href: string) => {
+    if (href === '/admin') return pathname === '/admin';
+    return pathname.startsWith(href);
+  };
+
   const breadcrumbLabel = BREADCRUMB_MAP[pathname] || pathname.split('/').pop();
   const showBreadcrumb = pathname !== '/admin';
 
   return (
     <div className={styles.container}>
+      {/* ---- Top Bar ---- */}
       <header className={styles.topBar}>
         <div className={styles.topBarLeft}>
+          <button
+            onClick={toggleSidebar}
+            className={styles.hamburger}
+            aria-label="Toggle sidebar"
+          >
+            {sidebarOpen ? '✕' : '☰'}
+          </button>
           <span className={styles.brand}>
             Dolce <span className={styles.brandAccent}>Atelier</span>
           </span>
@@ -51,41 +64,40 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
         </div>
       </header>
 
-      {isMobile && (
-        <button
-          onClick={toggleSidebar}
-          className={styles.sidebarToggle}
-        >
-          {sidebarOpen ? '✕' : '☰'}
-        </button>
-      )}
-
+      {/* ---- Sidebar backdrop (mobile) ---- */}
       {isMobile && sidebarOpen && (
         <div
           onClick={closeSidebar}
-          className={styles.overlay}
+          className={styles.sidebarBackdrop}
         />
       )}
 
+      {/* ---- Sidebar ---- */}
       <aside
         className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}
       >
-        <h2 className={styles.sidebarTitle}>Admin Panel</h2>
+        <div className={styles.sidebarTitle}>Admin Panel</div>
         <nav className={styles.sidebarNav}>
-          {NAV_ITEMS.map(item => (
+          {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               onClick={closeSidebar}
-              className={`${styles.sidebarLink} ${pathname === item.href ? styles.sidebarLinkActive : ''}`}
+              className={`${styles.sidebarLink} ${isActive(item.href) ? styles.sidebarLinkActive : ''}`}
             >
               <span className={styles.navIcon}>{item.icon}</span>
               {item.label}
             </Link>
           ))}
         </nav>
+        <div className={styles.sidebarFooter}>
+          <Link href="/" className={styles.backLink}>
+            ← Volver a la tienda
+          </Link>
+        </div>
       </aside>
 
+      {/* ---- Main Content ---- */}
       <main className={styles.main}>
         {showBreadcrumb && (
           <div className={styles.breadcrumbs}>
