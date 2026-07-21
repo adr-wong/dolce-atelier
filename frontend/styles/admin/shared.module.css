@@ -11,7 +11,7 @@
 .pageTitle {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
 }
 
 .toolbar {
@@ -24,10 +24,10 @@
 
 .btnPrimary {
   padding: 0.55rem 1.25rem;
-  background: var(--primary);
+  background: var(--primary, #E11D48);
   color: #fff;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 8px);
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 500;
@@ -36,15 +36,15 @@
 }
 
 .btnPrimary:hover {
-  background: var(--primary-dark);
+  background: var(--primary-dark, #be123c);
 }
 
 .btnSecondary {
   padding: 0.5rem 1rem;
   background: #fff;
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  color: var(--text-primary, #1a1a1a);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-md, 8px);
   cursor: pointer;
   font-size: 0.85rem;
   transition: all 0.15s;
@@ -58,23 +58,23 @@
 .btnDanger {
   padding: 0.5rem 1rem;
   background: #fff;
-  color: var(--danger);
-  border: 1px solid var(--danger-light);
-  border-radius: var(--radius-md);
+  color: var(--danger, #ef4444);
+  border: 1px solid var(--danger-light, #fee2e2);
+  border-radius: var(--radius-md, 8px);
   cursor: pointer;
   font-size: 0.85rem;
   transition: all 0.15s;
 }
 
 .btnDanger:hover {
-  background: var(--danger-light);
+  background: var(--danger-light, #fee2e2);
 }
 
 /* ---- Filter select ---- */
 .filterSelect {
   padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border, #e5e7eb);
   font-size: 0.85rem;
   background: #fff;
   cursor: pointer;
@@ -83,7 +83,7 @@
 }
 
 .filterSelect:focus {
-  border-color: var(--primary);
+  border-color: var(--primary, #E11D48);
 }
 
 /* ---- Desktop table ---- */
@@ -91,10 +91,10 @@
   display: none;
   width: 100%;
   border-collapse: collapse;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
+  background: var(--bg-card, #ffffff);
+  border-radius: var(--radius-lg, 12px);
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border, #e5e7eb);
 }
 
 .tableHead {
@@ -106,7 +106,7 @@
   text-align: left;
   font-weight: 600;
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #666);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -114,8 +114,8 @@
 .tableBody td {
   padding: 0.85rem 1rem;
   font-size: 0.9rem;
-  border-top: 1px solid var(--border);
-  color: var(--text-primary);
+  border-top: 1px solid var(--border, #e5e7eb);
+  color: var(--text-primary, #1a1a1a);
 }
 
 .tableRow:hover {
@@ -130,9 +130,9 @@
 }
 
 .card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  background: var(--bg-card, #ffffff);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border, #e5e7eb);
   padding: 1rem;
 }
 
@@ -145,17 +145,17 @@
 }
 
 .cardRow + .cardRow {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border, #e5e7eb);
 }
 
 .cardLabel {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #666);
   font-weight: 500;
   font-size: 0.78rem;
 }
 
 .cardValue {
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
   text-align: right;
   word-break: break-word;
 }
@@ -165,14 +165,14 @@
   gap: 0.5rem;
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border, #e5e7eb);
 }
 
 .cardActions button {
   flex: 1;
   padding: 0.4rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border, #e5e7eb);
   background: #fff;
   cursor: pointer;
   font-size: 0.8rem;
@@ -194,19 +194,19 @@
 .modal {
   background: #fff;
   padding: 1.5rem;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-lg, 12px);
   width: 90vw;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg, 0 10px 30px rgba(0,0,0,0.15));
 }
 
 .modalTitle {
   font-size: 1.15rem;
   font-weight: 700;
   margin-bottom: 1.25rem;
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
 }
 
 .formGroup {
@@ -218,14 +218,14 @@
   margin-bottom: 0.35rem;
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text-primary, #1a1a1a);
 }
 
 .formInput {
   width: 100%;
   padding: 0.55rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-md, 8px);
   font-size: 0.9rem;
   outline: none;
   box-sizing: border-box;
@@ -233,12 +233,12 @@
 }
 
 .formInput:focus {
-  border-color: var(--primary);
+  border-color: var(--primary, #E11D48);
   box-shadow: 0 0 0 3px rgba(225,29,72,0.1);
 }
 
 .formError {
-  color: var(--danger);
+  color: var(--danger, #ef4444);
   font-size: 0.78rem;
   margin-top: 0.25rem;
 }
@@ -257,26 +257,26 @@
 }
 
 .uploadZone {
-  border: 2px dashed var(--border);
-  border-radius: var(--radius-md);
+  border: 2px dashed var(--border, #e5e7eb);
+  border-radius: var(--radius-md, 8px);
   padding: 1rem;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.2s;
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--text-muted, #9ca3af);
 }
 
 .uploadZone:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--primary, #E11D48);
+  color: var(--primary, #E11D48);
 }
 
 .imgPreview {
   width: 80px;
   height: 80px;
   object-fit: cover;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm, 6px);
   margin-top: 0.5rem;
 }
 
@@ -287,7 +287,7 @@
 
 .orderDetailSection h4 {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #666);
   text-transform: uppercase;
   letter-spacing: 0.03em;
   margin-bottom: 0.5rem;
@@ -304,7 +304,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border, #e5e7eb);
   font-size: 0.88rem;
 }
 
@@ -313,7 +313,7 @@
 }
 
 .orderItemQty {
-  color: var(--text-muted);
+  color: var(--text-muted, #9ca3af);
   font-size: 0.8rem;
 }
 

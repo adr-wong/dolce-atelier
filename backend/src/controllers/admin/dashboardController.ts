@@ -41,6 +41,6 @@ export async function getDashboardStats(context: { set: { status: number }; quer
       total: p.total,
       createdAt: p.createdAt.toISOString(),
       items: p.items || [],
-    }))
+    })),
   };
 }
