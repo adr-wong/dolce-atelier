@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useCarritoStore } from '@/store/carrito';
@@ -9,6 +10,7 @@ import styles from './exito.module.css';
 export default function CheckoutExitoContent() {
   const searchParams = useSearchParams();
   const [orderId, setOrderId] = useState<string | null>(null);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     const orderIdFromParams = searchParams.get('order_id');
@@ -24,6 +26,38 @@ export default function CheckoutExitoContent() {
       localStorage.removeItem('dolce-carrito-anonimo');
     }
   }, [orderId]);
+
+  useEffect(() => {
+    if (!orderId) return;
+    const session_id = searchParams.get('session_id');
+    if (!session_id) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`/api/pedidos/${orderId}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+          credentials: 'include',
+        });
+        const data = await res.json();
+        if (data.pedido?.estado !== 'PAGADO') {
+          await fetch(`/api/pedidos/${orderId}/confirmar-pago`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+            body: JSON.stringify({ session_id }),
+          });
+        }
+      } catch (e) {
+        console.error('[CHECKOUT-EXITO] Error verificando pago:', e);
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [orderId, searchParams, getToken]);
 
   return (
     <main className={styles.container}>

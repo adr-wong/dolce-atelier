@@ -90,6 +90,30 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
           return jsonError(err.message, err.statusCode || 500);
         }
       })
+      .post('/:id/confirmar-pago', async ({ params, headers, request }) => {
+        const userId = await authMiddleware(headers);
+        if (!userId) return jsonError('No autenticado', 401);
+
+        try {
+          const body = await request.json();
+          const { session_id } = body;
+          if (!session_id) return jsonError('session_id requerido', 400);
+
+          const pedido = await pedidoService.obtener(params.id);
+          if (!pedido) return jsonError('Pedido no encontrado', 404);
+          if (pedido.clerkUserId !== userId) return jsonError('Acceso denegado', 403);
+          if (pedido.stripeSessionId !== session_id) return jsonError('session_id no coincide', 400);
+
+          if (pedido.estado === 'PAGADO') return { pedido };
+
+          const pedidoActualizado = await pedidoService.confirmarPago(session_id);
+          if (!pedidoActualizado) return jsonError('No se pudo confirmar el pago', 500);
+
+          return { pedido: pedidoActualizado };
+        } catch (err: any) {
+          return jsonError(err.message, err.statusCode || 500);
+        }
+      })
       .put('/:id/estado', async ({ params, body, headers }) => {
         const userId = await authMiddleware(headers);
         if (!userId) return jsonError('No autenticado', 401);
