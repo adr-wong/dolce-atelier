@@ -215,18 +215,19 @@ export default function PedidosPage() {
 
               <div className={styles.totalRow}>
                 <span>Total</span>
-                <span className={styles.totalAmount}>${pedido.total.toFixed(2)}</span>
+                <div className={styles.totalActions}>
+                  <span className={styles.totalAmount}>${pedido.total.toFixed(2)}</span>
+                  {pedido.estado === 'PENDIENTE' && (
+                    <button 
+                      className={styles.payBtn}
+                      onClick={() => handlePagar(pedido._id)}
+                      disabled={payingId === pedido._id}
+                    >
+                      {payingId === pedido._id ? 'Creando link...' : 'Pagar ahora'}
+                    </button>
+                  )}
+                </div>
               </div>
-
-              {pedido.estado === 'PENDIENTE' && (
-                <button 
-                  className={styles.payBtn}
-                  onClick={() => handlePagar(pedido._id)}
-                  disabled={payingId === pedido._id}
-                >
-                  {payingId === pedido._id ? 'Creando link...' : 'Pagar ahora'}
-                </button>
-              )}
             </div>
           ))}
         </div>

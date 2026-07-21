@@ -100,9 +100,32 @@
   font-weight: 600;
 }
 
+.totalActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .totalAmount {
   font-size: 1.1rem;
   color: var(--primary);
+}
+
+.payBtn {
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: var(--light);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+.payBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .loadingText {
