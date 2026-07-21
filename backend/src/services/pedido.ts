@@ -36,7 +36,14 @@ export class PedidoService {
     if (pedido.stripeSessionId) {
       try {
         const existingSession = await stripe.checkout.sessions.retrieve(pedido.stripeSessionId);
-        if (existingSession.payment_status === 'paid') throwWithStatus('Este pedido ya fue pagado', 400);
+        if (existingSession.payment_status === 'paid') {
+          if (pedido.estado !== 'PAGADO') {
+            pedido.estado = 'PAGADO';
+            await pedido.save();
+          }
+          const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+          return { checkoutUrl: `${frontendUrl}/checkout/exito?session_id=${existingSession.id}&order_id=${pedido._id}`, stripeSessionId: existingSession.id };
+        }
         if (existingSession.status === 'open' && existingSession.url) {
           return { checkoutUrl: existingSession.url, stripeSessionId: existingSession.id };
         }

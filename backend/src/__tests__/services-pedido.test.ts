@@ -123,10 +123,14 @@ describe("PedidoService.crearSesionPago", () => {
     await expect(pedidoService.crearSesionPago("p1", "u1")).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("throws 400 when existing session is already paid", async () => {
-    state.findByIdResult = { _id: "p1", clerkUserId: "u1", estado: "PENDIENTE", stripeSessionId: "sess_old" };
-    stripeCheckoutRetrieve.mockResolvedValueOnce({ payment_status: "paid" });
-    await expect(pedidoService.crearSesionPago("p1", "u1")).rejects.toMatchObject({ statusCode: 400 });
+  it("returns success URL and updates pedido when existing session is already paid", async () => {
+    const save = mock(async () => ({}));
+    state.findByIdResult = { _id: "p1", clerkUserId: "u1", estado: "PENDIENTE", stripeSessionId: "sess_old", save };
+    stripeCheckoutRetrieve.mockResolvedValueOnce({ id: "sess_old", payment_status: "paid" });
+    const r = await pedidoService.crearSesionPago("p1", "u1");
+    expect(r.checkoutUrl).toContain("/checkout/exito?session_id=sess_old&order_id=p1");
+    expect(r.stripeSessionId).toBe("sess_old");
+    expect(save).toHaveBeenCalledTimes(1);
   });
 
   it("returns existing session URL when session is open", async () => {
