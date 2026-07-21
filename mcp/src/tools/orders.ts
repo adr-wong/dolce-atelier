@@ -111,58 +111,64 @@ export function registerOrderTools(server: McpServer) {
         createdAt: Date.now(),
       });
 
+      const pedido = (result.data as any).pedido;
+      const pedidoId = pedido?._id?.slice(-6).toUpperCase() || pedido?._id || '';
+
       return {
         content: [
-          { type: "text" as const, text: JSON.stringify(result.data, null, 2) },
+          {
+            type: "text" as const,
+            text: `Pedido #${pedidoId} creado exitosamente (total: $${pedido?.total || 0}). Para realizar el pago, ve a https://dolce-atelier-chi.vercel.app/pedidos y selecciona "Pagar ahora" en el pedido pendiente.`,
+          },
         ],
       };
     },
   );
 
-  // --- pagar_pedido ---
-  server.registerTool(
-    "pagar_pedido",
-    {
-      description: "Create Stripe checkout session for a pending order. Returns checkout URL.",
-      inputSchema: PagarPedidoInput,
-    },
-    async (args, extra) => {
-      const auth = requireAuth(extra.authInfo);
-
-      const body = args.email ? { email: args.email } : {};
-
-      const headers: Record<string, string> = {
-        Authorization: `Bearer ${auth.token ?? ""}`,
-      };
-      if (args.idempotencyKey) {
-        headers["Idempotency-Key"] = args.idempotencyKey;
-      }
-
-      const result = await callBackend<unknown>(
-        `/api/pedidos/${encodeURIComponent(args.pedidoId)}/pagar`,
-        { method: "POST", body, headers }
-      );
-
-      if (!result.ok) {
-        const err = result.data as { error?: string };
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text" as const,
-              text: `Failed to create payment session (${result.status}): ${err.error || "Unknown"}`,
-            },
-          ],
-        };
-      }
-
-      return {
-        content: [
-          { type: "text" as const, text: JSON.stringify(result.data, null, 2) },
-        ],
-      };
-    },
-  );
+  // --- pagar_pedido (deshabilitado: los enlaces de Stripe no funcionan desde terminal) ---
+  // server.registerTool(
+  //   "pagar_pedido",
+  //   {
+  //     description: "Create Stripe checkout session for a pending order. Returns checkout URL.",
+  //     inputSchema: PagarPedidoInput,
+  //   },
+  //   async (args, extra) => {
+  //     const auth = requireAuth(extra.authInfo);
+  //
+  //     const body = args.email ? { email: args.email } : {};
+  //
+  //     const headers: Record<string, string> = {
+  //       Authorization: `Bearer ${auth.token ?? ""}`,
+  //     };
+  //     if (args.idempotencyKey) {
+  //       headers["Idempotency-Key"] = args.idempotencyKey;
+  //     }
+  //
+  //     const result = await callBackend<unknown>(
+  //       `/api/pedidos/${encodeURIComponent(args.pedidoId)}/pagar`,
+  //       { method: "POST", body, headers }
+  //     );
+  //
+  //     if (!result.ok) {
+  //       const err = result.data as { error?: string };
+  //       return {
+  //         isError: true,
+  //         content: [
+  //           {
+  //             type: "text" as const,
+  //             text: `Failed to create payment session (${result.status}): ${err.error || "Unknown"}`,
+  //           },
+  //         ],
+  //       };
+  //     }
+  //
+  //     return {
+  //       content: [
+  //         { type: "text" as const, text: JSON.stringify(result.data, null, 2) },
+  //       ],
+  //     };
+  //   },
+  // );
 
   // --- list_orders ---
   server.registerTool(
