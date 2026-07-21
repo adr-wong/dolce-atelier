@@ -127,7 +127,7 @@ export const recetaRoutes = new Elysia({ prefix: '/api/recetas' })
       cotizacion: receta.cotizacion,
       successUrl: `${frontendUrl}/checkout/receta/exito?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${frontendUrl}/recetas/mis`,
-      customerEmail: headers.get('x-user-email') || undefined,
+      customerEmail: headers['x-user-email'] || undefined,
     });
 
     return { sessionId: session.id, url: session.url };
