@@ -10,6 +10,7 @@ import styles from './exito.module.css';
 export default function CheckoutExitoContent() {
   const searchParams = useSearchParams();
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(true);
   const { getToken } = useAuth();
 
   useEffect(() => {
@@ -20,19 +21,16 @@ export default function CheckoutExitoContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    console.log('[CHECKOUT-EXITO] Pedido confirmado. El email de confirmación será enviado por el webhook de Stripe.');
-    useCarritoStore.getState().limpiar();
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('dolce-carrito-anonimo');
-    }
-  }, [orderId]);
-
-  useEffect(() => {
     if (!orderId) return;
     const session_id = searchParams.get('session_id');
-    if (!session_id) return;
+    if (!session_id) {
+      setConfirming(false);
+      return;
+    }
 
-    const timer = setTimeout(async () => {
+    let cancelled = false;
+
+    const confirmar = async () => {
       try {
         const token = await getToken();
         const res = await fetch(`/api/pedidos/${orderId}`, {
@@ -50,14 +48,52 @@ export default function CheckoutExitoContent() {
             credentials: 'include',
             body: JSON.stringify({ session_id }),
           });
+          return false;
         }
+        return true;
       } catch (e) {
         console.error('[CHECKOUT-EXITO] Error verificando pago:', e);
+        return false;
       }
-    }, 3000);
+    };
 
-    return () => clearTimeout(timer);
+    const poll = async () => {
+      while (!cancelled) {
+        const paid = await confirmar();
+        if (cancelled) return;
+        if (paid) {
+          setConfirming(false);
+          return;
+        }
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    };
+
+    poll();
+
+    return () => { cancelled = true; };
   }, [orderId, searchParams, getToken]);
+
+  useEffect(() => {
+    if (confirming) return;
+    console.log('[CHECKOUT-EXITO] Pedido confirmado. El email de confirmación será enviado por el webhook de Stripe.');
+    useCarritoStore.getState().limpiar();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('dolce-carrito-anonimo');
+    }
+  }, [confirming]);
+
+  if (confirming) {
+    return (
+      <main className={styles.loadingContainer}>
+        <div className={styles.content}>
+          <div className={styles.spinner} />
+          <h1 className={styles.title}>Confirmando pago...</h1>
+          <p className={styles.text}>Esto solo tomará un momento.</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.container}>
