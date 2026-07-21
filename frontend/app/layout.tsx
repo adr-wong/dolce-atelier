@@ -25,7 +25,14 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        <ClerkProvider afterSignOutUrl="/">
+        <ClerkProvider
+          afterSignOutUrl="/"
+          appearance={{
+            elements: {
+              userButtonPopoverFooter: { display: 'none' },
+            },
+          }}
+        >
           <CartMergeProvider>
             <ErrorBoundary>
               <Toaster richColors position="top-right" />
