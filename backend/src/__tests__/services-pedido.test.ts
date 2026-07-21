@@ -30,7 +30,7 @@ describe("PedidoService", () => {
     expect((await pedidoService.obtenerPorStripeId("s1"))?.stripeSessionId).toBe("s1");
   });
 
-  it("crear validates and returns pedido+checkout", async () => {
+  it("crear validates and returns pedido", async () => {
     state.findResult = [{ _id: "past1", nombre: "Torta", precio: 50 }];
     const save = mock(async () => ({}));
     state.createResult = { _id: "p1", save };
@@ -42,8 +42,7 @@ describe("PedidoService", () => {
       direccionEnvio: "Calle",
     };
     const result = await pedidoService.crear("u1", data);
-    expect(result.pedido._id).toBe("p1");
-    expect(result.checkoutUrl).toBe("http://pay/1");
+    expect(result._id).toBe("p1");
   });
 
   it("crear throws on invalid data", async () => {

@@ -28,6 +28,12 @@ export const GetOrderInput = z.object({
   id: z.string().describe("Order ID"),
 });
 
+export const PagarPedidoInput = z.object({
+  pedidoId: z.string().describe("Order ID to pay"),
+  email: z.string().email().optional().describe("Optional email override"),
+  idempotencyKey: z.string().optional().describe("Optional idempotency key"),
+});
+
 // ---------------------------------------------------------------------------
 // In-memory idempotency store (mirrors backend pattern)
 // ---------------------------------------------------------------------------
@@ -50,13 +56,12 @@ export function registerOrderTools(server: McpServer) {
   server.registerTool(
     "create_order",
     {
-      description: "Create a new order. Requires auth and idempotency key.",
+      description: "Create a new pending order. Does NOT create Stripe session. Use pagar_pedido to get payment link.",
       inputSchema: CreateOrderInput,
     },
     async (args, extra) => {
       const auth = requireAuth(extra.authInfo);
 
-      // Idempotency check (client-side first, backend also checks)
       const cached = idempotencyStore.get(args.idempotencyKey);
       if (cached) {
         return {
@@ -105,6 +110,51 @@ export function registerOrderTools(server: McpServer) {
         response: result.data,
         createdAt: Date.now(),
       });
+
+      return {
+        content: [
+          { type: "text" as const, text: JSON.stringify(result.data, null, 2) },
+        ],
+      };
+    },
+  );
+
+  // --- pagar_pedido ---
+  server.registerTool(
+    "pagar_pedido",
+    {
+      description: "Create Stripe checkout session for a pending order. Returns checkout URL.",
+      inputSchema: PagarPedidoInput,
+    },
+    async (args, extra) => {
+      const auth = requireAuth(extra.authInfo);
+
+      const body = args.email ? { email: args.email } : {};
+
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${auth.token ?? ""}`,
+      };
+      if (args.idempotencyKey) {
+        headers["Idempotency-Key"] = args.idempotencyKey;
+      }
+
+      const result = await callBackend<unknown>(
+        `/api/pedidos/${encodeURIComponent(args.pedidoId)}/pagar`,
+        { method: "POST", body, headers }
+      );
+
+      if (!result.ok) {
+        const err = result.data as { error?: string };
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: `Failed to create payment session (${result.status}): ${err.error || "Unknown"}`,
+            },
+          ],
+        };
+      }
 
       return {
         content: [

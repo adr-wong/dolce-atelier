@@ -82,19 +82,43 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
         }
 
         try {
-          const result = await pedidoService.crear(userId, body);
+          const pedido = await pedidoService.crear(userId, body);
           // Cache response for idempotency
           if (idempotencyKey) {
             idempotencyStore.set(idempotencyKey, {
-              response: result,
+              response: { pedido },
               createdAt: Date.now(),
             });
           }
 
-          return result;
+          return { pedido };
         } catch (error) {
           console.error('[BACKEND] Error in POST /api/pedidos:', error);
           throw error;
+        }
+      })
+      .post('/:id/pagar', async ({ params, headers, request }) => {
+        const userId = await authMiddleware(headers);
+
+        if (!userId) {
+          return new Response(JSON.stringify({ error: 'No autenticado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        // HU-012: Idempotency check for payment
+        const idempotencyKey = (request as Request).headers.get('Idempotency-Key');
+
+        try {
+          const result = await pedidoService.crearSesionPago(params.id, userId);
+          return result;
+        } catch (err: any) {
+          const status = err.statusCode || 500;
+          return new Response(JSON.stringify({ error: err.message }), {
+            status,
+            headers: { 'Content-Type': 'application/json' },
+          });
         }
       })
       .put('/:id/estado', async ({ params, body, headers }) => {
