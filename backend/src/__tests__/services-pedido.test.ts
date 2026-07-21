@@ -1,11 +1,35 @@
-import { describe, it, expect, mock } from "bun:test";
-import { modelsMock, modelState, stripeNpmMock } from "./helpers";
+import { describe, it, expect, mock, beforeEach, beforeAll } from "bun:test";
+import { modelsMock, modelState, stripeCheckoutCreate, stripeCheckoutRetrieve } from "./helpers";
 
 mock.module("../models", () => modelsMock);
-mock.module("stripe", () => ({ default: stripeNpmMock }));
 
-const { pedidoService } = await import("../services/pedido");
+const stripeSdkMock = {
+  checkout: { sessions: { create: stripeCheckoutCreate, retrieve: stripeCheckoutRetrieve } },
+  refunds: { create: mock() },
+  webhooks: { constructEvent: mock() },
+};
+mock.module("../services/stripe", () => ({
+  stripe: stripeSdkMock,
+  crearSesionCheckout: stripeCheckoutCreate,
+  crearSesionReceta: mock(),
+  reembolsarPago: mock(),
+  procesarWebhookStripe: mock(),
+}));
+
 const state = modelState;
+let pedidoService: typeof import("../services/pedido").pedidoService;
+
+beforeAll(async () => {
+  const mod = await import("../services/pedido");
+  pedidoService = mod.pedidoService;
+});
+
+beforeEach(() => {
+  stripeCheckoutCreate.mockClear();
+  stripeCheckoutRetrieve.mockClear();
+  stripeCheckoutCreate.mockImplementation(async () => ({ id: "sess_1", url: "http://pay/1" }));
+  stripeCheckoutRetrieve.mockImplementation(async () => ({ payment_intent: "pi_1" }));
+});
 
 describe("PedidoService", () => {
   it("listarPorUsuario filters by user", async () => {
@@ -30,7 +54,7 @@ describe("PedidoService", () => {
     expect((await pedidoService.obtenerPorStripeId("s1"))?.stripeSessionId).toBe("s1");
   });
 
-  it("crear validates and returns pedido+checkout", async () => {
+  it("crear validates and returns pedido", async () => {
     state.findResult = [{ _id: "past1", nombre: "Torta", precio: 50 }];
     const save = mock(async () => ({}));
     state.createResult = { _id: "p1", save };
@@ -42,8 +66,7 @@ describe("PedidoService", () => {
       direccionEnvio: "Calle",
     };
     const result = await pedidoService.crear("u1", data);
-    expect(result.pedido._id).toBe("p1");
-    expect(result.checkoutUrl).toBe("http://pay/1");
+    expect(result._id).toBe("p1");
   });
 
   it("crear throws on invalid data", async () => {
@@ -81,5 +104,67 @@ describe("PedidoService", () => {
   it("calcularIngresosMes sums totals", async () => {
     state.findResult = [{ total: 100 }, { total: 50 }, { total: 25 }];
     expect(await pedidoService.calcularIngresosMes()).toBe(175);
+  });
+});
+
+describe("PedidoService.crearSesionPago", () => {
+  it("throws 404 when pedido not found", async () => {
+    state.findByIdResult = null;
+    await expect(pedidoService.crearSesionPago("p1", "u1")).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("throws 403 when user does not own the pedido", async () => {
+    state.findByIdResult = { _id: "p1", clerkUserId: "other", estado: "PENDIENTE" };
+    await expect(pedidoService.crearSesionPago("p1", "u1")).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("throws 400 when pedido is not PENDIENTE", async () => {
+    state.findByIdResult = { _id: "p1", clerkUserId: "u1", estado: "PAGADO" };
+    await expect(pedidoService.crearSesionPago("p1", "u1")).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("throws 400 when existing session is already paid", async () => {
+    state.findByIdResult = { _id: "p1", clerkUserId: "u1", estado: "PENDIENTE", stripeSessionId: "sess_old" };
+    stripeCheckoutRetrieve.mockResolvedValueOnce({ payment_status: "paid" });
+    await expect(pedidoService.crearSesionPago("p1", "u1")).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("returns existing session URL when session is open", async () => {
+    const save = mock(async () => ({}));
+    state.findByIdResult = { _id: "p1", clerkUserId: "u1", estado: "PENDIENTE", stripeSessionId: "sess_old", save };
+    stripeCheckoutRetrieve.mockResolvedValueOnce({ status: "open", url: "http://pay/existing", id: "sess_old" });
+    const r = await pedidoService.crearSesionPago("p1", "u1");
+    expect(r.checkoutUrl).toBe("http://pay/existing");
+    expect(r.stripeSessionId).toBe("sess_old");
+  });
+
+  it("creates new session when no existing session", async () => {
+    const save = mock(async () => ({}));
+    state.findByIdResult = {
+      _id: "p1", clerkUserId: "u1", estado: "PENDIENTE",
+      items: [{ pastelId: "past1", nombre: "Torta", precioSnapshot: 50, cantidad: 2 }],
+      email: "a@b.com", save,
+    };
+    stripeCheckoutCreate.mockResolvedValueOnce({ id: "sess_new", url: "http://pay/new" });
+    const r = await pedidoService.crearSesionPago("p1", "u1");
+    expect(r.checkoutUrl).toBe("http://pay/new");
+    expect(r.stripeSessionId).toBe("sess_new");
+    expect(save).toHaveBeenCalledTimes(1);
+  });
+
+  it("creates new session when retrieve fails", async () => {
+    const save = mock(async () => ({}));
+    state.findByIdResult = {
+      _id: "p1", clerkUserId: "u1", estado: "PENDIENTE",
+      stripeSessionId: "sess_old",
+      items: [{ pastelId: "past1", nombre: "Torta", precioSnapshot: 50, cantidad: 1 }],
+      email: "a@b.com", save,
+    };
+    stripeCheckoutRetrieve.mockRejectedValueOnce(new Error("session expired"));
+    stripeCheckoutCreate.mockResolvedValueOnce({ id: "sess_new2", url: "http://pay/new2" });
+    const r = await pedidoService.crearSesionPago("p1", "u1");
+    expect(r.checkoutUrl).toBe("http://pay/new2");
+    expect(r.stripeSessionId).toBe("sess_new2");
+    expect(save).toHaveBeenCalledTimes(1);
   });
 });

@@ -2,6 +2,13 @@ import { Pedido, Pastel } from '../models';
 import type { IPedido } from '../models/Pedido';
 import { CrearPedidoSchema, ActualizarEstadoSchema } from '../schemas/pedido';
 import { crearSesionCheckout } from './stripe';
+import { stripe } from './stripe';
+
+function throwWithStatus(message: string, statusCode: number): never {
+  const err = new Error(message) as Error & { statusCode: number };
+  err.statusCode = statusCode;
+  throw err;
+}
 
 const allowedTransitions: Record<IPedido['estado'], IPedido['estado'][]> = {
   PENDIENTE: ['PAGADO', 'CANCELADO'],
@@ -20,6 +27,44 @@ export class PedidoService {
     return Pedido.find(filtro).sort({ createdAt: -1 });
   }
 
+  async crearSesionPago(pedidoId: string, clerkUserId: string): Promise<{ checkoutUrl: string; stripeSessionId: string }> {
+    const pedido = await Pedido.findById(pedidoId);
+    if (!pedido) throwWithStatus('Pedido no encontrado', 404);
+    if (pedido.clerkUserId !== clerkUserId) throwWithStatus('Acceso denegado', 403);
+    if (pedido.estado !== 'PENDIENTE') throwWithStatus('Solo se pueden pagar pedidos pendientes', 400);
+
+    if (pedido.stripeSessionId) {
+      try {
+        const existingSession = await stripe.checkout.sessions.retrieve(pedido.stripeSessionId);
+        if (existingSession.payment_status === 'paid') throwWithStatus('Este pedido ya fue pagado', 400);
+        if (existingSession.status === 'open' && existingSession.url) {
+          return { checkoutUrl: existingSession.url, stripeSessionId: existingSession.id };
+        }
+      } catch (e: any) {
+        if (e?.statusCode) throw e;
+      }
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const session = await crearSesionCheckout({
+      items: pedido.items.map(i => ({
+        pastelId: i.pastelId.toString(),
+        nombre: i.nombre,
+        precioSnapshot: i.precioSnapshot,
+        cantidad: i.cantidad,
+      })),
+      pedidoId: pedido._id.toString(),
+      successUrl: `${frontendUrl}/checkout/exito?session_id={CHECKOUT_SESSION_ID}&order_id=${pedido._id}`,
+      cancelUrl: `${frontendUrl}/checkout/error`,
+      customerEmail: pedido.email,
+    });
+
+    pedido.stripeSessionId = session.id;
+    await pedido.save();
+
+    return { checkoutUrl: session.url!, stripeSessionId: session.id };
+  }
+
   async listarTodos(estado?: string, limit?: number): Promise<IPedido[]> {
     const filtro = estado ? { estado } : {};
     return Pedido.find(filtro).sort({ createdAt: -1 }).limit(limit || 100);
@@ -33,7 +78,7 @@ export class PedidoService {
     return Pedido.findOne({ stripeSessionId });
   }
 
-  async crear(clerkUserId: string, data: unknown): Promise<{ pedido: IPedido; checkoutUrl: string }> {
+  async crear(clerkUserId: string, data: unknown): Promise<IPedido> {
     console.log('[PEDIDO SERVICE] 🏗️ crear() called:', {
       clerkUserId,
       data,
@@ -102,33 +147,7 @@ export class PedidoService {
         total: pedido.total
       });
 
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      console.log('[PEDIDO SERVICE] 🔄 Creating Stripe session...', {
-        frontendUrl,
-        pedidoId: pedido._id,
-        successUrl: `${frontendUrl}/checkout/exito?session_id={CHECKOUT_SESSION_ID}&order_id=${pedido._id}`,
-        cancelUrl: `${frontendUrl}/checkout/error`
-      });
-
-      const session = await crearSesionCheckout({
-        items,
-        pedidoId: pedido._id.toString(),
-        successUrl: `${frontendUrl}/checkout/exito?session_id={CHECKOUT_SESSION_ID}&order_id=${pedido._id}`,
-        cancelUrl: `${frontendUrl}/checkout/error`,
-        customerEmail: validado.email,
-      });
-
-      console.log('[PEDIDO SERVICE] ✅ Stripe session created:', {
-        sessionId: session.id,
-        checkoutUrl: session.url ? `${session.url.substring(0, 50)}...` : 'NONE',
-        paymentStatus: (session as any).payment_status
-      });
-
-      pedido.stripeSessionId = session.id;
-      await pedido.save();
-      console.log('[PEDIDO SERVICE] 💾 Stripe session ID saved to pedido');
-
-      return { pedido, checkoutUrl: session.url! };
+      return pedido;
     } catch (error) {
       console.error('[PEDIDO SERVICE] 💥 EXCEPTION in crear():', {
         error,

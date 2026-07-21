@@ -1,4 +1,4 @@
-import { describe, it, expect, mock, beforeEach } from "bun:test";
+import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 import { Elysia } from "elysia";
 import {
   modelState,
@@ -34,8 +34,10 @@ const { webhookRoutes } = await import("../routes/webhook");
 
 describe("webhookRoutes", () => {
   const app = new Elysia().use(webhookRoutes);
+  const originalNodeEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
+    process.env.NODE_ENV = 'production';
     modelState.findOneResult = null;
     modelState.createResult = undefined;
     modelState.lastCreate = undefined;
@@ -44,6 +46,10 @@ describe("webhookRoutes", () => {
     recetaServiceMock.aceptar.mockClear();
     auditLogServiceMock.log.mockClear();
     brevoMockModule.enviarFacturaPedido.mockClear();
+  });
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv;
   });
 
   it("POST /stripe returns 400 when signature is missing", async () => {

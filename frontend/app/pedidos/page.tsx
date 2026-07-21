@@ -41,6 +41,7 @@ export default function PedidosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<string>('');
+  const [payingId, setPayingId] = useState<string | null>(null);
   const { getToken } = useAuth();
 
   useEffect(() => {
@@ -81,6 +82,32 @@ export default function PedidosPage() {
     }
     cargarPedidos();
   }, [filtroEstado]);
+
+  const handlePagar = async (pedidoId: string) => {
+    setPayingId(pedidoId);
+    setError(null);
+    try {
+      const token = await getToken();
+      const res = await fetch(`${getApiUrl()}/api/pedidos/${pedidoId}/pagar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        throw new Error(data.error || 'No se obtuvo URL de pago');
+      }
+    } catch (e) {
+      setError('Error al crear sesión de pago');
+    } finally {
+      setPayingId(null);
+    }
+  };
 
   const EstadoBadge: React.FC<{ estado: string }> = ({ estado }) => {
     const colores = ESTADOS_COLORES[estado] || ESTADOS_COLORES.PENDIENTE;
@@ -190,6 +217,16 @@ export default function PedidosPage() {
                 <span>Total</span>
                 <span className={styles.totalAmount}>${pedido.total.toFixed(2)}</span>
               </div>
+
+              {pedido.estado === 'PENDIENTE' && (
+                <button 
+                  className={styles.payBtn}
+                  onClick={() => handlePagar(pedido._id)}
+                  disabled={payingId === pedido._id}
+                >
+                  {payingId === pedido._id ? 'Creando link...' : 'Pagar ahora'}
+                </button>
+              )}
             </div>
           ))}
         </div>

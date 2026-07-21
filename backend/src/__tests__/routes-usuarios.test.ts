@@ -13,9 +13,9 @@ describe("usuarioRoutes", () => {
   it("GET / lists users with role mapping", async () => {
     const res = await app.handle(new Request(BASE, { headers: adminAuthHeader() }));
     expect(res.status).toBe(200);
-    const users = (await res.json()) as any[];
-    expect(users[0].role).toBe("admin");
-    expect(users[0].email).toBe("a@b.com");
+    const data = (await res.json()) as any;
+    expect(data.usuarios[0].role).toBe("admin");
+    expect(data.usuarios[0].email).toBe("a@b.com");
   });
 
   it("PUT /:id/rol updates metadata", async () => {

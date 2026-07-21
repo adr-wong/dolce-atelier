@@ -10,7 +10,7 @@ const PedidoAggregate = mock();
 
 function makeQuery(docs: any[]) {
   const q: any = {};
-  for (const m of ['sort', 'skip', 'limit', 'select', 'collation']) q[m] = () => q;
+  for (const m of ['sort', 'skip', 'limit', 'select', 'collation', 'lean']) q[m] = () => q;
   q.then = (resolve: any) => resolve(docs);
   return q;
 }
