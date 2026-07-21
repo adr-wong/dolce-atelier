@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, mock } from 'bun:test';
-import mongoose from 'mongoose';
+import * as mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 // Import the REAL model classes directly from their sub-files. These are NOT

@@ -8,7 +8,7 @@ const AuditLogLog = mock();
 
 function makeQuery(docs: any[]) {
   const q: any = {};
-  for (const m of ['sort', 'skip', 'limit', 'select', 'collation']) q[m] = () => q;
+  for (const m of ['sort', 'skip', 'limit', 'select', 'collation', 'lean']) q[m] = () => q;
   q.then = (resolve: any) => resolve(docs);
   return q;
 }
@@ -107,7 +107,7 @@ describe('updatePedidoStatus', () => {
 
   it('allows a valid transition and writes an audit log', async () => {
     PedidoFindById.mockResolvedValue({ estado: 'PENDIENTE' });
-    const updated = { _id: 'p1', estado: 'PAGADO' };
+    const updated = { _id: 'p1', estado: 'PAGADO', toJSON() { return this; } };
     PedidoFindByIdAndUpdate.mockResolvedValue(updated);
 
     const set = { status: 0 };
@@ -133,7 +133,7 @@ describe('updatePedidoStatus', () => {
 
   it('allows cancelling from any state', async () => {
     PedidoFindById.mockResolvedValue({ estado: 'PREPARANDO' });
-    PedidoFindByIdAndUpdate.mockResolvedValue({ _id: 'p2', estado: 'CANCELADO' });
+    PedidoFindByIdAndUpdate.mockResolvedValue({ _id: 'p2', estado: 'CANCELADO', toJSON() { return this; } });
     const set = { status: 0 };
     const result = await updatePedidoStatus({
       set,

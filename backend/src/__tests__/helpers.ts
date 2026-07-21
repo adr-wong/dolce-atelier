@@ -20,6 +20,7 @@ export const pedidoServiceMock = {
   obtener: mock(async () => null),
   obtenerPorStripeId: mock(async () => null),
   crear: mock(async () => ({ _id: "p1" })),
+  crearSesionPago: mock(async () => ({ checkoutUrl: "http://pay/1", stripeSessionId: "sess_1" })),
   actualizarEstado: mock(async () => null),
   confirmarPago: mock(async () => null),
   confirmarPagoConEmail: mock(async () => null),

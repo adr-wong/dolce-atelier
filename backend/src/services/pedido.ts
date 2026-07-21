@@ -4,6 +4,12 @@ import { CrearPedidoSchema, ActualizarEstadoSchema } from '../schemas/pedido';
 import { crearSesionCheckout } from './stripe';
 import { stripe } from './stripe';
 
+function throwWithStatus(message: string, statusCode: number): never {
+  const err = new Error(message) as Error & { statusCode: number };
+  err.statusCode = statusCode;
+  throw err;
+}
+
 const allowedTransitions: Record<IPedido['estado'], IPedido['estado'][]> = {
   PENDIENTE: ['PAGADO', 'CANCELADO'],
   PAGADO: ['PREPARANDO', 'CANCELADO'],
@@ -23,37 +29,19 @@ export class PedidoService {
 
   async crearSesionPago(pedidoId: string, clerkUserId: string): Promise<{ checkoutUrl: string; stripeSessionId: string }> {
     const pedido = await Pedido.findById(pedidoId);
-    if (!pedido) {
-      const err = new Error('Pedido no encontrado') as Error & { statusCode: number };
-      err.statusCode = 404;
-      throw err;
-    }
-
-    if (pedido.clerkUserId !== clerkUserId) {
-      const err = new Error('Acceso denegado') as Error & { statusCode: number };
-      err.statusCode = 403;
-      throw err;
-    }
-
-    if (pedido.estado !== 'PENDIENTE') {
-      const err = new Error('Solo se pueden pagar pedidos pendientes') as Error & { statusCode: number };
-      err.statusCode = 400;
-      throw err;
-    }
+    if (!pedido) throwWithStatus('Pedido no encontrado', 404);
+    if (pedido.clerkUserId !== clerkUserId) throwWithStatus('Acceso denegado', 403);
+    if (pedido.estado !== 'PENDIENTE') throwWithStatus('Solo se pueden pagar pedidos pendientes', 400);
 
     if (pedido.stripeSessionId) {
       try {
         const existingSession = await stripe.checkout.sessions.retrieve(pedido.stripeSessionId);
-        if (existingSession.payment_status === 'paid') {
-          const err = new Error('Este pedido ya fue pagado') as Error & { statusCode: number };
-          err.statusCode = 400;
-          throw err;
-        }
+        if (existingSession.payment_status === 'paid') throwWithStatus('Este pedido ya fue pagado', 400);
         if (existingSession.status === 'open' && existingSession.url) {
           return { checkoutUrl: existingSession.url, stripeSessionId: existingSession.id };
         }
-      } catch {
-        // Si falla al recuperar, crear nueva sesión
+      } catch (e: any) {
+        if (e?.statusCode) throw e;
       }
     }
 

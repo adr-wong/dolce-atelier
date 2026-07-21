@@ -7,9 +7,16 @@ const PastelFindByIdAndUpdate = mock();
 const PastelFindById = mock();
 const PastelFindByIdAndDelete = mock();
 
+function makeChainable(val: any) {
+  const q: any = {};
+  for (const m of ['sort', 'skip', 'limit', 'select', 'collation', 'lean']) q[m] = () => q;
+  q.then = (resolve: any, reject?: any) => Promise.resolve(val).then(resolve, reject);
+  return q;
+}
+
 function makeQuery(docs: any[]) {
   const q: any = {};
-  for (const m of ['sort', 'skip', 'limit', 'select', 'collation']) q[m] = () => q;
+  for (const m of ['sort', 'skip', 'limit', 'select', 'collation', 'lean']) q[m] = () => q;
   q.then = (resolve: any) => resolve(docs);
   return q;
 }
@@ -150,7 +157,7 @@ describe('createPastel', () => {
 
 describe('updatePastel', () => {
   it('returns 404 when the pastel does not exist', async () => {
-    PastelFindByIdAndUpdate.mockResolvedValue(null);
+    PastelFindByIdAndUpdate.mockReturnValue(makeChainable(null));
     const set = { status: 0 };
     const result = await updatePastel({
       set,
@@ -163,7 +170,7 @@ describe('updatePastel', () => {
 
   it('returns the updated pastel on success', async () => {
     const doc = { _id: 'p3', nombre: 'X' };
-    PastelFindByIdAndUpdate.mockResolvedValue(doc);
+    PastelFindByIdAndUpdate.mockReturnValue(makeChainable(doc));
     const set = { status: 0 };
     const result = await updatePastel({
       set,

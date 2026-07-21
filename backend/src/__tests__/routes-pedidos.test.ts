@@ -191,4 +191,39 @@ describe("pedidoRoutes", () => {
     expect(res.status).toBe(200);
     expect(save).toHaveBeenCalledTimes(1);
   });
+
+  it("POST /:id/pagar requires auth", async () => {
+    const res = await app.handle(
+      new Request(`${BASE}/p1/pagar`, { method: "POST", headers: { "Content-Type": "application/json" } }),
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("POST /:id/pagar creates payment session", async () => {
+    servicesMock.pedidoService.crearSesionPago.mockResolvedValueOnce({ checkoutUrl: "http://pay/1", stripeSessionId: "sess_1" });
+    const res = await app.handle(
+      new Request(`${BASE}/p1/pagar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...userAuthHeader() },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.checkoutUrl).toBe("http://pay/1");
+  });
+
+  it("POST /:id/pagar returns error status from service", async () => {
+    const err = new Error("Pedido no encontrado") as Error & { statusCode: number };
+    err.statusCode = 404;
+    servicesMock.pedidoService.crearSesionPago.mockRejectedValueOnce(err);
+    const res = await app.handle(
+      new Request(`${BASE}/p1/pagar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...userAuthHeader() },
+      }),
+    );
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toBe("Pedido no encontrado");
+  });
 });

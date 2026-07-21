@@ -3,6 +3,13 @@ import { pedidoService } from '../services';
 import { FiltroPedidosSchema } from '../schemas';
 import { authMiddleware } from '../middleware/auth';
 
+function jsonError(message: string, status: number): Response {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 // HU-012: Idempotency store (in-memory)
 const idempotencyStore = new Map<string, { response: any; createdAt: number }>();
 setInterval(() => {
@@ -17,12 +24,7 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
     const filtro = FiltroPedidosSchema.parse(query);
     const userId = await authMiddleware(headers);
 
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'No autenticado' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    if (!userId) return jsonError('No autenticado', 401);
 
     const esAdmin = (headers['x-user-role'] || headers['X-User-Role']) === 'admin';
     const limite = filtro.limit ? Number.parseInt(filtro.limit) : undefined;
@@ -35,28 +37,13 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
   .get('/:id', async ({ params, headers }) => {
     const userId = await authMiddleware(headers);
 
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'No autenticado' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    if (!userId) return jsonError('No autenticado', 401);
 
     const pedido = await pedidoService.obtener(params.id);
-    if (!pedido) {
-      return new Response(JSON.stringify({ error: 'Pedido no encontrado' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    if (!pedido) return jsonError('Pedido no encontrado', 404);
 
     const esAdmin = (headers['x-user-role'] || headers['X-User-Role']) === 'admin';
-    if (!esAdmin && pedido.clerkUserId !== userId) {
-      return new Response(JSON.stringify({ error: 'Acceso denegado' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    if (!esAdmin && pedido.clerkUserId !== userId) return jsonError('Acceso denegado', 403);
 
     return { pedido };
   }, {
@@ -65,12 +52,7 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
   .post('/', async ({ body, headers, request }) => {
         const userId = await authMiddleware(headers);
 
-        if (!userId) {
-          return new Response(JSON.stringify({ error: 'No autenticado' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+        if (!userId) return jsonError('No autenticado', 401);
 
         // HU-012: Idempotency check
         const idempotencyKey = (request as Request).headers.get('Idempotency-Key');
@@ -83,7 +65,6 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
 
         try {
           const pedido = await pedidoService.crear(userId, body);
-          // Cache response for idempotency
           if (idempotencyKey) {
             idempotencyStore.set(idempotencyKey, {
               response: { pedido },
@@ -100,85 +81,39 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
       .post('/:id/pagar', async ({ params, headers, request }) => {
         const userId = await authMiddleware(headers);
 
-        if (!userId) {
-          return new Response(JSON.stringify({ error: 'No autenticado' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
-
-        // HU-012: Idempotency check for payment
-        const idempotencyKey = (request as Request).headers.get('Idempotency-Key');
+        if (!userId) return jsonError('No autenticado', 401);
 
         try {
           const result = await pedidoService.crearSesionPago(params.id, userId);
           return result;
         } catch (err: any) {
-          const status = err.statusCode || 500;
-          return new Response(JSON.stringify({ error: err.message }), {
-            status,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          return jsonError(err.message, err.statusCode || 500);
         }
       })
       .put('/:id/estado', async ({ params, body, headers }) => {
         const userId = await authMiddleware(headers);
-        if (!userId) {
-          return new Response(JSON.stringify({ error: 'No autenticado' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+        if (!userId) return jsonError('No autenticado', 401);
 
         try {
           const pedido = await pedidoService.actualizarEstado(params.id, body);
-          if (!pedido) {
-            return new Response(JSON.stringify({ error: 'Pedido no encontrado' }), {
-              status: 404,
-              headers: { 'Content-Type': 'application/json' },
-            });
-          }
+          if (!pedido) return jsonError('Pedido no encontrado', 404);
           return { pedido };
         } catch (err: any) {
-          const status = err.statusCode || 400;
-          return new Response(JSON.stringify({ error: err.message }), {
-            status,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          return jsonError(err.message, err.statusCode || 400);
         }
       }, {
         params: t.Object({ id: t.String() }),
       })
       .put('/:id/cancelar', async ({ params, headers }) => {
         const userId = await authMiddleware(headers);
-        if (!userId) {
-          return new Response(JSON.stringify({ error: 'No autenticado' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+        if (!userId) return jsonError('No autenticado', 401);
 
         const pedido = await pedidoService.obtener(params.id);
-        if (!pedido) {
-          return new Response(JSON.stringify({ error: 'Pedido no encontrado' }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+        if (!pedido) return jsonError('Pedido no encontrado', 404);
 
-        if (pedido.clerkUserId !== userId) {
-          return new Response(JSON.stringify({ error: 'Acceso denegado' }), {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+        if (pedido.clerkUserId !== userId) return jsonError('Acceso denegado', 403);
 
-        if (pedido.estado !== 'PENDIENTE') {
-          return new Response(
-            JSON.stringify({ error: 'Solo se pueden cancelar pedidos pendientes' }),
-            { status: 400, headers: { 'Content-Type': 'application/json' } }
-          );
-        }
+        if (pedido.estado !== 'PENDIENTE') return jsonError('Solo se pueden cancelar pedidos pendientes', 400);
 
         const actualizado = await pedidoService.actualizarEstado(params.id, {
           estado: 'CANCELADO',
@@ -191,34 +126,14 @@ export const pedidoRoutes = new Elysia({ prefix: '/api/pedidos' })
       // HU-024: Calificar pedido entregado
       .put('/:id/calificar', async ({ params, headers, body }) => {
         const userId = await authMiddleware(headers);
-        if (!userId) {
-          return new Response(JSON.stringify({ error: 'No autenticado' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+        if (!userId) return jsonError('No autenticado', 401);
 
         const pedido = await pedidoService.obtener(params.id);
-        if (!pedido) {
-          return new Response(JSON.stringify({ error: 'Pedido no encontrado' }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+        if (!pedido) return jsonError('Pedido no encontrado', 404);
 
-        if (pedido.clerkUserId !== userId) {
-          return new Response(JSON.stringify({ error: 'Acceso denegado' }), {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+        if (pedido.clerkUserId !== userId) return jsonError('Acceso denegado', 403);
 
-        if (pedido.estado !== 'ENTREGADO') {
-          return new Response(
-            JSON.stringify({ error: 'Solo se pueden calificar pedidos entregados' }),
-            { status: 400, headers: { 'Content-Type': 'application/json' } }
-          );
-        }
+        if (pedido.estado !== 'ENTREGADO') return jsonError('Solo se pueden calificar pedidos entregados', 400);
 
         const { calificacion, resena } = body as { calificacion: number; resena?: string };
         pedido.calificacion = calificacion;

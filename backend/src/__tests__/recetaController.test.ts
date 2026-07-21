@@ -5,9 +5,16 @@ const RecetaCreate = mock();
 const RecetaFindByIdAndUpdate = mock();
 const RecetaFindByIdAndDelete = mock();
 
+function makeChainable(val: any) {
+  const q: any = {};
+  for (const m of ['sort', 'skip', 'limit', 'select', 'collation', 'lean']) q[m] = () => q;
+  q.then = (resolve: any, reject?: any) => Promise.resolve(val).then(resolve, reject);
+  return q;
+}
+
 function makeQuery(docs: any[]) {
   const q: any = {};
-  for (const m of ['sort', 'skip', 'limit', 'select', 'collation']) q[m] = () => q;
+  for (const m of ['sort', 'skip', 'limit', 'select', 'collation', 'lean']) q[m] = () => q;
   q.then = (resolve: any) => resolve(docs);
   return q;
 }
@@ -62,7 +69,7 @@ describe('createReceta', () => {
 
 describe('updateReceta', () => {
   it('returns 404 when the receta does not exist', async () => {
-    RecetaFindByIdAndUpdate.mockResolvedValue(null);
+    RecetaFindByIdAndUpdate.mockReturnValue(makeChainable(null));
     const set = { status: 0 };
     const result = await updateReceta({
       set,
@@ -75,7 +82,7 @@ describe('updateReceta', () => {
 
   it('returns the updated receta on success', async () => {
     const doc = { _id: 'r4' };
-    RecetaFindByIdAndUpdate.mockResolvedValue(doc);
+    RecetaFindByIdAndUpdate.mockReturnValue(makeChainable(doc));
     const set = { status: 0 };
     const result = await updateReceta({
       set,

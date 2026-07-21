@@ -1,8 +1,9 @@
 import { describe, it, expect, mock } from "bun:test";
 import { Elysia } from "elysia";
-import { servicesMock, userAuthHeader } from "./helpers";
+import { servicesMock, userAuthHeader, stripeMockModule } from "./helpers";
 
 mock.module("../services", () => servicesMock);
+mock.module("../services/stripe", () => stripeMockModule);
 
 const { recetaRoutes } = await import("../routes/recetas");
 
@@ -143,12 +144,9 @@ describe("recetaRoutes", () => {
     expect(res.status).toBe(400);
   });
 
-  // NOTE: aceptar-pagar reads `headers.get('x-user-email')` on the Elysia
-  // context `headers` (a plain object without `.get` in Elysia v1.3). This
-  // throws, so the handler returns 500 (latent source bug, not fixed here).
-  // The 401/404/403/400 branches are covered above; the success branch that
-  // calls crearSesionReceta cannot be reached via HTTP because of the bug.
-  it("POST /:id/aceptar-pagar throws (500) on headers.get bug", async () => {
+  // NOTE: The route now correctly uses headers['x-user-email'] (property access)
+  // instead of headers.get(), so the success branch is reachable.
+  it("POST /:id/aceptar-pagar succeeds with email header", async () => {
     servicesMock.recetaService.obtener.mockResolvedValueOnce({ _id: "r1", clerkUserId: "u1", estado: "COTIZADA", cotizacion: 100 });
     const res = await app.handle(
       new Request(`${BASE}/r1/aceptar-pagar`, {
@@ -156,6 +154,6 @@ describe("recetaRoutes", () => {
         headers: { ...userAuthHeader(), "x-user-email": "a@b.com" },
       }),
     );
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(200);
   });
 });
