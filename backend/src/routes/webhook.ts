@@ -2,7 +2,7 @@ import { Elysia } from 'elysia';
 import { stripe, pedidoService, recetaService } from '../services';
 import { enviarFacturaPedido } from '../services/brevo';
 import { auditLogService } from '../services/auditLog';
-import { WebhookEvent } from '../models';
+import { WebhookEvent, Pedido } from '../models';
 import Stripe from 'stripe';
 
 export const webhookRoutes = new Elysia({ prefix: '/api/webhook' })
@@ -66,8 +66,26 @@ export const webhookRoutes = new Elysia({ prefix: '/api/webhook' })
         const recetaId = session.metadata?.recetaId;
         if (recetaId) {
           console.log(`[WEBHOOK] Confirmando pago de receta: ${recetaId}`);
-          await recetaService.aceptar(recetaId);
+          const receta = await recetaService.aceptar(recetaId);
           console.log(`[WEBHOOK] Receta ${recetaId} marcada como ACEPTADA`);
+
+          // Crear Pedido automáticamente (ya está pagado)
+          if (receta) {
+            const nuevoPedido = await Pedido.create({
+              clerkUserId: receta.clerkUserId,
+              email: email || '',
+              estado: 'PAGADO',
+              total: receta.cotizacion || 0,
+              items: [{
+                nombre: `Receta personalizada: ${receta.nota.substring(0, 80)}`,
+                precioSnapshot: receta.cotizacion || 0,
+                cantidad: 1,
+              }],
+              metodoEntrega: 'TIENDA',
+              stripeSessionId: session.id,
+            });
+            console.log(`[WEBHOOK] Pedido creado para receta ${recetaId}: ${nuevoPedido._id}`);
+          }
         }
       } else if (email) {
           console.log('[WEBHOOK] Confirmando pago...');

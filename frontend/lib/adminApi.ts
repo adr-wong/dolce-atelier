@@ -295,7 +295,8 @@ async function updateReceta(token: string, id: string, data: RecetaUpdateInput):
   });
 
   if (!response.ok) {
-    throw new Error('Request failed');
+    const body = await response.text();
+    throw new Error(`updateReceta failed: ${response.status} ${body}`);
   }
 
   return response.json();

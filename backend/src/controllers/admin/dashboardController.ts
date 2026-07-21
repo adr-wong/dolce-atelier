@@ -25,7 +25,8 @@ export async function getDashboardStats(context: { set: { status: number }; quer
   const recentPedidos = await Pedido.find()
     .sort({ createdAt: -1 })
     .limit(5)
-    .select('estado total createdAt items');
+    .select('estado total createdAt items')
+    .lean();
 
   set.status = 200;
   return {

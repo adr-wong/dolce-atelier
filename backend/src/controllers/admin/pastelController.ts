@@ -21,7 +21,7 @@ export async function listPasteles(context: { set: { status: number }; query: { 
   const limit = 100;
   const skip = (page - 1) * limit;
   const [pasteles, total] = await Promise.all([
-    Pastel.find(q).skip(skip).limit(limit),
+    Pastel.find(q).skip(skip).limit(limit).lean(),
     Pastel.countDocuments(q)
   ]);
   set.status = 200;
@@ -63,7 +63,7 @@ export async function updatePastel(context: { set: { status: number }; query: Re
     params.id,
     { $set: { ...body, updatedAt: new Date() } },
     { new: true }
-  );
+  ).lean();
   if (!pastel) {
     set.status = 404;
     return { error: 'Pastel no encontrado' };

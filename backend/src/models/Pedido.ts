@@ -10,7 +10,7 @@ export type EstadoPedido =
   | 'CANCELADO';
 
 export interface IItemPedido {
-  pastelId: mongoose.Types.ObjectId;
+  pastelId?: mongoose.Types.ObjectId;
   nombre: string;
   precioSnapshot: number;
   cantidad: number;
@@ -33,7 +33,7 @@ export interface IPedido extends Document {
 }
 
 const ItemPedidoSchema = new Schema<IItemPedido>({
-  pastelId: { type: Schema.Types.ObjectId, ref: 'Pastel', required: true },
+  pastelId: { type: Schema.Types.ObjectId, ref: 'Pastel' },
   nombre: { type: String, required: true },
   precioSnapshot: { type: Number, required: true },
   cantidad: { type: Number, required: true, min: 1 },

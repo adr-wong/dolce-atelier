@@ -64,7 +64,7 @@ export default function AdminRecetas() {
       if (ClerkOfflineError.is(error)) {
         toast.error("Sin conexión a internet");
       } else {
-        toast.error("Error al cotizar");
+        toast.error(`Error al cotizar: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
   };

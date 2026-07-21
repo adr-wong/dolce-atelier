@@ -9,7 +9,7 @@ type ElysiaContext = {
 
 export async function listRecetas(context: ElysiaContext) {
   const { set } = context;
-  const recetas = await Receta.find();
+  const recetas = await Receta.find().lean();
   set.status = 200;
   return { recetas };
 }
@@ -35,7 +35,7 @@ export async function updateReceta(context: ElysiaContext) {
     params.id,
     { $set: { ...body, updatedAt: new Date() } },
     { new: true }
-  );
+  ).lean();
   if (!receta) {
     set.status = 404;
     return { error: 'Receta no encontrada' };
