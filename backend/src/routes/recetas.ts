@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { recetaService, pedidoService } from '../services';
-import { crearSesionReceta } from '../services/stripe';
+import { stripe, crearSesionReceta } from '../services/stripe';
+import { Pedido } from '../models';
 import { FiltroRecetasSchema } from '../schemas';
 import { authMiddleware } from '../middleware/auth';
 
@@ -134,7 +135,7 @@ export const recetaRoutes = new Elysia({ prefix: '/api/recetas' })
   }, {
     params: t.Object({ id: t.String() }),
   })
-  .post('/:id/confirmar-pago', async ({ params, userId, headers, request }) => {
+  .post('/:id/confirmar-pago', async ({ params, userId, request }) => {
     if (!userId) {
       return new Response(JSON.stringify({ error: 'No autenticado' }), {
         status: 401,
@@ -166,21 +167,44 @@ export const recetaRoutes = new Elysia({ prefix: '/api/recetas' })
       });
     }
 
-    // Si la receta ya fue aceptada (pago confirmado por webhook), retornar ok
+    // Ya confirmado
     if (receta.estado === 'ACEPTADA') {
       return { success: true };
     }
 
-    // Si la receta sigue cotizada, intentar confirmar via pedido asociado
-    const pedido = await pedidoService.obtenerPorStripeId(sessionId);
-    if (pedido && pedido.estado === 'PAGADO') {
-      return { success: true };
+    // Verificar pago directo con Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.payment_status !== 'paid') {
+      return new Response(JSON.stringify({ error: 'El pago aún no ha sido confirmado' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    return new Response(JSON.stringify({ error: 'El pago aún no ha sido confirmado' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Pago confirmado — aceptar receta si aún no está aceptada
+    if (receta.estado !== 'ACEPTADA') {
+      await recetaService.aceptar(receta._id.toString());
+    }
+
+    // Crear pedido asociado si no existe (idempotente)
+    const existingPedido = await pedidoService.obtenerPorStripeId(sessionId);
+    if (!existingPedido) {
+      await Pedido.create({
+        clerkUserId: receta.clerkUserId,
+        email: session.customer_details?.email || '',
+        estado: 'PAGADO',
+        total: receta.cotizacion || 0,
+        items: [{
+          nombre: `Receta personalizada: ${receta.nota.substring(0, 80)}`,
+          precioSnapshot: receta.cotizacion || 0,
+          cantidad: 1,
+        }],
+        metodoEntrega: 'TIENDA',
+        stripeSessionId: session.id,
+      });
+    }
+
+    return { success: true };
   }, {
     params: t.Object({ id: t.String() }),
   });
