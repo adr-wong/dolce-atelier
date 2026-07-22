@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { recetaService } from '../services';
+import { recetaService, pedidoService } from '../services';
 import { crearSesionReceta } from '../services/stripe';
 import { FiltroRecetasSchema } from '../schemas';
 import { authMiddleware } from '../middleware/auth';
@@ -125,12 +125,62 @@ export const recetaRoutes = new Elysia({ prefix: '/api/recetas' })
       recetaId: receta._id.toString(),
       nota: receta.nota,
       cotizacion: receta.cotizacion,
-      successUrl: `${frontendUrl}/checkout/receta/exito?session_id={CHECKOUT_SESSION_ID}`,
+      successUrl: `${frontendUrl}/checkout/receta/exito?session_id={CHECKOUT_SESSION_ID}&receta_id=${receta._id}`,
       cancelUrl: `${frontendUrl}/recetas/mis`,
       customerEmail: headers['x-user-email'] || undefined,
     });
 
     return { sessionId: session.id, url: session.url };
+  }, {
+    params: t.Object({ id: t.String() }),
+  })
+  .post('/:id/confirmar-pago', async ({ params, userId, headers, request }) => {
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'No autenticado' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const receta = await recetaService.obtener(params.id);
+    if (!receta) {
+      return new Response(JSON.stringify({ error: 'Receta no encontrada' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (receta.clerkUserId !== userId) {
+      return new Response(JSON.stringify({ error: 'Acceso denegado' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const body = await request.json();
+    const { sessionId } = body;
+    if (!sessionId) {
+      return new Response(JSON.stringify({ error: 'sessionId requerido' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Si la receta ya fue aceptada (pago confirmado por webhook), retornar ok
+    if (receta.estado === 'ACEPTADA') {
+      return { success: true };
+    }
+
+    // Si la receta sigue cotizada, intentar confirmar via pedido asociado
+    const pedido = await pedidoService.obtenerPorStripeId(sessionId);
+    if (pedido && pedido.estado === 'PAGADO') {
+      return { success: true };
+    }
+
+    return new Response(JSON.stringify({ error: 'El pago aún no ha sido confirmado' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }, {
     params: t.Object({ id: t.String() }),
   });

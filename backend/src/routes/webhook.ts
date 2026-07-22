@@ -85,6 +85,22 @@ export const webhookRoutes = new Elysia({ prefix: '/api/webhook' })
               stripeSessionId: session.id,
             });
             console.log(`[WEBHOOK] Pedido creado para receta ${recetaId}: ${nuevoPedido._id}`);
+
+            if (email) {
+              enviarFacturaPedido({
+                email,
+                nombre: customerName || 'Cliente',
+                pedidoId: nuevoPedido._id.toString(),
+                total: nuevoPedido.total,
+                items: nuevoPedido.items.map(item => ({
+                  nombre: item.nombre,
+                  cantidad: item.cantidad,
+                  precioSnapshot: item.precioSnapshot,
+                })),
+                metodoEntrega: nuevoPedido.metodoEntrega,
+                direccionEnvio: nuevoPedido.direccionEnvio,
+              }).catch(err => console.error('[WEBHOOK] Error sending recipe invoice:', err));
+            }
           }
         }
       } else if (email) {
